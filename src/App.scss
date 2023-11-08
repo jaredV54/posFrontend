@@ -1,0 +1,313 @@
+@import url('https://fonts.googleapis.com/css2?family=Amatic+SC&family=Bruno+Ace&family=Chakra+Petch:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Comfortaa:wght@300;400&family=DM+Sans:wght@400;500;700&family=Dancing+Script&family=Inconsolata:wght@200&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Nunito:wght@200&family=Orbitron:wght@900&family=Phudu&family=Prata&family=Questrial&family=Rajdhani:wght@300&family=Raleway:wght@100;200;300;400;500;600;700&family=Righteous&family=Rubik+80s+Fade&family=Rubik+Pixels&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+body {
+  background: linear-gradient(90deg, #1a1a1a, #212121);
+}
+
+.go-back {
+  position: fixed;
+  top: 15px;
+  left: 85px;
+  width: 40px;
+  height: 40px;
+  background-color: #313a72;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all ease .25s;
+
+  &:hover {
+    background-color: #f7860e;
+  }
+
+  &:active {
+    background-color: #dfdfdf;
+  }
+
+  i {
+    color: #fff;
+    font-size: 2.4rem;
+    &:hover {
+      animation: goBack 1.6s infinite;
+    }
+  }
+}
+
+.wrapper {
+  height: 100svh;
+  width: 100svw;
+  background-color: #1a1a1a;
+  padding-top: 20px;
+  position: absolute;
+  z-index: 100;
+  top: 0;
+}
+
+.link {
+  text-decoration: none;
+  outline: none;
+}
+
+.sign-in-container {
+  margin: 10px auto !important;
+}
+
+.container {
+  width: 420px;
+  height: auto;
+  background: linear-gradient(90deg, #1a1a1a, #212121);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 50px auto;
+  padding: 30px;
+
+  span {
+    color: #ff911b;
+    font-size: .81rem;
+    margin: -10px 0;
+  }
+
+  fieldset {
+    width: 100%;
+    margin: 0 auto;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    border-color: #6878e0;
+    
+    legend.page-name {
+        font-size: 1.6rem;
+        color: #ededed;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 400;
+        padding: 0 15px;
+        margin: 0 auto;
+    }
+  }
+
+  fieldset.delete-page-name {
+    border-color: #f7860e;
+  }
+
+  form > .input-container {
+    height: 75px;
+    margin: 15px auto;
+    display: grid;
+    justify-content: center;
+
+    label {
+      font-size: .91rem;
+      i {
+        font-size: 1.2rem;
+        position: relative;
+        top: 2px;
+        color: #6878e0;
+      }
+    }
+
+    input, select {
+      width: 300px;
+      height: 30px;
+      outline: none;
+      margin: 0px 0 0 0;
+      padding: 0 5px;
+      position: relative;
+      background-color: transparent;
+      border-bottom: 2px solid white !important;
+      border: none;
+      font-size: .87rem;
+      caret-color: #f7860e;
+      color: #f7860e;
+    }
+
+    input::placeholder {
+      opacity: 1;
+      color: #c6c6c6d6;
+      transition: all ease .25s;
+     }
+    
+    input:focus::placeholder {
+         opacity: 0;
+     }
+
+     input:focus {
+      border-bottom: 2px solid #f7860e !important;
+     }
+     select {
+      color: #f7860e !important;
+      cursor: pointer;
+      justify-content: left;
+      option {
+        color: #1a1a1a;
+        font-weight: 500;
+      }
+     }
+  }
+
+  .terms-paragraph {
+    text-align: center;
+    margin: 10px 0;
+    font-size: .9rem;
+  }
+
+  .submit-type-bttn {
+    width: 300px;
+    height: 32px;
+    border: none;
+    margin: 10px auto;
+    text-align: center;
+    display: grid;
+    justify-content: center;
+    line-height: 32px;
+    cursor: pointer;
+    background-color: #f7860e;
+    color: white;
+    position: relative;
+    transition: all ease .25s;
+
+    div.submit-text-logIn, div.submit-text-delete, div.submit-text-signUp,
+    div.submit-text-update {
+      transition: all ease .25s;
+     }
+
+    i.arrow-right,  i.trash, i.user-i, i.user-detail {
+      font-size: 1.9rem;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      color: #f7860e;
+      transition: all ease .25s;
+    }
+
+    i.trash {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+
+    i.user-i, i.user-detail {
+      font-size: 1.3rem;
+      line-height: 2rem;
+    }
+  }
+
+  .submit-type-bttn:hover {
+    background-color: #313a72;
+
+    div.submit-text-logIn {
+      transform: translate(-10px, 0);
+    }
+
+    div.submit-text-delete {
+      transform: translate(-15px, 0);
+    }
+
+    div.submit-text-signUp {
+      transform: translate(-15px, 0);
+    }
+
+    div.submit-text-update {
+      transform: translate(-20px, 0);
+    }
+
+    i.arrow-right {
+      left: calc(50% + 25px);
+      opacity: 1;
+    }
+
+    i.trash {
+      left: calc(50% + 50px);
+      opacity: 1;
+    }
+
+    i.user-i {
+      left: calc(50% + 30px);
+      opacity: 1;
+    }
+
+    i.user-detail {
+      left: calc(50% + 60px);
+      opacity: 1;
+    }
+    
+  }
+
+  .change-page-bttn {
+    width: 300px;
+    height: 32px;
+    border: none;
+    margin: 10px auto 5px;
+    text-align: center;
+    display: grid;
+    justify-content: center;
+    line-height: 32px;
+    cursor: pointer;
+    background-color: #313a72;
+    color: white;
+    transition: all ease .25s;
+
+    div.update-acc-txt, div.delete-acc-txt, div.create-acc-txt, div.login-acc-txt {
+      transition: all ease .25s;
+    }
+
+    i.user-plus, i.user-detail--, i.user-x, i.arrow-right {
+      font-size: 1.4rem;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      color: #fff;
+      line-height: 2rem;
+      transition: all ease .25s;
+    }
+
+    i.arrow-right {
+      font-size: 1.9rem;
+    }
+
+    &:hover {
+      background-color: #6878e0;
+      
+      div.create-acc-txt {
+        transform: translate(-20px, 0);
+      }
+
+      div.update-acc-txt {
+        transform: translate(-20px, 0);
+      }
+
+      div.delete-acc-txt {
+        transform: translate(-20px, 0);
+      }
+
+      div.login-acc-txt {
+        transform: translate(-10px, 0);
+      }
+
+      i.user-plus {
+        left: calc(50% + 53px);
+        opacity: 1;
+      }
+
+      i.arrow-right {
+        left: calc(50% + 25px);
+        opacity: 1;
+      }
+
+      i.user-detail--, i.user-x {
+        left: calc(50% + 60px);
+        opacity: 1;
+      }
+
+    }
+  }
+}
+

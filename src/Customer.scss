@@ -1,0 +1,298 @@
+#customer-info {
+    font-family: 'Montserrat', sans-serif;
+    color: #fff;
+    text-align: center;
+
+    h1 {
+        font-size: 1.5rem;
+        font-weight: 300;
+        margin: 20px 30px;
+    }
+
+    div.search-form {
+        display: flex;
+        justify-content: center;
+        margin: 30px 0;
+  
+        i.search-icon {
+          font-size: 1.8rem;
+          color: #6878e0;
+          margin-left: 5px;
+        }
+  
+        input.search-bar {
+          width: 280px;
+          height: 30px;
+          border: none;
+          background-color: #333333;
+          border-radius: 35px;
+          padding: 5px 10px;
+          outline: none;
+          font-size: .86rem;
+          caret-color: #f7860e;
+          color: #fff;
+          font-weight: 400;
+          text-align: center;
+  
+          &::placeholder {
+            color: #e1e1e1ce;
+            opacity: 1;
+            transition: all ease .25s;
+          }
+  
+          &:focus::placeholder {
+            opacity: 0;
+          }
+        }
+    }
+
+    div.add-customer {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(6, 15.5%);
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      
+      div.input-customer-info {
+        position: relative;
+        label {
+          display: block;
+          text-align: left;
+          font-size: .78rem;
+          margin-bottom: 3px;
+
+          p.check-input {
+            color: #fff;
+            font-weight: 500;
+            display: inline-block;
+          }
+        }
+
+        input {
+          position: relative;
+          z-index: 20;
+          color: #151515;
+          display: block;
+          background-color: #fff;
+          border: none;
+          outline: none;
+          width: 100%;
+          height: 25px;
+          padding: 2px 5px;
+          font-size: .78rem;
+          font-weight: 600; 
+        }
+
+        i {
+          z-index: 20;
+          position: absolute;
+          right: 0px;
+          top: 15px;
+          cursor: pointer;
+          color: #151515;
+          font-size: 1.85rem;
+          transition: all ease .25s;
+
+          &:hover {
+            color: #f7860e;
+          }
+
+          &:active {
+            color: #313a72;
+          }
+
+          &.isAdmin {
+            pointer-events: none;
+            display: none;
+            text-shadow: 0px 0px 7px;
+          }
+        }
+
+        div.option-close {
+          display: none;
+        }
+
+        div.option {
+          z-index: 25;
+          background-color: #efefef;
+          display: flex;
+          flex-direction: column;
+          padding: 5px;
+          font-size: .78rem;
+          font-weight: 500;
+          position: absolute;
+          top: 50px;
+          z-index: 11111;
+
+          span {
+            color: #151515;
+            cursor: pointer;
+            padding: 3px 0;
+            
+            transition: all ease .25s;
+
+            &:hover {
+              background-color: #151515;
+              color: #fefefe;
+            }
+          }
+        }
+
+        input[type="date"] {
+          &::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            background-color: #6878e0;
+            font-size: 1rem;
+            height: 100%;
+            margin-right: -12px;
+            padding: 5px 12px 0 8px;
+            border-left: 2px solid #fff;
+            transition: all ease .25s;
+    
+            &:hover {
+              background-color: #f7860e;
+              border-left: 2px solid #f7860e;
+            }
+            &:active {
+              background-color: #6878e0;
+            }
+          }
+        }
+
+        input::placeholder {
+          opacity: 1;
+          font-weight: 400;
+          transition: all ease .25s;
+        }
+
+        input:focus::placeholder {
+          opacity: 0;
+        }
+
+        div {
+          width: 100%;
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          button {
+            background-color: #313a72;
+            color: #fff;
+            cursor: pointer;
+            display: block;
+            border: none;
+            outline: none;
+            width: 49%;
+            height: 25px;
+            padding: 2px 5px;
+            font-size: .8rem;
+            font-weight: 500;
+            transition: background-color ease .25s;
+            &:hover {
+              background-color: #6878e0;
+            }
+            &:active {
+              background-color: #313a72;
+            }
+          }
+          button.add-bttn {
+            width: 100%;
+          }
+          button.cancel-bttn {
+            background-color: #fc8200;
+            &:hover {
+              background-color: #ffa340;
+            }
+            &:active {
+              background-color: #fc8200;
+            }
+          }
+        }
+      }
+    }
+
+    table.customer-table {
+      position: relative;
+      z-index: 30;
+      width: 98%;
+      margin: 0 auto 30px;
+      font-size: .7rem;
+      overflow: auto;
+
+        thead {
+            background-color: #151515;
+            tr {
+              th {
+                padding: 5px;
+              }
+            }
+          }
+          tbody {
+            background-color: #363636;
+            tr {
+              td {
+                font-weight: 500;
+                padding: 2px 5px;
+
+                &.edit-customer {
+
+                border: none;
+                color: #fff;
+                cursor: pointer;
+                transition: all ease .25s;
+                }
+
+                &.edit-button {
+                  background-color: #313a72;
+                  padding: 5px;
+                  &:hover {
+                      background-color: #6878e0;
+                      transform: scale(1.05);
+                  }
+                  &:active {
+                      transform: scale(.95);
+                      background-color: #313a72;
+                  }
+                  }
+    
+                  &.delete-button {
+                    padding: 5px;
+                      background-color: #fc8200;
+                      &:hover {
+                          transform: scale(1.05);
+                          background-color: #ffa340;
+                      }
+                      &:active {
+                          transform: scale(.95);
+                          background-color: #fc8200;
+                      }
+                  }
+
+                  .link {
+                    color: #151515;
+                    width: 100%;
+                  }
+    
+                  &.select-button {
+                    background-color: #fff;
+                    color: #151515;
+
+                    div.selected {
+                      color: #ff8400;
+                      font-weight: 500;
+                    }
+
+                    &:hover {
+                        transform: scale(1.05);
+                        background-color: #dddddd;
+                    }
+                    &:active {
+                        transform: scale(.95);
+                        background-color: #fff;
+                    }
+                 }    
+              }
+            }
+          }
+    }
+}

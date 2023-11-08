@@ -1,0 +1,236 @@
+
+
+@keyframes goBack {
+  0% {
+    transform: translateX(1px);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+  100% {
+    transform: translateX(1px);
+  }
+}
+
+h1.total-sales {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin: 20px 30px;
+  text-align: center;
+}
+
+div.date-range {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+
+    .clear-date {
+        border: none;
+        outline: none;
+        cursor: pointer;
+        background-color: #ff8808;
+        color: #ffffff;
+        padding: 7px 10px;
+        border-radius: 5px;
+        transition: all ease .25s;
+  
+        &:hover {
+          background-color: #313a72;
+        }
+  
+        &:active {
+          background-color: #f7860e;
+        }
+      }
+    
+      select.select-date-type {
+        border: none;
+        outline: none;
+        cursor: pointer;
+        background-color: #ff8808;
+        color: #ffffff;
+        padding: 7px;
+        border-radius: 5px;
+        transition: all ease .25s;
+
+        option {
+          background-color: #313a72;
+        }
+      }
+  
+    label {
+        color: #fff;
+    }
+
+    input[type="year"] {
+      width: 100px !important;
+    }
+
+    input[type="month"] {
+      width: 180px !important;
+    }
+
+    input[type="date"] {
+      width: 160px !important;
+    }
+    
+    input[type="date"], input[type="month"], input[type="year"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 0 12px;
+    height: 30px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    font-size: 14px;
+    outline: none;
+    font-weight: 500;
+    cursor: text;
+    transition: all ease .25s;
+  
+    &::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      background-color: #6878e0;
+      font-size: 1rem;
+      height: 100%;
+      margin-right: -12px;
+      padding: 12px 10px 0 12px;
+      border-left: 2px solid #fff;
+      transition: all ease .25s;
+
+      &:hover {
+        background-color: #fff;
+        border-left: 2px solid #f7860e;
+      }
+      &:active {
+        background-color: #6878e0;
+      }
+    }
+
+    &::after {
+      content: '\25BE';
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+  }
+  
+  input[type="date"]:focus, input[type="month"]:focus, input[type="year"]:focus  {
+    background-color: #212121;
+    color: #fff;
+  }
+  
+}
+
+div.sales-data * {
+  transition: all ease .25s;
+}
+
+div.sales-data {
+    display: grid;
+    justify-content: center;
+    flex-direction: row;
+    
+    div.store-info {
+      background-color: #fff;
+      padding: 10px;
+      margin-top: 20px;
+      div > span {
+        color: #212121;
+        font-weight: 500;
+      }
+    }
+
+    table {
+        margin: 20px;
+        color: #fff;
+        border: 2px solid #1a1a1a;
+        width: 500px;
+
+        thead {
+            background-color: #f7860e;
+            tr {
+                th {
+                    padding: 5px;
+                    &.last-th {
+                      background-color: #1a1a1a;
+                    }
+                }
+            }
+        }
+
+        tbody {
+            background-color: #dfdfdf !important;
+            color: #1a1a1a;
+            font-weight: 500;
+            tr {
+                td {
+                    padding: 5px;
+                    &.select-store-bttn {
+                      text-align: center;
+                      background-color: #313a72;
+                      color: #fff;
+                      cursor: pointer;
+                      transition: all ease .25s;
+
+                      &:hover {
+                        background-color: #f7860e;
+                      }
+                    }
+                }
+
+            }
+        }
+    }
+
+    table.close-select-store {
+      visibility: hidden;
+      opacity: 0;
+      margin-top: -150px;
+      width: 960px !important;
+    }
+
+    table.open-select-store {
+      visibility: visible;
+      opacity: 1;
+      margin-top: 10px;
+    }
+}
+
+.print-sales-bttn-container {
+  position: relative;
+  margin-top: 30px;
+  left: 50%;
+  width: 400px;
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  transform: translateX(-50%);
+
+  .print-sales-bttn {
+    
+    gap: 10px;
+    margin: 0 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border: none;
+    outline: none;
+    font-weight: 500;
+    transition: all ease .25s;
+  
+    &:hover {
+      background-color: #f7860e;
+      color: #fff;
+    }
+  }
+}
+
+

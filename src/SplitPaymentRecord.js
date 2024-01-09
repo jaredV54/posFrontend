@@ -17,6 +17,7 @@ function SplitPaymentRecord() {
     };
     const userTypeJSON = JSON.parse(localStorage.getItem("currentUserType"));
     const userType = userTypeJSON.userType;
+    const [displayCount, setDisplayCount] = useState(150);
     const [values, setValues] = useState(initialValues);
 
       useEffect(() => {
@@ -30,6 +31,10 @@ function SplitPaymentRecord() {
       useEffect(() => {
         fetchStoreInfo();
       }, [values]);
+
+      const handleExpandClick = () => {
+        setDisplayCount((prev) => prev + 150);
+      }
     
       const fetchStoreInfo = async () => {
         try {
@@ -200,10 +205,9 @@ function SplitPaymentRecord() {
               <th>Acc Number</th>
             </tr>
           </thead>
-
-          {filteredSplitPayment.map((split) => (
-            <tbody className='table-rows' key={split.id}>
-              <tr className='sales-row'>
+          <tbody className='table-rows'>
+          {filteredSplitPayment.slice(0, displayCount).map((split) => (
+              <tr key={split.id} className='sales-row'>
                 <td>{split.id}</td>
                 <td>{split.transId}</td>
                 <td>{split.items}</td>
@@ -216,8 +220,23 @@ function SplitPaymentRecord() {
                 <td>{split.modeOfPayment}</td>
                 <td>{split.accNo}</td>
               </tr>
-            </tbody>
           ))}
+          {filteredSplitPayment.length >= displayCount ? (
+              <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td id='expand' onClick={handleExpandClick}>Expand</td>
+            </tr>
+            ): null}
+            </tbody>
 
         </table>
       </div>

@@ -74,7 +74,7 @@ function SplitPayment() {
               accNo: accNo
             });
 
-          const { success, id } = response.data;
+          const { success, id, message } = response.data;
           setSplitId(id)
           if (success) {
             showReceipt();
@@ -86,6 +86,8 @@ function SplitPayment() {
               items: initialValues.items
             }));
             alert("Payment Successful");
+          } else {
+            alert(message + ". Please insert unique numbers.");
           }
         } catch (error) {
           console.error(error);

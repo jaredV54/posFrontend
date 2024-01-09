@@ -19,7 +19,8 @@ class User extends React.Component {
             checkEmail: '',
             checkinput: '',
             option: 'Add',
-            currentStoreId: 0
+            currentStoreId: 0,
+            displayCount: 150
         }
     }
 
@@ -28,6 +29,12 @@ class User extends React.Component {
         this.getStores();
         this.handleAdminClass();
     }
+
+    handleExpandClick = () => {
+      this.setState((prevState) => ({
+        displayCount: prevState.displayCount + 150
+      }));
+    };  
 
     getUser = async () => {
         try {
@@ -301,8 +308,7 @@ class User extends React.Component {
 
     render() {
         const {  filteredUser, searchQuery, name, email, password, userType, checkEmail, checkinput, option, stores,
-        storeName } = this.state;
-        console.log(userType)
+        storeName, displayCount } = this.state;
 
         if (userType === 'admin') {
         return (
@@ -441,7 +447,7 @@ class User extends React.Component {
                         </tr>
                       </thead>
                       <tbody className='table-body'>
-                        {filteredUser.map((cust) => {
+                        {filteredUser.slice(0, displayCount).map((cust) => {
       
                           if (cust.isDeleted) {
                             return null;
@@ -468,6 +474,18 @@ class User extends React.Component {
                           </tr>
                           )
                         })}
+                        {filteredUser.length >= displayCount ? (
+                         <tr>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td></td>
+                         <td id='expand' onClick={this.handleExpandClick}>Expand</td>
+                       </tr>
+                       ): null}
                       </tbody>
                     </table>
                 </div>

@@ -8,6 +8,8 @@ input[type="number"]::-webkit-outer-spin-button {
   scroll-behavior: smooth;
 }
 
+.purchasing-product-wrapper
+
 a {
   text-decoration: none;
   outline: none;
@@ -187,7 +189,7 @@ a {
         display: flex;
         justify-content: center;
         padding-bottom: 30px;
-        margin-top: 30px;
+        margin-top: 10px;
   
         i.search-icon {
           font-size: 1.8rem;
@@ -241,8 +243,8 @@ a {
         z-index: 5;
         color: #fff;
         border-radius: 10px;
-        width: 250px;
-        height: 250px;
+        width: 30%;
+        height: 300px;
         flex-wrap: wrap;
         transition: all ease .25s;
 
@@ -542,6 +544,11 @@ a {
             border-radius: 10px;
           }
 
+          input.product-price {
+            border-bottom: 2px solid #ca690100;
+            width: 100px;
+          }
+
           &:last-child {
             margin-bottom: 10px;
           }
@@ -579,12 +586,20 @@ a {
             z-index: 5;
             position: relative;
           }
+
           .product-price {
             margin: 0 10px 10px 10px;
             float: inline-start;
             z-index: 5;
+            background-color: transparent;
+            color: #e1e1e1;
+            border: none;
             position: relative;
+            text-align: left;
+            outline: none;
+            font-size: 1rem;
           }
+
           .product-quantity {
             font-size: .86rem;
             font-weight: 500;
@@ -733,6 +748,7 @@ a {
           z-index: 10;
           min-height: 90px;
           border: #e1e1e1 2px solid;
+          position: relative;
 
           div.shadow {
             background: linear-gradient(90deg, #1f1f1fa8, #1a1a1a13) !important;
@@ -764,8 +780,21 @@ a {
           .product-price {
             animation: priceTrans cubic-bezier(.04,.07,.1,1.66) .5s;
             float: right;
+            text-align: center;
             margin-top: 10px;
+            position: absolute;
+            right: 0;
+            bottom: 10px;
             margin-bottom: 0 !important;
+          }
+
+          input.product-price {
+            background-color: #313a72;
+            color: #f5f5f5;
+            font-weight: 500;
+            border-radius: 35px;
+            width: 100px;
+            padding: 4px 10px 2px 10px;
           }
 
           .product-quantity {
@@ -825,11 +854,6 @@ a {
                 transform: translateY(-5px);
                 padding: 0 5px;
                 border-radius: 0 5px 5px 0;
-                cursor: pointer;
-                transition: all ease .25s;
-                &:hover {
-                  background-color: #313a72;
-                }
               }
             }
           }
@@ -856,7 +880,6 @@ a {
 #payment-method {
   transition: all ease .25s;
 }
-
 
 div.purchasing-product-wrapper {
   display: flex;
@@ -936,8 +959,10 @@ div.purchasing-product-wrapper {
         .drop-down {
           padding: 3px;
           cursor: pointer;
-          font-size: .85rem;
+          font-size: 1.1rem;
+          position: absolute;
           border: none;
+          top: 0;
           margin-left: 5px;
           background-color: transparent;
           outline: none;

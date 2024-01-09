@@ -19,7 +19,7 @@
           color: #6878e0;
           margin-left: 5px;
         }
-  
+
         input.search-bar {
           width: 280px;
           height: 30px;
@@ -49,7 +49,7 @@
     div.add-customer {
       position: relative;
       display: grid;
-      grid-template-columns: repeat(6, 15.5%);
+      grid-template-columns: repeat(5, 19%);
       justify-content: center;
       gap: 10px;
       margin-bottom: 30px;
@@ -216,6 +216,7 @@
       z-index: 30;
       width: 98%;
       margin: 0 auto 30px;
+      padding-left: 1%;
       font-size: .7rem;
       overflow: auto;
 
@@ -230,6 +231,18 @@
           tbody {
             background-color: #363636;
             tr {
+              td#expand {
+                background-color: #313a72;
+                text-align: center;
+                transition: all ease .25s;
+                cursor: pointer;
+                &:hover {
+                  background-color: #f7860e;
+                }
+                &:active {
+                  background-color: #6878e0;
+                }
+              }
               td {
                 font-weight: 500;
                 padding: 2px 5px;

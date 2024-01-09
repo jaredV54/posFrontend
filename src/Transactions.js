@@ -13,7 +13,8 @@ class Transactions extends React.Component {
       endDate: '',
       searchQuery: '',
       splitPayment: [],
-      userType: JSON.parse(localStorage.getItem("currentUserType")).userType
+      userType: JSON.parse(localStorage.getItem("currentUserType")).userType,
+      displayCount: 150
     };
   }
 
@@ -183,6 +184,12 @@ class Transactions extends React.Component {
     });
   };  
 
+  handleExpandClick = () => {
+    this.setState((prevState) => ({
+      displayCount: prevState.displayCount + 150
+    }));
+  };  
+
   render() {
     const {
       startDate,
@@ -191,7 +198,8 @@ class Transactions extends React.Component {
       searchQuery,
       splitPayment,
       transactions,
-      userType
+      userType,
+      displayCount
     } = this.state;
   
     const matchingSplitPayments = {};
@@ -255,11 +263,12 @@ class Transactions extends React.Component {
                 <th>Mode of Payment</th>
                 <th>Acc No#</th>
                 <th>Type of Payment</th>
+                <th>Platform</th>
                 <th></th>
               </tr>
             </thead>
             <tbody className='table-rows'>
-              {filteredTransactions.map((trans) => (
+              {filteredTransactions.slice(0, displayCount).map((trans) => (
                 <tr className={`sales-row ${matchingSplitPayments[trans.id] ? 'split-balance-passed' : ''}`} key={trans.id}>
                   <td>{trans.id}</td>
                   <td>{trans.items}</td>
@@ -279,6 +288,7 @@ class Transactions extends React.Component {
                   <td>{trans.modeOfPayment}</td>
                   <td>{trans.accNo}</td>
                   <td>{trans.typeOfPayment}</td>
+                  <td>{trans.platform}</td>
                   {trans.typeOfPayment === 'straight' ? (
                     <td className='select-split-row' style={{
                       backgroundColor: "#2c3157",
@@ -296,6 +306,24 @@ class Transactions extends React.Component {
                   )}
                 </tr>
               ))}
+              {filteredTransactions.length >= displayCount ? (
+              <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td id='expand' onClick={this.handleExpandClick}>Expand</td>
+            </tr>
+            ): null}
             </tbody>
           </table>
         </div>

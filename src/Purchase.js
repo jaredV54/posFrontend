@@ -5,6 +5,7 @@ import ReactToPrint from 'react-to-print';
 import config from "./Config.json";
 
 function Purchase() {
+  const currentSelectedHybrid__ = localStorage.getItem("currentSelectedHybrid__");
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState([]);
@@ -20,6 +21,7 @@ function Purchase() {
     address: ''
   }]
   const [searchQuery, setSearchQuery] = useState('');
+  const [newServicePrice, setNewServicePrice] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [change, setChange] = useState();
   const [checkChange, setCheckChange] = useState(false);
@@ -27,14 +29,26 @@ function Purchase() {
   const [cashValue, setCashValue] = useState();
   const [transId, setTransId] = useState();
   const [accNo, setAccNo] = useState('N/A');
+  const [platform, setPlatform] = useState('Onsite');
   const [receiptNo, setReceiptNo] = useState('');
-  const [checkReceiptNo, setCheckReceiptNo] = useState(false);
+  const [checkReceiptNo, setCheckReceiptNo] = useState({
+    check: false,
+    message: ""
+  });
   const [checkAccNo, setCheckAccNo] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [modeOfPayment, setModeOfPayment] = useState('Cash');
   const [typeOfPayment, setTypeOfPayment] = useState('straight');
   const componentRef = useRef(null);
   const userType = JSON.parse(localStorage.getItem("currentUserType")) || "none";
+
+  if (!currentSelectedHybrid__) {
+    localStorage.setItem("currentSelectedHybrid__", "all");
+  }
+
+  useEffect(() => {
+    getProducts();
+  }, [currentSelectedHybrid__]);
   
   const handleCash = (e) => {
     const { value } = e.target;
@@ -64,7 +78,7 @@ function Purchase() {
       if (productId) {
         productId.classList.add("select-another");
       }
-      if (expand) {
+      if (expand && product.hybrid === "product") {
         expand.classList.remove("expand-bttn")
       }
     });
@@ -80,7 +94,7 @@ function Purchase() {
           productScrollTo(newlyAddedProduct);
         }
       }, 10);
-    } else {
+    } else if (product.hybrid === "product") {
       productId.classList.remove('select-another');
       expand.classList.add('expand-bttn');
     }
@@ -99,7 +113,7 @@ function Purchase() {
           }
           return {
             ...product, amount: product.amount + (action === 'increment' && product.amount < product.quantity ? 1 :
-              action === 'decrement' && product.amount > 1? -1 : 0)
+              action === 'decrement' && product.amount > 1 ? -1 : 0)
           };
         }
         return product;
@@ -154,18 +168,17 @@ function Purchase() {
 
     if (parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && customer[0].id > 0) {
       setCheckChange(false);
-      setCheckReceiptNo(false);
+      setCheckReceiptNo((rec) => ({...rec, check: false}));
       setCheckAccNo(false);
       setCheckCustomer(false);
     } else if (accNo.toString().length <= 0) {
       setCheckAccNo(true);
     } else if (receiptNo.length === 0) {
-      setCheckReceiptNo(true)
+      setCheckReceiptNo((rec) => ({...rec, check: true}));
     } else if (change < 0 || change === "-") {
       setCheckChange(true);
     } else if (customer.length > 0) {
       setCheckCustomer(true);
-      console.log("He")
     }
 
 if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && customer[0].id > 0)) {
@@ -179,15 +192,17 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
       receiptNo: receiptNo,
       modeOfPayment: modeOfPayment,
       accNo: accNo,
-      typeOfPayment: typeOfPayment
+      typeOfPayment: typeOfPayment,
+      platform: platform,
     });
-    const { success, id } = response.data;
+    const { success, id, message } = response.data;
     
     if (success) {
       setTransId(id);
       handleTransaction(id);
     } else {
       console.error("Transaction error");
+      alert(message + ". Please insert unique numbers.")
     }
   } catch (error) {
     console.error(error);
@@ -232,11 +247,8 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
     setReceiptNo('');
     setAccNo('N/A');
     setModeOfPayment('Cash');
+    setTypeOfPayment('straight')
   }
-
-  useEffect(() => {
-    getProducts();
-  }, []);
 
   const productScrollTo = (prod) => {
     const productIdDiv = document.getElementById(`productId-${prod.id}`);
@@ -250,13 +262,17 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
 
   const getProducts = async () => {
     try {
-      const response = await axios.get(`${config.Configuration.database}/product`);
+      const response = await axios.get(`${config.Configuration.database}/product`, {
+        params: {
+          hybrid: currentSelectedHybrid__ === "all" ? null : currentSelectedHybrid__
+        }
+      });
       setProducts(response.data);
       setFilteredProducts(response.data);
     } catch (error) {
       console.error(error);
     }
-  };
+  };  
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -275,32 +291,36 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
 
   useEffect(() => {
     const totalPrice = selectedProduct.reduce((total, prod) => {
-      const productPrice = prod.price * (prod.amount === 0 ? 1 : prod.amount);
-      return total + productPrice;
+      const matchingService = newServicePrice.find(prevPrice => prevPrice.id === prod.id);
+      const productPrice = matchingService ? matchingService.price : prod.price;
+  
+      total += productPrice * (prod.amount === 0 ? 1 : prod.amount);
+      return total;
     }, 0);
-    
-    setTotalPrice(totalPrice.toFixed(2));  
-  }, [selectedProduct, products]);    
+  
+    setTotalPrice(totalPrice.toFixed(2));
+  }, [selectedProduct, newServicePrice]);
+   
 
   function getDate() {
     const currentDate = new Date();
     return currentDate.toLocaleString();
   }
 
-  const removeClassList = (id) => {
+  const removeClassList = (id, isService) => {
     let productId = document.getElementById(`productId-${id}`);
     let expand = document.getElementById(`expand-${id}`);
     productId.classList.add('select-another');
-    if (expand) {
+    if (expand && isService === "product") {
       expand.classList.remove("expand-bttn")
     }
   }
 
-  const addClassList = (id) => {
+  const addClassList = (id, isService) => {
     let productId = document.getElementById(`productId-${id}`)
     let expand = document.getElementById(`expand-${id}`)
     productId.classList.remove('select-another');
-    if (expand) {
+    if (expand && isService === "product") {
       expand.classList.add("expand-bttn")
     }
   }
@@ -345,7 +365,7 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
         setCheckChange(false);
         setCheckCustomer(false);
         setCheckAccNo(false);
-        setCheckReceiptNo(false);
+        setCheckReceiptNo((rec) => ({...rec, check: false}));
       }, 1500);
     }
   
@@ -382,6 +402,21 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
     }
   }
 
+  const handleplatform = (plat) => {
+    setPlatform(plat);
+    const showMode = document.getElementById("show-platform")
+    if (showMode) {
+      showMode.classList.remove("show-mode-of-payment")
+    }
+  }
+
+  const handleChoosePlatform = () => {
+    const show = document.getElementById("show-platform")
+    if (show) {
+      show.classList.toggle("show-mode-of-payment")
+    }
+  }
+
   useEffect(() => {
     function handleOnlineStatus() {
       setIsOnline(navigator.onLine);
@@ -399,8 +434,30 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
   const formatDate = (dateString) => {
     const options = { month: '2-digit', day: '2-digit', year: '2-digit', hour: 'numeric', minute: 'numeric' };
     const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString('en-US', options).replace(',', ' -');;
+    const formattedDate = date.toLocaleDateString('en-US', options).replace(',', ' -');
     return formattedDate;
+  };
+
+  const handleHybridSelection = (name) => {
+    localStorage.setItem("currentSelectedHybrid__", name);
+  }
+
+  const handleServicePriceChange = (e, serviceId) => {
+    const newPrice = e.target.value;
+    const existingService = newServicePrice.find(prev => prev.id === serviceId);
+  
+    if (!existingService) {
+      setNewServicePrice(prev => ([
+        ...prev,
+        { id: serviceId, price: newPrice }
+      ]));
+    } else {
+      setNewServicePrice(prev => (
+        prev.map(item =>
+          item.id === serviceId ? { ...item, price: newPrice } : item
+        )
+      ));
+    }
   };
 
   if (userType.userType !== undefined) {
@@ -480,7 +537,7 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
           }} className='show-payment' >
           <p className='total-'>Total: <span>₱{totalPrice}</span></p>
           <p>Cash: <span>₱{cashValue}</span></p>
-          <p className='change-'>Change: <span>₱{change}</span></p>
+          <p className='change-'>{typeOfPayment === "split" ? "Balance:" : "Change:"} <span>₱{change}</span></p>
           
           </div>
         </div>
@@ -619,6 +676,31 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
                     </td>
                   </tr>
 
+                  <tr>
+                    <td>Platform</td>
+                    <td>
+                      {platform === "" ? "select" : platform}
+                    <button 
+                    type="button"
+                    className='drop-down'
+                    onClick={() => handleChoosePlatform()}>
+                      <i className='bx bxs-down-arrow'></i>
+                    </button>
+                    
+                    <div id='show-platform' className='change-mode-of-payment'>
+                    <div className='payment-button payment-cash'
+                    onClick={() => handleplatform("Online")}>
+                    Online
+                    </div>
+                    <div className='payment-button payment-cash'
+                    onClick={() => handleplatform("Onsite")}>
+                    Onsite
+                    </div>
+                    </div>
+
+                    </td>
+                  </tr>
+
                 </tbody>
               </table>
 
@@ -646,9 +728,7 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
                       </button>
                     </form>
               </div>
-      </div>}
-
-          <h2 className='prod-label'>Products</h2>
+          </div>}
           <div className='search-form'>
               <input
                 className='search-bar'
@@ -656,57 +736,44 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
                 name='search-bar'
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder='Search the product'
+                placeholder='Search...'
               />
               <i className='bx bx-search search-icon' ></i>
           </div>
+          
+          <ul id='hybrid_selection'>
+          <li className={currentSelectedHybrid__ === "all" ? "selectedHybrid" : ""} data-hybrid="all" onClick={(e) => handleHybridSelection(e.currentTarget.dataset.hybrid)}>All</li>
+          <li className={currentSelectedHybrid__ === "service" ? "selectedHybrid" : ""} data-hybrid="service" onClick={(e) => handleHybridSelection(e.currentTarget.dataset.hybrid)}>Services</li>
+          <li className={currentSelectedHybrid__ === "product" ? "selectedHybrid" : ""} data-hybrid="product" onClick={(e) => handleHybridSelection(e.currentTarget.dataset.hybrid)}>Products</li>
+          <div
+          style={{
+            position: "absolute",
+            bottom: "-10px",
+            left: currentSelectedHybrid__ === "all" ? "35px" : currentSelectedHybrid__ === "service" ? "145px" : "255px"
+          }}
+            className='hybrid_selection_bar'
+          ></div>
+          </ul>
 
           <div className='overflow-product-description'>
-                {filteredProducts.length === 0 && <p className='not-found'>None</p>}
-                {filteredProducts
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((product) => {
-                    if (product.isDeleted) {
-                      return null; 
-                    }
+          {filteredProducts.length === 0 && <p className='not-found'>None</p>}
+          {filteredProducts
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((product) => {
 
-                    return (
-                      <div
-                      key={product.id}
-                      className={`product-info`}
-                      onClick={() => {
-                        addDisplayPurchase(product);
-                        productScrollTo(product);
-                      }}
-                    >
-                      {isOnline ? (
-                        <>
-                          {product.image && product.imageHover ? (
-                            <>
-                              <div className="img-hover" style={{ backgroundImage: `url(${product.imageHover})` }}></div>
-                              <img src={`${product.image}`} alt="none" className='image' />
-                            </>
-                          ) : (
-                            <>
-                              <div className='no-img-hover'></div>
-                              <div className='no-image'><i className='bx bxs-layer'></i></div>
-                            </>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <div className='no-image-selected'><i className='bx bxs-layer'></i></div>
-                        </>
-                      )}
-                      
-                      <div className='text-container'>
-                      <p className='product-name-text'>{product.name}</p>
-                      <div className='product-price-text'>₱{product.price}</div>
-                      <p className='product-description-text'>{product.description}</p>
-                      <span className='product-quantity-text'>{product.quantity} qty</span>
-                      </div>
-                    </div>
-                    )
+            return (
+              <div
+              key={product.id}
+              className={`product-info`}
+              onClick={() => {
+                addDisplayPurchase(product);
+                productScrollTo(product);
+              }}
+            >
+              {filterHybrid(isOnline, product)}
+            </div>
+            )
+            
            })}
           </div>
       </section>
@@ -714,11 +781,11 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
         {checkChange && <p className='check-change'>Please insert right amount</p>}
         {checkCustomer && <p className='check-change'>Please select client</p>}
         {checkAccNo && <p className='check-change'>Please enter account number</p>}
-        {checkReceiptNo && <p className='check-change'>Please enter receipt number</p>}
+        {checkReceiptNo.check && <p className='check-change'>Please enter receipt number</p>}
 
         {/* purchase--> */}
         <section className='purchase-product-section'>
-          <h2 className='purchase-label'>Purchase</h2>
+          <h2 className='purchase-label'>Customize</h2>
           <div id='client-to-fill'>
           <div className='selected-client'>
             <Link className='link' to='/Customer'>
@@ -745,7 +812,10 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
             ) : (
               selectedProduct
                 .map((product) => {
-                  return (<div id={`productId-${product.id}`} className={`unselect selected`} key={product.id}>
+                  return (
+                  <div id={`productId-${product.id}`} className={`unselect selected ${
+                    product.hybrid === "service" ? "select-another" : ''
+                  }`} key={product.id}>
                     
                     {isOnline ? (
                       <>
@@ -757,7 +827,7 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
                           </>
                         ) : (
                           <>
-                            <div className='no-image-selected'><i className='bx bxs-layer'></i></div>
+                            <div className='no-image-selected'></div>
                           </>
                         )}
                       </>
@@ -776,7 +846,7 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
                     <button
                       title='Minimize'
                       className='edit-selected-product'
-                      onClick={() => removeClassList(product.id)}
+                      onClick={() => removeClassList(product.id, product.hybrid)}
                     >
                       <i className='bx bx-collapse' ></i>
                     </button>
@@ -784,16 +854,18 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
                       title='Expand'
                       id={`expand-${product.id}`}
                       className='edit-selected-product expand-bttn'
-                      onClick={() => addClassList(product.id)}
+                      onClick={() => addClassList(product.id, product.hybrid)}
                     >
                       <i className='bx bx-expand' ></i>
                     </button>
                     <p className='product-name'>{product.name}</p>
-                    <div className='product-price'>₱{(product.price * (product.amount <= 0 ? 1: product.amount)).toFixed(2)}</div>
-                    <div className='product-quantity'>Available quantity: <span>{product.quantity}</span>
-                    </div>
-
-                    <div className='quantity-button'>
+                    {product.hybrid === "product" ? (
+                      <>
+                      <div className='product-price'>₱{(product.price * (product.amount <= 0 ? 1: product.amount)).toFixed(2)}</div>
+                      <div className='product-quantity'>Available quantity: 
+                      <span>{product.quantity}</span>
+                      </div>
+                      <div className='quantity-button'>
                       <div className='manage-quantity'>
                         <div className='select-amnt'>
                           Select quantity: 
@@ -824,6 +896,21 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
                         </button>
                       </div>
                     </div>
+                      </>
+                    ) : (
+                      <>
+                      <input
+                        className='product-price'
+                        placeholder='---'
+                        value={
+                          newServicePrice.some(service => service.id === product.id)
+                            ? newServicePrice.find(service => service.id === product.id).price
+                            : product.price
+                        }
+                        onChange={(e) => handleServicePriceChange(e, product.id)}
+                      />
+                     </>
+                    )}
                   </div>)
               })
             )}
@@ -845,6 +932,41 @@ if ((parseFloat(change) >= 0 && receiptNo > 0 && accNo.toString().length > 0 && 
       Log in to access the page
     </div>);
   }
+}
+
+const filterHybrid = (isOnline, product) => {
+      return (
+        <>
+          {isOnline ? (
+            <>
+              {product.image && product.imageHover ? (
+                <>
+                  <div className="img-hover" style={{ backgroundImage: `url(${product.imageHover})` }}></div>
+                  <img src={`${product.image}`} alt="none" className='image' />
+                </>
+              ) : (
+                <>
+                  <div className='no-img-hover'></div>
+                  <div className='no-image'><i className='bx bxs-layer'></i></div>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <div className='no-image-selected'><i className='bx bxs-layer'></i></div>
+            </>
+          )}
+          
+          <div className='text-container'>
+          <p className='product-name-text'>{product.name}</p>
+          <div className='product-price-text'>₱{product.price}</div>
+          <p className='product-description-text'>{product.description}</p>
+          {product.hybrid === "product" ? (
+            <span className='product-quantity-text'>{product.quantity} qty</span>
+          ): null}
+          </div>
+          </>
+        )
 }
 
 

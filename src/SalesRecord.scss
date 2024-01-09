@@ -249,6 +249,18 @@
                 font-family: 'Montserrat', sans-serif;
             }
             tr {
+              td#expand {
+                background-color: #313a72;
+                text-align: center;
+                transition: all ease .25s;
+                cursor: pointer;
+                &:hover {
+                  background-color: #f7860e;
+                }
+                &:active {
+                  background-color: #6878e0;
+                }
+              }
               td {
                 background-color: #212121;
                 padding: 5px;

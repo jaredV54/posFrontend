@@ -7,6 +7,7 @@ import config from "./Config.json";
 function SalesRecord() {
   const [sales, setSales] = useState([]);
   const [filteredSales, setFilteredSales] = useState([]);
+  const [displayCount, setDisplayCount] = useState(150);
   const [searchQuery, setSearchQuery] = useState('');
   const userTypeJSON = JSON.parse(localStorage.getItem("currentUserType"));
   const userType = userTypeJSON.userType;
@@ -44,6 +45,10 @@ function SalesRecord() {
     return formattedDate;
   };
 
+  const handleExpandClick = () => {
+    setDisplayCount((prev) => prev + 150);
+  }
+
   useEffect(() => {
     filterSales();
   }, [searchQuery]);
@@ -80,10 +85,9 @@ function SalesRecord() {
                 <th>Amount</th>
               </tr>
             </thead>
-  
-            {filteredSales.map((sale) => (
-              <tbody className='table-rows' key={sale.salesId}>
-                <tr className='sales-row'>
+            <tbody className='table-rows' >
+            {filteredSales.slice(0, displayCount).map((sale) => (
+                <tr className='sales-row' key={sale.salesId}>
                   <td>{sale.salesId}</td>
                   <td>{sale.transId}</td>
                   <td>{sale.name}</td>
@@ -92,9 +96,19 @@ function SalesRecord() {
                   <td>{sale.quantity}</td>
                   <td>{(sale.price * sale.quantity).toFixed(2)}</td>
                 </tr>
-              </tbody>
             ))}
-  
+            {filteredSales.length >= displayCount ? (
+              <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td id='expand' onClick={handleExpandClick}>Expand</td>
+            </tr>
+            ): null}
+            </tbody>
           </table>
         </div>
       </div>
@@ -121,10 +135,26 @@ class Receipt extends React.Component {
     this.getClients();
   }
 
+  componentDidUpdate(prevProps) {
+    const { searchQuery, trackReceipt } = this.props;
+
+    if (searchQuery !== prevProps.searchQuery) {
+      this.getTransactions();
+    }
+
+    if (trackReceipt !== prevProps.trackReceipt && trackReceipt.length > 0) {
+      this.getTransactions();
+    }
+  }
+
   getTransactions = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/transactions');
-      this.setState({ transactions: response.data });
+      const { trackReceipt, searchQuery } = this.props;
+      if (searchQuery.length > 0 && trackReceipt.length !== 0) {
+        const firstReceipt = trackReceipt[0];
+        const response = await axios.get(`${config.Configuration.database}/transactions/${firstReceipt.transId}`);
+        this.setState({ transactions: response.data });
+      }
     } catch (error) {
       console.error(error);
     }
@@ -132,7 +162,7 @@ class Receipt extends React.Component {
 
   getClients = async () => {
     try {
-      const response = await axios.get('http://localhost:8081/customer');
+      const response = await axios.get(`${config.Configuration.database}/customer`);
       this.setState({customer: response.data})
     } catch (error) {
       console.error(error);
@@ -152,7 +182,6 @@ class Receipt extends React.Component {
         </div>
       </div>;
     }
-
     const firstReceipt = trackReceipt[0];
 
     return (
@@ -211,7 +240,7 @@ class Receipt extends React.Component {
           </table>
           
           {transactions.map((prod) => {
-            if (prod.id === trackReceipt[0].transId) {
+            if (prod.id === firstReceipt.transId) {
               return (
                 <div className='show-payment' key={prod.id}
                 style={{
@@ -226,12 +255,12 @@ class Receipt extends React.Component {
                     <p style={{marginBottom: '10px'}} className='change-'>Change: <span
                     style={{
                       color: '#f7860e'
-                    }}>₱{prod.change}</span></p>
+                    }}>₱{prod.changeAmount}</span></p>
                   ): (
                   <p style={{marginBottom: '10px'}} className='change-'>Balance: <span
                   style={{
                     color: '#f7860e'
-                  }}>₱{prod.change}</span></p>
+                  }}>₱{prod.changeAmount}</span></p>
                   )}
                 </div>
               );

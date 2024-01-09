@@ -4,7 +4,7 @@ import Validation from './LogInValidation';
 import axios from 'axios';
 import config from "./Config.json";
 
-function LogIn({ values, setValues, setAuthenticated  }) {
+function LogIn({ values, setValues, handleLogin  }) {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
 
@@ -28,7 +28,7 @@ function LogIn({ values, setValues, setAuthenticated  }) {
             localStorage.setItem('currentUserType', JSON.stringify({ userType, storeId }));
             if (res.data.message === 'Requirements Matched') {
               localStorage.setItem('loginValues', JSON.stringify({ email: values.email }));
-              setAuthenticated(true);
+              handleLogin(true)
               navigate('/Purchase');
             } else if (res.data === 'Wrong Password') {
               setErrors((prev) => ({ ...prev, password: 'Wrong Password' }));

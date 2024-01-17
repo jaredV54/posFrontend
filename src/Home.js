@@ -70,7 +70,6 @@ const Products = () => {
           await axios.post(`${config.Configuration.database}/product`, {
             name,
             description,
-            isDeleted: false,
             price,
             quantity,
             image,

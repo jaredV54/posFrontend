@@ -3,7 +3,7 @@ import React, {useState, useEffect} from "react";
 import config from "./Config.json";
 
 const Client = () => {
-    const initialState = {
+    const initialClient = {
         fName: '',
         lName: '',
         mName: '',
@@ -19,7 +19,7 @@ const Client = () => {
         caseNumber: ''
     };
 
-    const [clientFilter, setClientFilter] = useState(initialState);
+    const [clientFilter, setClientFilter] = useState(initialClient);
 
     const [clientData, setClientData] = useState({
         client: [],
@@ -101,8 +101,6 @@ const Client = () => {
     const handleEditCustomer = (id) => {
         const { client } = clientData;
         const selectedCustomer = client.find((c) => c.id === id);
-        
-        //If editing we need to remove the add button and replace with cancel bttn and change bttn
         if (selectedCustomer) {
           const { id, isDeleted, ...newObject } = selectedCustomer;
           const button = document.getElementById("add-bttn");
@@ -207,7 +205,7 @@ const Client = () => {
     }; 
 
     const handleReset = () => {
-        setClientFilter(initialState);
+        setClientFilter(initialClient);
     }
 
     const handleSelectCustomer = (client, isSelected) => {
@@ -408,9 +406,11 @@ const Client = () => {
             </div>
         );
         } else {
-          return (<div>
+          return (
+          <div>
             You don't have acces to this page.
-          </div>);
+          </div>
+          );
         } 
 }
 

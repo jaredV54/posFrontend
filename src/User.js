@@ -361,6 +361,7 @@ class User extends React.Component {
                         <label htmlFor="userType">User Type: </label>
                         <input 
                         name="userType" 
+                        placeholder="---"
                         defaultValue={userType.charAt(0).toUpperCase() + userType.slice(1)} 
                         style={{pointerEvents: "none"}}/>
                         <i className='bx bx-chevron-down' onClick={() => this.handleSelectUserType()}></i>

@@ -13,7 +13,8 @@ class User extends React.Component {
             name: '',
             email: '',
             password: '',
-            userType: JSON.parse(localStorage.getItem("currentUserType")).userType,
+            currentUserType: JSON.parse(localStorage.getItem("currentUserType")).userType,
+            userType: '',
             storeName: '',
             currentId: 0,
             checkEmail: '',
@@ -201,11 +202,12 @@ class User extends React.Component {
         email,
         password,
         userType,
-        storeName
+        ...(userType === 'admin' ? [] : [storeName])
       ];
+      
       const allFieldsValid = requiredFields.every((field) => field && field.length > 0);
-    
-      if (allFieldsValid || userType === 'admin') {
+       
+      if (allFieldsValid) {
         this.removeClass()
         this.setState({ checkinput: "" });
     
@@ -307,10 +309,10 @@ class User extends React.Component {
     }
 
     render() {
-        const {  filteredUser, searchQuery, name, email, password, userType, checkEmail, checkinput, option, stores,
+        const {  filteredUser, searchQuery, name, email, password, currentUserType,userType, checkEmail, checkinput, option, stores,
         storeName, displayCount } = this.state;
 
-        if (userType === 'admin') {
+        if (currentUserType === 'admin') {
         return (
             <div>
                 <div id="customer-info" className="customer-info-container">

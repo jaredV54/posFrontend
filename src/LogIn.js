@@ -20,31 +20,35 @@ function LogIn({ values, setValues, handleLogin  }) {
 
   useEffect(() => {
     if (errors.email === '' && errors.password === '') {
-      axios
-        .post(`${config.Configuration.database}/login`, values)
+      axios.post(`${config.Configuration.database}/login`, values)
         .then((res) => {
-          const { userType, storeId } = res.data.data[0];
-          if (userType && storeId) {
-            localStorage.setItem('currentUserType', JSON.stringify({ userType, storeId }));
-            if (res.data.message === 'Requirements Matched') {
-              localStorage.setItem('loginValues', JSON.stringify({ email: values.email }));
-              handleLogin(true)
-              navigate('/Purchase');
-            } else if (res.data === 'Wrong Password') {
+          if (res.data && res.data.data) {
+            const { userType, storeId } = res.data.data[0];
+  
+            if (userType && storeId) {
+              localStorage.setItem('currentUserType', JSON.stringify({ userType, storeId }));
+              if (res.data.message === 'Requirements Matched') {
+                localStorage.setItem('loginValues', JSON.stringify({ email: values.email }));
+                handleLogin(true);
+                navigate('/Purchase');
+              }
+            } else {
+              alert("Incomplete user data");
+            }
+          } if (res.data) {
+            if (res.data === 'Wrong Password') {
               setErrors((prev) => ({ ...prev, password: 'Wrong Password' }));
             } else if (res.data === "Email doesn't exist") {
               setErrors((prev) => ({ ...prev, email: "User doesn't exist" }));
-            } else {
-              console.log(res.data);
-              alert('Error');
             }
           } else {
-            navigate("/");
+            alert("No user data received, Please check your internet");
           }
         })
         .catch((err) => console.log(err));
     }
-  }, [values, errors, navigate]);
+  }, [values, errors, navigate, handleLogin]);
+  
 
   useEffect(() => {
     const savedValues = JSON.parse(localStorage.getItem('loginValues'));
@@ -82,7 +86,7 @@ function LogIn({ values, setValues, handleLogin  }) {
             </div>
             <i className='bx bx-chevrons-right arrow-right'></i>
           </button>
-          <p className='terms-paragraph'>You agree to our Terms of Policies?</p>
+          <p className='terms-paragraph'>Welcome to PSYZYGY POS!</p>
         </form>
       </div>
     </div>

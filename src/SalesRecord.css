@@ -1,0 +1,253 @@
+@charset "UTF-8";
+.go-back .go-back-bttn {
+  position: fixed !important;
+  left: 10px !important;
+  top: 10px;
+  transform: translateX(0%) !important;
+}
+.go-back .view-total-sales-bttn {
+  position: fixed !important;
+  left: 210px !important;
+  top: 10px !important;
+  transform: translate(0%) !important;
+}
+
+#sales-record-container {
+  height: auto;
+  color: rgb(255, 255, 255);
+  margin-bottom: 40px;
+}
+#sales-record-container .clear-date {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background-color: #ff8808;
+  color: #ffffff;
+  padding: 7px 10px;
+  border-radius: 5px;
+  transition: all ease 0.25s;
+}
+#sales-record-container .clear-date:hover {
+  background-color: #313a72;
+}
+#sales-record-container .clear-date:active {
+  background-color: #f7860e;
+}
+#sales-record-container .start-date {
+  margin-right: 10px;
+}
+#sales-record-container .end-date {
+  margin-left: 10px;
+}
+#sales-record-container div.date-range {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+#sales-record-container div.date-range input[type=date] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 0 12px;
+  height: 30px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #333;
+  font-size: 14px;
+  outline: none;
+  font-weight: 500;
+  cursor: text;
+  transition: all ease 0.25s;
+}
+#sales-record-container div.date-range input[type=date]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  background-color: #6878e0;
+  font-size: 1rem;
+  height: 100%;
+  margin-right: -12px;
+  padding: 12px 10px 0 12px;
+  border-left: 2px solid #fff;
+  transition: all ease 0.25s;
+}
+#sales-record-container div.date-range input[type=date]::-webkit-calendar-picker-indicator:hover {
+  background-color: #fff;
+  border-left: 2px solid #f7860e;
+}
+#sales-record-container div.date-range input[type=date]::-webkit-calendar-picker-indicator:active {
+  background-color: #6878e0;
+}
+#sales-record-container div.date-range input[type=date]::after {
+  content: "▾";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+#sales-record-container div.date-range input[type=date]:focus {
+  background-color: #212121;
+  color: #fff;
+}
+#sales-record-container h1 {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin: 20px 30px;
+  text-align: center;
+}
+#sales-record-container div.search-form {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+#sales-record-container div.search-form i.search-icon {
+  font-size: 1.8rem;
+  color: #6878e0;
+  margin-left: 5px;
+}
+#sales-record-container div.search-form input.search-bar {
+  width: 300px;
+  height: 30px;
+  border: none;
+  background-color: #333333;
+  border-radius: 35px;
+  padding: 5px 10px;
+  outline: none;
+  font-size: 0.86rem;
+  caret-color: #f7860e;
+  color: #fff;
+  font-weight: 400;
+  text-align: center;
+}
+#sales-record-container div.search-form input.search-bar::placeholder {
+  color: rgba(225, 225, 225, 0.8078431373);
+  opacity: 1;
+  transition: all ease 0.25s;
+}
+#sales-record-container div.search-form input.search-bar:focus::placeholder {
+  opacity: 0;
+}
+#sales-record-container .no-receipt {
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  color: #f7860e;
+}
+#sales-record-container .receipt-closed {
+  margin: 30px auto;
+  min-width: 300px;
+  padding: 20px;
+  width: 45%;
+  height: auto;
+  padding: 10px;
+  background-color: #eeeeee;
+  color: #1a1a1a;
+}
+#sales-record-container .receipt-closed h1 {
+  color: #1a1a1a;
+  font-size: 1.9rem;
+  font-family: "Raleway", sans-serif;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-align: center;
+}
+#sales-record-container .receipt-closed table.receipt-table thead {
+  background-color: #c3c3c3;
+  color: #1a1a1a;
+}
+#sales-record-container .receipt-closed table.receipt-table thead tr th {
+  padding: 5px 10px;
+}
+#sales-record-container .receipt-closed table.receipt-table tbody {
+  background-color: #d3d3d3;
+  color: #1a1a1a;
+}
+#sales-record-container .receipt-closed table.receipt-table tbody tr td {
+  font-weight: 400;
+}
+#sales-record-container .receipt-closed table.receipt-table tbody tr td span {
+  font-weight: 600;
+}
+#sales-record-container .receipt-closed .show-payment {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  width: 100%;
+}
+#sales-record-container .print-button {
+  outline: none;
+  background-color: #313a72;
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all ease 0.25s;
+}
+#sales-record-container .print-button:hover {
+  background-color: #f7860e;
+}
+#sales-record-container table.sales-table {
+  font-size: 0.8rem;
+  width: 95%;
+  margin: 30px auto 0;
+  border: 1px solid #fff;
+  text-align: left;
+}
+#sales-record-container table.sales-table thead.table-column {
+  font-family: "Raleway", sans-serif;
+  font-weight: 400;
+}
+#sales-record-container table.sales-table thead.table-column tr th {
+  padding: 5px;
+  background-color: #333;
+}
+#sales-record-container table.sales-table tbody {
+  outline: #fff;
+}
+#sales-record-container table.sales-table tbody .table-rows {
+  background-color: #212121;
+  font-family: "Montserrat", sans-serif;
+}
+#sales-record-container table.sales-table tbody tr td#expand {
+  background-color: #313a72;
+  text-align: center;
+  transition: all ease 0.25s;
+  cursor: pointer;
+}
+#sales-record-container table.sales-table tbody tr td#expand:hover {
+  background-color: #f7860e;
+}
+#sales-record-container table.sales-table tbody tr td#expand:active {
+  background-color: #6878e0;
+}
+#sales-record-container table.sales-table tbody tr td {
+  background-color: #212121;
+  padding: 5px;
+}
+#sales-record-container table.sales-table tbody tr td.select-split-row {
+  padding: 0 10px !important;
+  background-color: #f7860e;
+  color: #eeeeee;
+  cursor: pointer;
+  transition: all ease 0.25s;
+}
+#sales-record-container table.sales-table tbody tr td.select-split-row:hover {
+  background-color: #ff8400;
+  transform: scale(1.05);
+}
+#sales-record-container table.sales-table tbody tr td.select-split-row:active {
+  background-color: #f7860e;
+  transform: scale(1);
+}
+#sales-record-container table.sales-table tbody tr td.split-balance-passed {
+  pointer-events: none !important;
+  background-color: #2c3157 !important;
+  text-decoration: line-through !important;
+}/*# sourceMappingURL=SalesRecord.css.map */

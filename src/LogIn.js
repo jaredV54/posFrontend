@@ -14,7 +14,6 @@ function LogIn({ values, setValues, handleLogin  }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    
     setErrors(Validation(values));
   };
 
@@ -36,12 +35,18 @@ function LogIn({ values, setValues, handleLogin  }) {
               alert("Incomplete user data");
             }
           } if (res.data) {
-            if (res.data === 'Wrong Password') {
-              setErrors((prev) => ({ ...prev, password: 'Wrong Password' }));
-            } else if (res.data === "Email doesn't exist") {
-              setErrors((prev) => ({ ...prev, email: "User doesn't exist" }));
+            switch (res.data) {
+              case 'Wrong Password':
+                setErrors((prev) => ({ ...prev, password: 'Wrong Password' }));
+                break;
+              case "Email doesn't exist":
+                setErrors((prev) => ({ ...prev, email: "User doesn't exist" }));
+                break;
+              default:
+                break;
             }
-          } else {
+          }
+           else {
             alert("No user data received, Please check your internet");
           }
         })

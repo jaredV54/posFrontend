@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import './App.scss'
-import './Home.scss'
 import './Purchase.scss'
 import './Store.scss'
 import './Customer.scss'
@@ -12,6 +11,7 @@ import './Nav.scss'
 import './SplitPayment.scss'
 import './SplitPaymentRecords.scss'
 import './PageContainer.scss'
+import './Hybrid.scss'
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 

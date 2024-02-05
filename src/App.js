@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import LogIn from './LogIn';
 import NavArea from './NavArea';
 import User from './User';
-import Home from './Home';
+import Hybrid from './Hybrid';
 import Purchase from './Purchase';
 import SalesRecord from './SalesRecord';
 import Transactions from './Transactions';
@@ -30,7 +30,7 @@ const AuthenticatedRoutes = ({ values, authenticated }) => {
         <div className='page-container'>
           <Routes>
             <Route path='/User' element={<User />} />
-            <Route path='/Home' element={<Home />} />
+            <Route path='/Hybrid' element={<Hybrid />} />
             <Route path='/Purchase' element={<Purchase />} />
             <Route path='/SalesRecord' element={<SalesRecord />} />
             <Route path='/Transactions' element={<Transactions />} />

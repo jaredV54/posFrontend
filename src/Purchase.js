@@ -100,7 +100,7 @@ const Purchase = () => {
       <main id='purchase_container' className='purchase_container_class'>
         <section id='hybrid_info'>
           <SelectPsychologicalTest
-          psyc={psychologicalAssessment}
+          psyTestSelection={psychologicalAssessment.psyTestSelection}
           setPsyc = {setPsychologicalAssessment}
           />
           <FillTransaction/>

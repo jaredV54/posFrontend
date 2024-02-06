@@ -16,6 +16,7 @@ main#purchase_container {
         grid-column: span 2;
         background-color: #262626;
         border-radius: 10px;
+        position: relative;
 
         #display_hybrids {
             position: relative;
@@ -96,6 +97,77 @@ main#purchase_container {
                 border: solid #ededed 2px;
                 transform: scale(.97);
             }
+        }
+
+        #psyc_list_container * {
+            transition: all ease .25s;
+        }
+
+        div.psyc_list_container {
+            background-color: #373737;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            border-radius: 10px;
+            z-index: -3;
+            padding: 20px;
+            opacity: 0;
+            transition: all ease .25s;
+
+            .view_first_section {
+                background-color: #262626;
+                color: #ededed;
+                font-size: 1.8rem;
+                height: 100%;
+                width: 30px;
+                position: absolute;
+                right: 0;
+                top: 0;
+                cursor: pointer;
+                border-radius: 0 10px 10px 0;
+                transition: all ease .25s;
+
+                i {
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+            }
+
+            .view_first_section:hover {
+                background-color: #212121;
+                i {
+                    color: #ededed;
+                }
+            }
+
+            .ul_of_psycTests {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+                .psyc_test_column {
+                    width: 70%;
+                }
+                .stand_int_column {
+                    width: 20%;
+                }
+                .check_list_column {
+                    width: 10%;
+                }
+                
+                li {
+                    list-style: none;
+                    display: inline-block;
+                }
+                div {
+                    display: inline-block;
+                }
+            }
+        }
+
+        div.psyc_list_fetched {
+            z-index: 20;
+            opacity: 1;
+            transition: all ease .25s;
         }
     }
 
@@ -187,8 +259,34 @@ main#purchase_container {
                 p.s_hybrid_price {
                    font-size: .87rem;
                    font-weight: 500;
+                   width: 100%;
                    @media (max-width: 1050px) {
                     font-size: 0.8rem;
+                   }
+                }
+
+                .s_hybrid_psycList {
+                    margin-top: 5px;
+                    p {
+                        color: #ededed;
+                        font-size: .88rem;
+                    }
+                }
+
+                .discount_conainer {
+                    width: 100%;
+                    height: 20px;
+                    display: flex;
+                    gap: 10px;
+                    font-size: .9rem;
+
+                    input {
+                        background-color: #ededed;
+                        border: none;
+                        outline: none;
+                        padding: 3px;
+                        font-weight: 500;
+                        color: #262626;
                     }
                 }
 

@@ -580,19 +580,6 @@ div#hybrid_container {
             background-color: #262626;
             scrollbar-width: thick;
             scrollbar-color: #6878e0 #ededed00;
-
-            .added_test_wrapper::-webkit-scrollbar {
-                width: 10px;
-                background-color: #ededed;
-            } 
-
-            div.added_test_wrapper::-webkit-scrollbar-thumb {
-                background-color: #6878e0;
-              }
-          
-            div.added_test_wrapper::-webkit-scrollbar-thumb:hover {
-              background-color: #f7860e;
-            }
         }
 
         #display_hybrids {

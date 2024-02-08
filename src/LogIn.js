@@ -73,12 +73,14 @@ function LogIn({ values, setValues, handleLogin  }) {
               type="email"
               name="email"
               placeholder="Enter email"
+              required="required"
               onChange={handleInput}
             />
           </div>
           <div className="input-container">
             <label htmlFor="password">Password {errors.password && <span>{errors.password}</span>}</label>
             <input
+              required="required"
               type="password"
               name="password"
               placeholder="Enter password"

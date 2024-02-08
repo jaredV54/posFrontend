@@ -29,20 +29,21 @@ const Purchase = () => {
       contactNo: '',
       address: ''
     }],
+    quantity: 1,
     totalPrice: 0,
     discount: 0,
     discounted: 0,
-    receiptNo: ''
+    change: 0
   })
 
   const [transaction, setTransaction] = useState({
-    modeOfPayment: "",
+    modeOfPayment: "cash",
     typeOfPayment: "straight",
     platform: "Onsite",
-    accNo: "",
-    cash: 0,
-    changeAmount: 0,
-  })
+    accNo: "N/A",
+    cash: "",
+    opened: false
+  });
 
   const [fieldInfo, setFieldInfo] = useState({
     searchQuery: "",
@@ -57,7 +58,7 @@ const Purchase = () => {
   const [psychologicalAssessment, setPsychologicalAssessment] = useState({
     psyTestSelection: [],
     selectedTest: []
-  })
+  });
   
   const getHybrids = async () => {
     try {
@@ -75,9 +76,28 @@ const Purchase = () => {
     }
   };
 
+  const handleShowFillTrans = () => {
+    const showTransactionField = document.getElementById("fill_transaction");
+    const togglePaymentBttn = document.getElementById("proceed_to_payment_bttn_toggle");
+    if (showTransactionField && togglePaymentBttn && receipt.totalPrice > 0) {
+      showTransactionField.classList.toggle("fill_trans_show");
+      togglePaymentBttn.classList.toggle("payment_cancel_bttn_show");
+      setTransaction((prev) => ({
+        ...prev,
+        opened: !prev.opened
+      }))
+    }
+  }
+
   useEffect(() => {
     getHybrids();
   }, [])
+
+  useEffect(() => {
+    if (!(hybrid.selectedHybrid.length > 0)) {
+      handleShowFillTrans();
+    }
+  }, [hybrid.selectedHybrid])
   
   const handleHybridSelection = (current) => {
     localStorage.setItem("currentSelectedHybrid_", current);
@@ -105,6 +125,49 @@ const Purchase = () => {
     }
   }
 
+  const handleResetSelectionField = () => {
+    if (containerRef.current) {
+      containerRef.current.classList.remove("psyc_list_fetched");
+    }
+    
+    getHybrids();
+    handleShowFillTrans();
+    setFieldInfo((prev) => ({
+      ...prev,
+      currentIdToUpdate: 0
+    }));
+
+    setTransaction(prev => ({
+      ...prev,
+      modeOfPayment: "cash",
+      typeOfPayment: "straight",
+      platform: "Onsite",
+      accNo: "N/A",
+      cash: "",
+    }))
+
+    setReceipt((prev) => ({
+      ...prev,
+      quantity: 1,
+      totalPrice: 0,
+      discount: 0,
+      discounted: 0,
+      change: 0
+    }));
+
+    setHybrid((prev) => ({
+      ...prev,
+      selectedHybrid: [],
+      selectedHybridType: ""
+    }))
+
+    setPsychologicalAssessment((prev) => ({
+      ...prev,
+      psyTestSelection: [],
+      selectedTest: []
+    }))
+  }
+
   if (userType.userType !== undefined) {
   return (
     <React.Fragment>
@@ -115,8 +178,17 @@ const Purchase = () => {
           setPsyc = {setPsychologicalAssessment}
           containerRef={containerRef} 
           setReceipt={setReceipt}
+          hybrid={hybrid}
           />
-          <FillTransaction/>
+          <FillTransaction
+          receipt={receipt}
+          setReceipt={setReceipt}
+          transaction={transaction}
+          setTransaction={setTransaction}
+          setFieldInfo={setFieldInfo}
+          hybrid={hybrid}
+          handleResetSelectionField={handleResetSelectionField}
+          />
         <div className='search_bar_container'>
           <input 
           type="text"
@@ -139,6 +211,7 @@ const Purchase = () => {
           handleHybridSelection = {handleHybridSelection}
           fieldInfo = {fieldInfo}
           setFieldInfo = {setFieldInfo}
+          setPsyc={setPsychologicalAssessment}
           />
         </section>
         <section id='hybrid_purchase'>
@@ -152,12 +225,16 @@ const Purchase = () => {
           psyc={psychologicalAssessment}
           setPsyc = {setPsychologicalAssessment}
           setFieldInfo={setFieldInfo}
+          handleShowFillTrans={handleShowFillTrans}
+          transaction={transaction}
+          selectedHybridType={hybrid.selectedHybridType}
           />
         </section>
       </main>
 
-      <FillTransaction/>
-      <Receipt/>
+      <Receipt 
+      hybrid={hybrid}
+      />
     </React.Fragment>
   ) 
   } else {
@@ -173,7 +250,8 @@ const Purchase = () => {
 const DisplayHybrids = ({
   hybrid, setHybrid,
   handleHybridSelection,
-  fieldInfo, setFieldInfo
+  setFieldInfo,
+  setPsyc
 }) => {
 
   const selectedHybrid = (hyb) => {
@@ -182,13 +260,18 @@ const DisplayHybrids = ({
       if (hybrid.selectedHybridType !== "service") {
         setHybrid((prev) => ({
           ...prev,
-          selectedHybrid: [hyb, ...prev.selectedHybrid],
+          selectedHybrid: [{...hyb, newPrice: hyb.price, prodQuantity: 1}, ...prev.selectedHybrid],
           selectedHybridType: hyb.hybrid
         }))
       } else {
-        setFieldInfo((info) => ({
-          ...info,
-          message: "1 service a time"
+        setHybrid((prev) => ({
+          ...prev,
+          selectedHybrid: [hyb],
+          selectedHybridType: hyb.hybrid
+        }))
+        setPsyc((prev) => ({
+          ...prev,
+          selectedTest: []
         }))
       }
     } else if (fieldAlreadyExist) {
@@ -258,7 +341,6 @@ const DisplayHybrids = ({
 }
 
 const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) => {
-
   const handleRemoveDisplayedList = () => {
     if (containerRef.current) {
       containerRef.current.classList.remove("psyc_list_fetched");
@@ -304,36 +386,43 @@ const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) =>
           >
             <i className='bx bx-chevron-right'></i>
           </div>
-          <ul className='ul_of_psycTests'>
-            <li>
-              <div className='psyc_test_column'>
-                Psychological Test
-              </div>
-              <div className='stand_int_column'>
-                Standard Rate
-              </div>
-              <div className='check_list_column'></div>
-            </li>
-            {psyc.psyTestSelection.map((list) => (
-              <li key={list.id}>
-                <div className='psyc_test_column' htmlFor={`psyTest${list.id}`}>
-                  {list.psycTest}
-                </div>
-                <div className='stand_int_column'>
-                  {list.standardRate}
-                </div>
-                <div className='check_list_column'>
-                  <input
-                    type="checkbox"
-                    id={`psyTest${list.id}`}
-                    value={list.id}
-                    checked={psyc.selectedTest.some((selectedId) => selectedId.id === list.id)}
-                    onChange={() => handleCheckboxChange(list)}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className='psyc_test_select_container'>
+          <table>
+            <thead id='select_psyc_test_table'>
+            <tr>
+              <th>Psychological Test</th>
+              <th>Standard Input</th>
+              <th>Select</th>
+            </tr>
+            </thead>
+            <tbody>
+            {psyc.psyTestSelection ?
+              psyc.psyTestSelection
+                .sort((a, b) => a.psycTest.localeCompare(b.psycTest))
+                .map((list) => (
+                  <tr key={list.id}>
+                    <td>{list.psycTest}</td>
+                    <td><span>₱</span>{list.standardRate}</td>
+                    <td>
+                      <div className='check_list_column'>
+                        <label className="checkBox">
+                          <input 
+                            type="checkbox" 
+                            id={`psyTest${list.id}`}
+                            value={list.id}
+                            checked={psyc.selectedTest.some((selectedId) => selectedId.id === list.id)}
+                            onChange={() => handleCheckboxChange(list)}
+                          />
+                          <div className="transition"></div>
+                        </label>
+                      </div>
+                    </td>
+                  </tr>
+                )) : null
+            }
+            </tbody>
+          </table>
+          </div>
         </div>
       </React.Fragment>
     );
@@ -342,7 +431,15 @@ const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) =>
   return null;
 };
 
-const SelectedHybrid = ({selectedHybrid, client, hybridType, setHybrid, receipt, setReceipt, psyc, setPsyc, setFieldInfo}) => {
+const SelectedHybrid = ({
+  selectedHybrid, client, 
+  setHybrid, selectedHybridType,
+  receipt, setReceipt,
+  psyc, setPsyc, 
+  setFieldInfo, handleShowFillTrans,
+  transaction
+}) => {
+
   const handleHybridSelection = (id) => {
     setHybrid((hyb) => ({
       ...hyb,
@@ -370,9 +467,16 @@ const SelectedHybrid = ({selectedHybrid, client, hybridType, setHybrid, receipt,
   }, [psyc.selectedTest]);
 
   useEffect(() => {
+    const selectedHybridTypeClass = document.querySelector('.selected_hybrid');
     if (selectedHybrid.length > 0) {
-      getTests(selectedHybrid[0].id)
+      getTests(selectedHybrid[0].id);
+      if (selectedHybridTypeClass && selectedHybrid[0].hybrid === "service") {
+      selectedHybridTypeClass.classList.add('overflow-scroll');
+    } else {
+      selectedHybridTypeClass.classList.remove('overflow-scroll');
     }
+    }
+    productTotalPrice();
     
   }, [selectedHybrid])
 
@@ -421,6 +525,36 @@ const SelectedHybrid = ({selectedHybrid, client, hybridType, setHybrid, receipt,
     }
   }
 
+  // For handling product quantity * price
+  const handleProductQuantity = (operator, id) => {
+    setHybrid((prev) => ({
+      ...prev,
+      selectedHybrid: prev.selectedHybrid.map(item => {
+        const checkLimit = (operator === "+" ? item.prodQuantity + 1 : item.prodQuantity - 1);
+        const updateProdQty = checkLimit === 0 ? 1 : checkLimit > item.quantity ? item.quantity: checkLimit;
+        const newPrice = parseFloat(item.price) * updateProdQty;
+        if (item.id === id) {
+          return {
+            ...item,
+            newPrice: newPrice.toFixed(2),
+            prodQuantity: updateProdQty
+          };
+        }
+        return item;
+      })
+    }));
+    productTotalPrice();
+  };  
+
+  const productTotalPrice = () => {
+    if (selectedHybridType === "product") {
+      setReceipt((prev) => ({
+        ...prev,
+        totalPrice: selectedHybrid.reduce((sum, item) => sum + parseFloat(item.newPrice), 0)
+      }));   
+    } 
+  }
+
   return (
     <React.Fragment>
       <div id='select_client' className='client_info_container'>
@@ -443,30 +577,35 @@ const SelectedHybrid = ({selectedHybrid, client, hybridType, setHybrid, receipt,
           key={list.id}
           className='selected_hybrid'
           >
-            <h4 className='s_hybrid_name'>
+            <div className='s_hybrid_name'>
               {list.name}
-            </h4>
-            <p className='s_hybrid_price'>Actual Price: ₱{list.price}</p>
+            </div>
+            <p className='s_hybrid_price'>{selectedHybrid[0].hybrid === "product" ? "Price:" : "Actual Price:"} ₱{list.newPrice !== list.price ? list.newPrice : list.price}</p>
             {psyc.selectedTest ? psyc.selectedTest.map((list) => (
               <div className="s_hybrid_psycList" key={list.id}>
-              <p>{list.psycTest}</p> 
-              <p>Standard Input: ₱{list.standardRate}</p> 
+                <div className='selected_psyc_test'>
+                <p>Psychological Test:</p> <div>{list.psycTest}</div>
+              </div>
+                <div className='selected_stdrd_int'>
+                <p>Standard Input:</p> <div className='price_to_cap'>₱{list.standardRate}</div>
+              </div>
               </div>
             )): null}
             {receipt.totalPrice > 0 && psyc.selectedTest.length > 0 && (<>
               <div className='discount_conainer'>
-              <label htmlFor="discount">Discount: </label>
-              <input 
-              style={{
-                display: "block"
-              }}
-              type="number" 
-              name="discount" 
-              value={receipt.discount === 0 ? '' : receipt.discount}
-              onChange={(e) => {
-                e.preventDefault();
-                handleDiscount(e);
-              }}
+                <label htmlFor="discount">Discount: </label>
+                <input 
+                style={{
+                  display: "block"
+                }}
+                type="number" 
+                placeholder='₱ ###'
+                name="discount" 
+                value={receipt.discount === 0 ? '' : receipt.discount}
+                onChange={(e) => {
+                  e.preventDefault();
+                  handleDiscount(e);
+                }}
               />
               </div>
               <p className='s_hybrid_price'>Total Price: 
@@ -482,11 +621,16 @@ const SelectedHybrid = ({selectedHybrid, client, hybridType, setHybrid, receipt,
               </p>
             </>)}
             {list.hybrid === "product" ? (
+              <>
               <div className='qty_bttn_wrapper'>
-                <button type="button" className='cremental_bttn'><i class='bx bx-minus'></i></button>
-                <span>{list.quantity}qty</span>
-                <button type="button" className='cremental_bttn'><i className='bx bx-plus'></i></button>
+                <button type="button" className='cremental_bttn' onClick={(e) => {e.preventDefault(); handleProductQuantity("-", list.id)}}><i class='bx bx-minus'></i></button>
+                <span>{list.prodQuantity} qty</span>
+                <button type="button" className='cremental_bttn' onClick={(e) => {e.preventDefault(); handleProductQuantity("+", list.id)}}><i className='bx bx-plus'></i></button>
               </div>
+              <div className='currentProductQuantity'>
+              {list.quantity} qty
+              </div>
+              </>
             ): <button type="button"
              className='psy_test_bttn'
              onClick={(e) => {
@@ -505,17 +649,381 @@ const SelectedHybrid = ({selectedHybrid, client, hybridType, setHybrid, receipt,
         )
       }): null}
       </div>
+
       <div id='proceed_to_payment' className='paymeny_bttn_container'>
-        <button type="button">
-          Proceed Payment
+        <button 
+        id='proceed_to_payment_bttn_toggle'
+        type="button"
+        className='payment_cancel_bttn_hidden'
+        onClick={(e) => {
+          e.preventDefault();
+          handleShowFillTrans();
+        }}>
+          {transaction.opened ? "Cancel Payment" : "Proceed to Payment"}
         </button>
       </div>
     </React.Fragment>
   )
 }
 
-const FillTransaction = ({}) => {
+const FillTransaction = ({
+  transaction, setTransaction,
+  receipt, setReceipt,
+  setFieldInfo,
+  hybrid, handleResetSelectionField
+}) => {
+  
+  const [transFieldInfo, setTransFieldInfo] = useState({
+    selectingModeOfPayment: false,
+    selectingTypeOfPayment: false,
+    selectingPlatform: false,
+  })
 
+  const handleToggleModeOfpayment = () => {
+    const element = document.querySelector('.mode_of_pay_bttn_selection_hidden');
+    if (element) {
+      element.classList.toggle('mode_of_pay_bttn_selection_show');
+      setTransFieldInfo((prev) => ({
+        ...prev,
+        selectingModeOfPayment: !prev.selectingModeOfPayment
+      }))
+    }
+  }
+
+  const handleToggleTypeOfpayment = () => {
+    const element = document.querySelector('.type_of_pay_bttn_selection_hidden');
+    if (element) {
+      element.classList.toggle('type_of_pay_bttn_selection_show');
+      setTransFieldInfo((prev) => ({
+        ...prev,
+        selectingTypeOfPayment: !prev.selectingTypeOfPayment
+      }))
+    }
+  }
+
+  const handleTogglePlatform = () => {
+    const element = document.querySelector('.platform_bttn_selection_hidden');
+    if (element) {
+      element.classList.toggle('type_of_pay_bttn_selection_show');
+      setTransFieldInfo((prev) => ({
+        ...prev,
+        selectingPlatform: !prev.selectingPlatform
+      }))
+    }
+  }
+
+  const changeModeOfPayment = (mode) => {
+    setTransaction((prev) => ({
+      ...prev,
+      modeOfPayment: mode
+    }))
+    handleToggleModeOfpayment();
+  }
+
+  const changeTypeOfPayment = (type) => {
+    setTransaction((prev) => ({
+      ...prev,
+      typeOfPayment: type,
+      cash: ""
+    }))
+    handleToggleTypeOfpayment();
+  }
+
+  const changePlatform = (platform) => {
+    setTransaction((prev) => ({
+      ...prev,
+      platform: platform
+    }))
+    handleTogglePlatform();
+  }
+
+  useEffect(() => {
+    const currentChange = transaction.cash - (receipt.discount > 0 ? receipt.discounted : receipt.totalPrice);
+    const currentBalance = (receipt.discount > 0 ? receipt.discounted : receipt.totalPrice) - transaction.cash;
+    if (receipt.totalPrice < transaction.cash && transaction.typeOfPayment === "split") {
+      setTransaction((prev) => ({
+        ...prev,
+        cash: (receipt.discount > 0 ? receipt.discounted : receipt.totalPrice),
+        typeOfPayment: "straight"
+      }));
+      setReceipt((prev) => ({
+        ...prev,
+        change: currentChange
+      }))
+    } else if (transaction.cash < 0) {
+      setTransaction((prev) => ({
+        ...prev,
+        cash: ""
+      }));
+    } else if (transaction.typeOfPayment === "split") {
+      setReceipt(prev => ({
+        ...prev,
+        change: currentBalance
+      }))
+    } else if (transaction.typeOfPayment === "straight") {
+      setReceipt((prev) => ({
+        ...prev,
+        change: currentChange
+      }))
+    }
+  }, [transaction.cash, transaction.typeOfPayment, receipt.totalPrice]);
+  
+  const paymentTransation = async () => {
+    console.log(hybrid.selectedHybrid)
+    const { cash, modeOfPayment, typeOfPayment, platform, accNo } = transaction;
+    const { quantity, totalPrice, change, client, discount, discounted } = receipt;
+    const everyFieldRequired = [cash, client, accNo];
+    // Check the field requirements
+    if (everyFieldRequired.every(prev => prev.length === 0)) {
+      setFieldInfo((prev) => ({
+        ...prev,
+        warn: cash.length < 0 ? "Cash amount required!": 
+        client[0].length < 0 ? "Please select your client/customer first." : "Account number required!"
+      }));
+      alert("field req")
+      return;
+    }
+
+    // Check change of straight type of payment
+    if (change < 0 && typeOfPayment === "straight") {
+      setFieldInfo((prev) => ({
+        ...prev,
+        warn: "Insufficient cash amount!"
+      }));
+      alert("change")
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${config.Configuration.database}/recordTransactions`, { 
+        items: quantity, 
+        total: discount > 0 ? discounted : totalPrice, 
+        cash: cash, 
+        changeAmount: change, 
+        clientId: client[0].id, 
+        modeOfPayment: modeOfPayment, 
+        accNo: accNo, 
+        typeOfPayment: typeOfPayment, 
+        platform: platform,
+        discount: discount,
+        hybridData: hybrid.selectedHybrid
+       });
+
+       if (response.data.isSuccessful) {
+        setFieldInfo((prev) => ({
+          ...prev,
+          message: response.data.message
+        }))
+        handleResetSelectionField();
+      } else {
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: response.data.message
+        }))
+      }
+    } catch (error) {
+      console.error(error)
+      if (error) {
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: error.message,
+          message: "Transaction failed, Please try again later."
+        }))
+      }
+    }
+  }
+
+  return (
+    <React.Fragment>
+      <div id='fill_transaction' className='fill_trans_hidden'>
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Client Name:</td>
+              <td>{receipt.client[0].id > 0 && `${receipt.client[0].fName}, ${receipt.client[0].lName} ${receipt.client[0].mName}`}</td>
+            </tr>
+
+            <tr>
+              <td></td>
+              <td></td>
+            </tr>
+
+            <tr>
+              <td>Mode of Payment:</td>
+              <td>
+              <button type="button" className='mode_of_pay_bttn' 
+                onClick={(e) => {
+                  e.preventDefault(); 
+                  handleToggleModeOfpayment();
+                }}
+                style={{
+                  backgroundColor: transFieldInfo.selectingModeOfPayment ? "#373737": null,
+                }}>
+                {transFieldInfo.selectingModeOfPayment ? (<i  style={{fontSize: "1.2rem"}} className='bx bx-x'></i>): transaction.modeOfPayment}</button>
+              <div className='mode_of_pay_bttn_selection_hidden'>
+                <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  changeModeOfPayment("cash");
+                }}>
+                  Cash
+                </div>
+                <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  changeModeOfPayment("gcash");
+                }}>
+                  Gcash
+                </div>
+              </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Type of Payment:</td>
+              <td>
+              <button type="button" className='type_of_pay_bttn' 
+                onClick={(e) => {
+                  e.preventDefault(); 
+                  handleToggleTypeOfpayment();
+                }}
+                style={{
+                  backgroundColor: transFieldInfo.selectingTypeOfPayment ? "#373737": null,
+                }}>
+                {transFieldInfo.selectingTypeOfPayment ? (<i  style={{fontSize: "1.2rem"}} className='bx bx-x'></i>): transaction.typeOfPayment}</button>
+              <div className='type_of_pay_bttn_selection_hidden'>
+                <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  changeTypeOfPayment("straight");
+                }}>
+                  Straight
+                </div>
+                <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  changeTypeOfPayment("split");
+                }}>
+                  Split
+                </div>
+              </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Platform:</td>
+              <td>
+              <button type="button" className='platform_bttn' 
+                onClick={(e) => {
+                  e.preventDefault(); 
+                  handleTogglePlatform();
+                }}
+                style={{
+                  backgroundColor: transFieldInfo.selectingPlatform ? "#373737": null,
+                }}>
+                {transFieldInfo.selectingPlatform ? (<i  style={{fontSize: "1.2rem"}} className='bx bx-x'></i>): transaction.platform}</button>
+              <div className='platform_bttn_selection_hidden'>
+                <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  changePlatform("onsite");
+                }}>
+                  Onsite
+                </div>
+                <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  changePlatform("online");
+                }}>
+                  Online
+                </div>
+              </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td></td>
+              <td></td>
+            </tr>
+
+            <tr>
+              <td>Account Number:</td>
+              <td>
+                {transaction.modeOfPayment === "cash" ? (
+                  "N/A"
+                ): (
+                <input type="number" placeholder="###" name="acc_no" value={transaction.accNo} 
+                required
+                onChange={e => {
+                  e.preventDefault();
+                  setTransaction((prev) => ({
+                    ...prev,
+                    accNo: e.target.value
+                  }))
+                }}/>
+                )}
+              </td>
+            </tr>
+
+            <tr>
+              <td>Cash:</td>
+              <td><input type="number" placeholder="###" name="cash_amount" value={transaction.cash}
+              required
+              onChange={e => {
+                e.preventDefault();
+                setTransaction((prev) => ({
+                  ...prev,
+                  cash: e.target.value
+                }))
+              }}/></td>
+            </tr>
+
+            <tr>
+              <td></td>
+              <td></td>
+            </tr>
+
+            <tr>
+              <td>Discount:</td>
+              <td>₱{receipt.discount}</td>
+            </tr>
+
+            <tr>
+              <td>Total:</td>
+              <td style={{color: "#f7860e"}}>₱{receipt.discount > 0 ? receipt.discounted : receipt.totalPrice}</td>
+            </tr>
+
+            <tr>
+              <td>{transaction.typeOfPayment === "split" ? "Balance:" : "Change: "}</td>
+              <td style={{color: "#6878e0"}}>₱{receipt.change}</td>
+            </tr>
+
+            <tr>
+              <td></td>
+              <td></td>
+            </tr>
+
+            <tr>
+              <td></td>
+              <td><button type="button" className='pay_bttn'
+              onClick={e => {
+                e.preventDefault();
+                paymentTransation();
+              }}>Pay</button></td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </React.Fragment>
+  )
+  
 }
 
 const Receipt = ({}) => {

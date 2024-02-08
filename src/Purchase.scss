@@ -2,6 +2,12 @@ main * {
     letter-spacing: .025em;
 }
 
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+}
+
 main#purchase_container {
     width: 100%;
     height: 90vh;
@@ -12,7 +18,7 @@ main#purchase_container {
     grid-template-columns: repeat(3, 30%);
     gap: 30px;
 
-    #hybrid_info {
+    section#hybrid_info {
         grid-column: span 2;
         background-color: #262626;
         border-radius: 10px;
@@ -110,7 +116,8 @@ main#purchase_container {
             position: absolute;
             border-radius: 10px;
             z-index: -3;
-            padding: 20px;
+            padding: 30px;
+            padding-right: 60px;
             opacity: 0;
             transition: all ease .25s;
 
@@ -141,25 +148,88 @@ main#purchase_container {
                 }
             }
 
-            .ul_of_psycTests {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
-                .psyc_test_column {
-                    width: 70%;
-                }
-                .stand_int_column {
-                    width: 20%;
-                }
-                .check_list_column {
-                    width: 10%;
-                }
-                
-                li {
-                    list-style: none;
-                    display: inline-block;
-                }
-                div {
-                    display: inline-block;
+            .psyc_test_select_container {
+                overflow: auto;
+                height: 100%;
+                scrollbar-width: thick;
+                scrollbar-color: #f7860e #ededed00;
+                border: 2px solid #ededed;
+
+                table {
+                    padding: 2px;
+                    width: 100%;
+                    thead {
+                        tr {
+                            th {
+                                background-color: #6878e0;
+                                padding: 7px;
+                                font-size: .94rem;
+                                color: #ededed;
+                            }
+                        }
+                    }
+                    tbody {
+                        border: 2px solid #ededed;
+                        tr {
+                        border: 2px solid #ededed;
+    
+                            td {
+                                text-align: left;
+                                color: #262626;
+                                padding: 7px;
+                                font-size: .9rem;
+                                font-weight: 600;
+                                &:not(:last-child) {
+                                    background-color: #ededed;
+                                }
+    
+                                span {
+                                    color: #f7860e;
+                                }
+                                .clear {
+                                    clear: both;
+                                } 
+                                .checkBox {
+                                  display: block;
+                                  margin: 0 auto;
+                                  cursor: pointer;
+                                  width: 20px;
+                                  height: 20px;
+                                  border: 3px solid rgba(255, 255, 255, 0);
+                                  border-radius: 3px;
+                                  position: relative;
+                                  overflow: hidden;
+                                  box-shadow: 0px 0px 0px 2px #fff;
+            
+                                  div {
+                                    width: 40px;
+                                    height: 40px;
+                                    background-color: #f7860e;
+                                    top: -52px;
+                                    left: -52px;
+                                    position: absolute;
+                                    transform: rotateZ(45deg);
+                                    z-index: 100;
+                                  }
+            
+                                  input[type=checkbox]:checked + div {
+                                    left: -10px;
+                                    top: -10px;
+                                  }
+            
+                                  input[type=checkbox] {
+                                    position: absolute;
+                                    left: 50px;
+                                    visibility: hidden;
+                                  }
+                                  
+                                  .transition {
+                                    transition: 300ms ease;
+                                  }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -169,9 +239,141 @@ main#purchase_container {
             opacity: 1;
             transition: all ease .25s;
         }
+
+        div.fill_trans_hidden {
+            background-color: #262626;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            display: block;
+            visibility: none;
+            z-index: -1;
+            opacity: 0;
+
+            table {
+                width: 50%;
+                color: #ededed;
+                margin: auto;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                font-size: .9rem;
+
+                tbody {
+                    tr {
+                        td {
+                            padding: 4px;
+                            position: relative;
+
+                            &:first-child {
+                                font-weight: 600;
+                            }
+
+                            &:last-child {
+                                font-weight: 500;
+                                font-size: .85rem;
+                            }
+
+                            input {
+                                width: 100%;
+                                height: 25px;
+                                padding: 5px;
+                                outline: none;
+                                border: solid #00000000 2px;
+                                border-bottom: 2px solid #ededed;
+                                background-color: #fff;
+                                color: #212121;
+                                font-size: .9rem;
+                                font-weight: 500;
+                            }
+
+                            button {
+                                width: 100px;
+                                height: 25px;
+                                background-color: #f7860e;
+                                color: #ededed;
+                                border: none;
+                                font-weight: 600;
+                                outline: none;
+                                cursor: pointer;
+                                border: #00000000 solid 2px;
+                                transition: all ease .25s;
+                                position: relative;
+
+                                &::first-letter {
+                                    text-transform: uppercase;   
+                                }
+                            }
+
+                            button.pay_bttn {
+                                width: 100%;
+                                background-color: #6878e0;
+                            }
+
+                            button:hover {
+                                border: #ededed solid 2px;
+                            }
+
+                            div.mode_of_pay_bttn_selection_hidden, div.type_of_pay_bttn_selection_hidden,
+                            div.platform_bttn_selection_hidden {
+                                position: absolute;
+                                left: 140px;
+                                top: 50%;
+                                transform: translate(0, -50%);
+                                z-index: -1;
+                                opacity: 0;
+                                transition: all ease .25s;
+                                width: 100%;
+                                div {
+                                    display: inline-block;
+                                    margin-left: 5px;
+                                    transform: scale(.5);
+                                    padding: 3px;
+                                    font-weight: 600;
+                                    width: 85px;
+                                    height: 25px;
+                                    background-color: #ededed;
+                                    color: #262626;
+                                    font-weight: 500;
+                                    cursor: pointer;
+                                    text-align: center;
+                                    border: #00000000 solid 2px;
+                                    transition: all ease .25s;
+
+                                    &:hover {
+                                        color: #ededed;
+                                        background-color: #6878e0;
+                                        border: #ededed solid 2px;
+                                    }
+                                }
+                            }
+
+                            div.mode_of_pay_bttn_selection_show, div.type_of_pay_bttn_selection_show,
+                            div.platform_bttn_selection_show {
+                                left: 105px !important;
+                                z-index: 45 !important;
+                                opacity: 1 !important;
+
+                                div {
+                                    transform: scale(1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        div.fill_trans_show {
+            visibility: visible;
+            z-index: 35;
+            opacity: 1;
+        }
     }
 
-    #hybrid_purchase {
+    section#hybrid_purchase {
         border-radius: 10px;
         overflow: hidden;
         background-color: #373737;
@@ -245,12 +447,13 @@ main#purchase_container {
                 color: #ededed;
                 padding: 10px;
                 min-height: 100px;
-                height: auto;
                 border-radius: 10px;
                 overflow: hidden;
+                
 
-                h4 {
-                    font-size: .9rem;
+                div.s_hybrid_name {
+                    font-size: 1rem;
+                    font-weight: 600;
                     @media (max-width: 1050px) {
                         font-size: 0.82rem;
                     }
@@ -266,30 +469,62 @@ main#purchase_container {
                 }
 
                 .s_hybrid_psycList {
-                    margin-top: 5px;
-                    p {
-                        color: #ededed;
-                        font-size: .88rem;
+                    margin: 10px 0;
+                    padding: 10px;
+                    width: 100%;
+                    border-radius: 10px;
+                    background-color: #373737;
+                    div {
+                        p {
+                            color: #ededed;
+                            font-size: .88rem;
+                            font-weight: 600;
+                        }
+                        div {
+                            font-size: .86rem;
+                        }
+                        div.price_to_cap:first-letter {
+                            color: #6878e0;
+                            font-weight: 600;
+                        }
+                    }
+
+                    .selected_psyc_test {
+                        margin-bottom: 7px;
                     }
                 }
 
                 .discount_conainer {
                     width: 100%;
-                    height: 20px;
+                    height: 25px;
                     display: flex;
                     gap: 10px;
                     font-size: .9rem;
+                    margin-bottom: 5px;
+
+                    label {
+                        font-weight: 500;
+                        padding: 4px 0;
+                    }
 
                     input {
-                        background-color: #ededed;
-                        border: none;
+                        background-color: transparent;
+                        border-bottom: 2px solid #ededed !important;
+                        border: 2px solid #00000000;
                         outline: none;
                         padding: 3px;
+                        padding: 4px;
                         font-weight: 500;
-                        color: #262626;
+                        color: #ededed;
+                        transition: all ease .25s;
+
+                        &:focus {
+                            border: 2px solid #ededed;
+                        }
                     }
                 }
 
+                // For Products
                 div.qty_bttn_wrapper {
                     display: inline-block;
                     width: 50%;
@@ -375,6 +610,10 @@ main#purchase_container {
                 }
                 
             }
+
+            div.overflow-scroll {
+                overflow-y: auto !important;
+            }
         }
 
         div#proceed_to_payment {
@@ -382,7 +621,8 @@ main#purchase_container {
             display: flex;
             justify-content: center;
             align-items: center;
-            button {
+
+            .payment_cancel_bttn_hidden {
                 width: 90%;
                 margin: 7px auto;
                 border: solid 2px #00000000;
@@ -390,15 +630,27 @@ main#purchase_container {
                 color: #ededed;
                 font-size: .87rem;
                 cursor: pointer;
-                font-weight: 500;
+                font-weight: 600;
+                border-radius: 10px;
                 background-color: #313a72;
                 transition: all ease .25s;
+
+                &:hover {
+                    background-color: #ededed;
+                    color: #262626;
+                    border:  solid 2px #313a72;
+                    color: #313a72;
+                }
             }
 
-            button:hover {
-                background-color: #ededed;
-                color: #262626;
-                border:  solid 2px #313a72;
+            .payment_cancel_bttn_show {
+                background-color: #f7860e;
+                color: #ededed;
+
+                &:hover {
+                    border:  solid 2px #f7860e;
+                    color: #f7860e;
+                }
             }
         }
     }

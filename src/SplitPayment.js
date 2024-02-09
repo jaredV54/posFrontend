@@ -9,14 +9,15 @@ function SplitPayment() {
     const initialValues = JSON.parse(localStorage.getItem('transId'));
     const [sales, setSales] = useState([]);
     const [cashValue, setCashValue] = useState(false);
+    const [checkReceiptNo, setCheckReceiptNo] = useState(false);
     const [modeOfPayment, setModeOfPayment] = useState('Cash');
     const [accNo, setAccNo] = useState('N/A');
     const [checkAccNo, setCheckAccNo] = useState(false);
     const [checkChange, setCheckChange] = useState(false);
     const navigate = useNavigate();
     const [customer, setCustomer] = useState([]);
+    const [receiptNo, setReceiptNo] = useState('');
     const [balance, setChange] = useState();
-    const [receiptNo, setReceiptNo] = useState();
     const [splitId, setSplitId] = useState('');
     const componentRef = React.createRef();
     const userTypeJSON = JSON.parse(localStorage.getItem("currentUserType"))
@@ -52,9 +53,14 @@ function SplitPayment() {
         setCheckChange(true);
         break;
     
+      case receiptNo.length === 0:
+        setCheckReceiptNo(true);
+        break;
+    
       default:
         setCheckChange(false);
         setCheckAccNo(false);
+        setCheckReceiptNo(false);
         try {
           const response = await axios.post(`${config.Configuration.database}/splitPayment`, {
               transId: initialValues.id,
@@ -62,15 +68,15 @@ function SplitPayment() {
               amount: initialValues.balance,
               money: money,
               balance: balance,
+              receiptNo: receiptNo,
               customerId: initialValues.customerId,
               modeOfPayment: modeOfPayment,
               accNo: accNo
             });
 
-          const { success, id, message, receiptNo } = response.data;
+          const { success, id, message } = response.data;
           setSplitId(id)
           if (success) {
-            setReceiptNo(receiptNo)
             showReceipt();
             localStorage.setItem('transId', JSON.stringify(
               {
@@ -126,21 +132,25 @@ function SplitPayment() {
 
     useEffect(() => {
         let timeoutId;
-      
-        if (checkChange || checkAccNo) {
+        if (checkChange || checkAccNo || checkReceiptNo) {
           timeoutId = setTimeout(() => {
             setCheckChange(false);
             setCheckAccNo(false);
+            setCheckReceiptNo(false);
           }, 1500);
         }
       
         return () => {
           clearTimeout(timeoutId);
         };
-      }, [modeOfPayment, checkChange, checkAccNo]);    
+      }, [modeOfPayment, checkChange, checkAccNo, checkReceiptNo]);    
 
     const handleAccNo = (e) => {
         setAccNo(e.target.value);
+    }
+
+    const handleReceiptNo = (e) => {
+      setReceiptNo(e.target.value)
     }
 
     const handleRemoveReceipt = () => {
@@ -149,8 +159,8 @@ function SplitPayment() {
       setSales([]);
       setCashValue();
       setChange();
+      setReceiptNo('')
       setAccNo('N/A')
-      setReceiptNo();
       setModeOfPayment('Cash')
       navigate("/Transactions");
     }
@@ -273,9 +283,11 @@ function SplitPayment() {
           </div>
           </div>
             
+
             <div className='split-payment-wrapper'>
             {checkChange && <p className='check-change'>Please insert amount</p>}
             {checkAccNo && <p className='check-change'>Please enter account number </p>}
+            {checkReceiptNo && <p className='check-change'>Please enter receipt number </p>}
                 <div className='split-payment-container'>
                     <h1>Split Payment</h1>
                     <table className='payment'>
@@ -315,6 +327,17 @@ function SplitPayment() {
                               color: "#ff8502"
                             }}>₱ {balance}</td>
                             </>
+                        </tr>
+
+                        <tr>
+                          <td>Receipt No#</td>
+                          <td><input
+                          type="text"
+                          name="receipt-no"
+                          value={receiptNo}
+                          placeholder='###'
+                          onChange={(e) => handleReceiptNo(e)}
+                        /></td>
                         </tr>
 
                         <tr>

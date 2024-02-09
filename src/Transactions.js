@@ -178,6 +178,7 @@ class Transactions extends React.Component {
         const filtered = transactions.filter(
           (trans) =>
             trans.id.toString() === searchQuery.trim() ||
+            trans.receiptNo.toString() === searchQuery.trim() ||
             trans.fName.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
             trans.lName.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
             trans.modeOfPayment.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||

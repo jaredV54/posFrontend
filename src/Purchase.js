@@ -32,7 +32,8 @@ const Purchase = () => {
     totalPrice: 0,
     discount: 0,
     discounted: 0,
-    change: 0
+    change: 0,
+    receiptNo: ""
   })
 
   const [transaction, setTransaction] = useState({
@@ -530,7 +531,7 @@ const SelectedHybrid = ({
     if (psyc.selectedTest.length > 0) {
       setReceipt((prev) => ({
         ...prev,
-        totalPrice: psyc.selectedTest.reduce((sum, total) => sum + parseFloat(total.standardRate), 0)
+        totalPrice: psyc.selectedTest.reduce((sum, total) => sum + parseFloat(total.standardRate), 0).toFixed(2)
       }))
     }
   }
@@ -595,14 +596,14 @@ const SelectedHybrid = ({
     } else if (value > receipt.totalPrice) {
       setReceipt((prev) => ({
         ...prev, 
-        discount: prev.totalPrice,
+        discount: prev.totalPrice.toFixed(2),
         discounted: 0
       }))
     } else {
       setReceipt((prev) => ({
         ...prev, 
         discount: value,
-        discounted: prev.totalPrice - value
+        discounted: (prev.totalPrice - value).toFixed(2)
       }))
     }
   }
@@ -632,7 +633,7 @@ const SelectedHybrid = ({
     if (selectedHybridType === "product") {
       setReceipt((prev) => ({
         ...prev,
-        totalPrice: selectedHybrid.reduce((sum, item) => sum + parseFloat(item.newPrice), 0)
+        totalPrice: selectedHybrid.reduce((sum, item) => sum + parseFloat(item.newPrice).toFixed(2), 0)
       }));   
     } 
   }
@@ -823,7 +824,7 @@ const FillTransaction = ({
   useEffect(() => {
     const currentChange = transaction.cash - (receipt.discount > 0 ? receipt.discounted : receipt.totalPrice);
     const currentBalance = (receipt.discount > 0 ? receipt.discounted : receipt.totalPrice) - transaction.cash;
-    if (receipt.totalPrice < transaction.cash && transaction.typeOfPayment === "split") {
+    if (parseFloat(receipt.totalPrice) < parseFloat(transaction.cash) && transaction.typeOfPayment === "split") {
       setTransaction((prev) => ({
         ...prev,
         cash: (receipt.discount > 0 ? receipt.discounted : receipt.totalPrice),
@@ -831,7 +832,7 @@ const FillTransaction = ({
       }));
       setReceipt((prev) => ({
         ...prev,
-        change: currentChange
+        change: currentChange.toFixed(2)
       }))
     } else if (transaction.cash < 0) {
       setTransaction((prev) => ({
@@ -841,26 +842,26 @@ const FillTransaction = ({
     } else if (transaction.typeOfPayment === "split") {
       setReceipt(prev => ({
         ...prev,
-        change: currentBalance
+        change: currentBalance.toFixed(2)
       }))
     } else if (transaction.typeOfPayment === "straight") {
       setReceipt((prev) => ({
         ...prev,
-        change: currentChange
+        change: currentChange.toFixed(2)
       }))
     }
   }, [transaction.cash, transaction.typeOfPayment, receipt.totalPrice]);
   
   const paymentTransation = async () => {
     const { cash, modeOfPayment, typeOfPayment, platform, accNo } = transaction;
-    const { quantity, totalPrice, change, client, discount, discounted } = receipt;
-    const everyFieldRequired = [cash, accNo];
+    const { quantity, totalPrice, change, client, discount, discounted, receiptNo } = receipt;
+    const everyFieldRequired = [cash, accNo, receiptNo];
 
     // Check the field requirements
     if (!everyFieldRequired.every(prev => prev.length > 0)) {
       setFieldInfo((prev) => ({
         ...prev,
-        warn: cash.length < 1 ? "Cash amount required!" : "Account number required!"
+        warn: cash.length < 1 ? "Cash amount required!" : accNo.length < 1 ? "Account number required!" : "Receipt number required!"
       }));
       return;
     }
@@ -901,7 +902,8 @@ const FillTransaction = ({
         platform: platform,
         discount: discount,
         hybridData: hybrid.selectedHybrid,
-        currentDate: formattedDate
+        currentDate: formattedDate,
+        receiptNo: receiptNo
        });
 
        if (response.data.isSuccessful) {
@@ -917,11 +919,10 @@ const FillTransaction = ({
         }))
       }
     } catch (error) {
-      console.error(error)
       if (error) {
         setFieldInfo((prev) => ({
           ...prev,
-          warn: error.message
+          warn: error.response.data.message
         }))
       }
     } finally {
@@ -1076,6 +1077,19 @@ const FillTransaction = ({
                 setTransaction((prev) => ({
                   ...prev,
                   cash: e.target.value
+                }))
+              }}/></td>
+            </tr>
+
+            <tr>
+              <td>Receipt #:</td>
+              <td><input type="number" placeholder="###" name="cash_amount" value={receipt.receiptNo}
+              required
+              onChange={e => {
+                e.preventDefault();
+                setReceipt((prev) => ({
+                  ...prev,
+                  receiptNo: e.target.value
                 }))
               }}/></td>
             </tr>

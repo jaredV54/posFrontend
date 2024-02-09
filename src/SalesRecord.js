@@ -15,13 +15,20 @@ function SalesRecord() {
     getSalesRecord();
   }, []);
 
+  const [fieldInfo, setFieldInfo] = useState({
+    loading: false
+  })
+
   const getSalesRecord = async () => {
     try {
+      setFieldInfo((prev) => ({...prev, loading: true }))
       const response = await axios.get(`${config.Configuration.database}/sales`);
       setSales(response.data);
       setFilteredSales(response.data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setFieldInfo((prev) => ({...prev, loading: false }))
     }
   };
 
@@ -39,9 +46,16 @@ function SalesRecord() {
   };
 
   const formatDate = (dateString) => {
-    const options = { month: '2-digit', day: '2-digit', year: '2-digit', hour: 'numeric', minute: 'numeric' };
+    const options = {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    };
     const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString('en-US', options).replace(',', ' -');;
+    const formattedDate = date.toLocaleDateString('en-US', options);
     return formattedDate;
   };
 
@@ -74,13 +88,18 @@ function SalesRecord() {
           </div>
           <Receipt trackReceipt={filteredSales} searchQuery={searchQuery} formatDate={formatDate} />
           <table className='sales-table'>
+          {fieldInfo.loading ? (<>
+            <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+            </>) : null
+          }
             <thead className='table-column'>
               <tr className='sales-column'>
                 <th>Sales ID</th>
                 <th>Trans No#</th>
-                <th>Product Name</th>
+                <th>Hybrid</th>
+                <th>Name</th>
                 <th>Date Time Purchased</th>
-                <th>Price</th>
+                <th>Actual Price</th>
                 <th>Quantity</th>
                 <th>Amount</th>
               </tr>
@@ -90,10 +109,11 @@ function SalesRecord() {
                 <tr className='sales-row' key={sale.salesId}>
                   <td>{sale.salesId}</td>
                   <td>{sale.transId}</td>
+                  <td>{sale.hybrid}</td>
                   <td>{sale.name}</td>
                   <td>{formatDate(sale.dateTimePurchased)}</td>
                   <td>{sale.price}</td>
-                  <td>{sale.quantity}</td>
+                  <td>{sale.hybrid === 'service' ? "N/A" : sale.quantity}</td>
                   <td>{(sale.price * sale.quantity).toFixed(2)}</td>
                 </tr>
             ))}

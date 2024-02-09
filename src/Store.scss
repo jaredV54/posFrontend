@@ -108,6 +108,7 @@
 
         &.stores-wrapper {
             grid-column: span 2;
+            position: relative;
 
             div.search-form {
                 display: flex;

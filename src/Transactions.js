@@ -14,7 +14,8 @@ class Transactions extends React.Component {
       searchQuery: '',
       splitPayment: [],
       userType: JSON.parse(localStorage.getItem("currentUserType")).userType,
-      displayCount: 150
+      displayCount: 150,
+      loading: false
     };
   }
 
@@ -25,10 +26,13 @@ class Transactions extends React.Component {
   
   getTransactions = async () => {
     try {
+      this.setState({ loading: true });
       const response = await axios.get(`${config.Configuration.database}/transactions`);
       this.setState({ transactions: response.data, filteredTransactions: response.data });
     } catch (error) {
       console.error(error);
+    } finally {
+      this.setState({ loading: false });
     }
   };
 
@@ -199,7 +203,8 @@ class Transactions extends React.Component {
       splitPayment,
       transactions,
       userType,
-      displayCount
+      displayCount,
+      loading
     } = this.state;
   
     const matchingSplitPayments = {};
@@ -326,6 +331,10 @@ class Transactions extends React.Component {
             ): null}
             </tbody>
           </table>
+          {loading ? (<>
+            <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+            </>) : null
+          }
         </div>
       </div>
     );

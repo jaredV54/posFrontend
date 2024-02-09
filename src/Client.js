@@ -19,6 +19,10 @@ const Client = () => {
         caseNumber: ''
     };
 
+    const [fieldInfo, setFieldInfo] = useState({
+      loading: false
+    })
+
     const [clientFilter, setClientFilter] = useState(initialClient);
 
     const [clientData, setClientData] = useState({
@@ -45,10 +49,13 @@ const Client = () => {
 
     const getClients = async () => {
         try {
+            setFieldInfo((prev) => ({...prev, loading: true }))
             const response = await axios.get(`${config.Configuration.database}/customer`);
             setClientData((d) => ({...d, client: response.data, filteredClient: response.data}));
         } catch (error) {
             console.error(error)
+        } finally {
+            setFieldInfo((prev) => ({...prev, loading: false }))
         }
     }
 
@@ -322,6 +329,10 @@ const Client = () => {
                 </div>
 
                 <table className='customer-table'>
+                {fieldInfo.loading ? (<>
+                  <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+                  </>) : null
+                }
                     <thead className='table-head'>
                     <tr className="customer-table">
                     <th style={{backgroundColor: '#1a1a1a'}}></th>

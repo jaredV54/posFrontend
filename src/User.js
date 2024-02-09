@@ -21,7 +21,8 @@ class User extends React.Component {
             checkinput: '',
             option: 'Add',
             currentStoreId: 0,
-            displayCount: 150
+            displayCount: 150,
+            loading: false
         }
     }
 
@@ -39,10 +40,13 @@ class User extends React.Component {
 
     getUser = async () => {
         try {
+          this.setState({loading: true})
             const response = await axios.get(`${config.Configuration.database}/user`);
             this.setState({user: response.data, filteredUser: response.data});
         } catch (error) {
             console.error(error)
+        } finally {
+          this.setState({loading: false})
         }
      }
 
@@ -61,20 +65,7 @@ class User extends React.Component {
       this.handleAdminClass();
     }
   }
-  /*
-  handleAdminClass() {
-    const { userType } = this.state;
-    const storeNameElement = this.storeNameRef.current;
-
-    if (userType === 'admin' && storeNameElement) {
-      storeNameElement.classList.add('isAdmin');
-      this.setState({ storeName: "" });
-    } else if (storeNameElement) {
-      storeNameElement.classList.remove('isAdmin');
-    }
-  }
-  */
-
+  
   handleAdminClass() {
     const { userType } = this.state;
     const storeNameElement = document.getElementById('store-name');
@@ -310,7 +301,7 @@ class User extends React.Component {
 
     render() {
         const {  filteredUser, searchQuery, name, email, password, currentUserType,userType, checkEmail, checkinput, option, stores,
-        storeName, displayCount } = this.state;
+        storeName, displayCount, loading } = this.state;
 
         if (currentUserType === 'admin') {
         return (
@@ -437,6 +428,10 @@ class User extends React.Component {
                     </div>
 
                     <table className='customer-table'>
+                    {loading ? (<>
+                    <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+                    </>) : null
+                    }
                       <thead className='table-head'>
                         <tr className='customer-column'>
                           <th>ID</th>

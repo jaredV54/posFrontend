@@ -19,6 +19,9 @@ function SplitPaymentRecord() {
     const userType = userTypeJSON.userType;
     const [displayCount, setDisplayCount] = useState(150);
     const [values, setValues] = useState(initialValues);
+    const [fieldInfo, setFieldInfo] = useState({
+      loading: false
+    })
 
       useEffect(() => {
         getSplitPayments();
@@ -38,6 +41,7 @@ function SplitPaymentRecord() {
     
       const fetchStoreInfo = async () => {
         try {
+          setFieldInfo((prev) => ({...prev, loading: true }))
           const response = await axios.post(`${config.Configuration.database}/storeInfo`, values);
           setStoreInfo(response.data.storeInfo);
         } catch (error) {
@@ -48,8 +52,10 @@ function SplitPaymentRecord() {
           } else {
             console.log("Error:", error.message);
           }
+        } finally {
+          setFieldInfo((prev) => ({...prev, loading: false }))
         }
-      };
+      }
 
       const getSplitPayments = async () => {
         try {
@@ -239,6 +245,10 @@ function SplitPaymentRecord() {
             </tbody>
 
         </table>
+        {fieldInfo.loading ? (<>
+            <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+            </>) : null
+          }
       </div>
             </div>
         </React.Fragment>

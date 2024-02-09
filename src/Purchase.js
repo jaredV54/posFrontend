@@ -10,7 +10,6 @@ const Purchase = () => {
     selectedHybrid: [],
     selectedHybridType: "",
     currentView: localStorage.getItem("currentSelectedHybrid_"),
-    isFetching: false,
   });
   if (!hybrid.currentView) {
     localStorage.setItem("currentSelectedHybrid_", "all")
@@ -68,15 +67,25 @@ const Purchase = () => {
           hybrid: hybrid.currentView === "all" ? null : hybrid.currentView,
         },
       });
-      setHybrid((prev) => ({ ...prev, receivedData: response.data }));
+      if (response.data.isSuccessful) {
+        setHybrid((prev) => ({ ...prev, receivedData: response.data.result }));
+      } else {
+        setFieldInfo((prev) => ({
+          ...prev,
+          message: response.data.message
+        }))
+      }
     } catch (error) {
-      console.error('Error fetching hybrids:', error);
+        setFieldInfo(prev => ({
+          ...prev,
+          message: error.response.data.message
+        }));
     } finally {
       setFieldInfo((prev) => ({ ...prev, fetchingData: false }));
     }
   };
 
-  const handleShowFillTrans = () => {
+  const handleShowFillTrans = (val) => {
     const showTransactionField = document.getElementById("fill_transaction");
     const togglePaymentBttn = document.getElementById("proceed_to_payment_bttn_toggle");
     if (showTransactionField && togglePaymentBttn && receipt.totalPrice > 0) {
@@ -85,6 +94,12 @@ const Purchase = () => {
       setTransaction((prev) => ({
         ...prev,
         opened: !prev.opened
+      }))
+    }
+    if (!(receipt.totalPrice > 0) && hybrid.selectedHybridType === "service") {
+      setFieldInfo((prev) => ({
+        ...prev,
+        warn: "Please select Psychological Test first."
       }))
     }
   }
@@ -97,7 +112,7 @@ const Purchase = () => {
     if (!(hybrid.selectedHybrid.length > 0)) {
       handleShowFillTrans();
     }
-  }, [hybrid.selectedHybrid])
+  }, [hybrid.selectedHybrid]);
   
   const handleHybridSelection = (current) => {
     localStorage.setItem("currentSelectedHybrid_", current);
@@ -129,13 +144,18 @@ const Purchase = () => {
     if (containerRef.current) {
       containerRef.current.classList.remove("psyc_list_fetched");
     }
-    
-    getHybrids();
-    handleShowFillTrans();
-    setFieldInfo((prev) => ({
-      ...prev,
-      currentIdToUpdate: 0
-    }));
+
+    const showTransactionField = document.getElementById("fill_transaction");
+    const togglePaymentBttn = document.getElementById("proceed_to_payment_bttn_toggle");
+
+    if (showTransactionField && togglePaymentBttn) {
+      showTransactionField.classList.remove("fill_trans_show");
+      togglePaymentBttn.classList.remove("payment_cancel_bttn_show");
+      setTransaction((prev) => ({
+        ...prev,
+        opened: !prev.opened
+      }))
+    }
 
     setTransaction(prev => ({
       ...prev,
@@ -144,6 +164,7 @@ const Purchase = () => {
       platform: "Onsite",
       accNo: "N/A",
       cash: "",
+      opened: false
     }))
 
     setReceipt((prev) => ({
@@ -168,10 +189,53 @@ const Purchase = () => {
     }))
   }
 
+  const fieldMessageRef = useRef(null);
+  const fieldWarnRef = useRef(null);
+  const fieldIsSuccessfulRef = useRef(null);
+  
+  useEffect(() => {
+    const showNotification = (elementRef) => {
+      const element = elementRef.current;
+      if (element) {
+        element.classList.add("field_show");
+        setTimeout(() => {
+          element.classList.remove("field_show");
+          setTimeout(() => {
+            setFieldInfo((prev) => ({
+              ...prev,
+              message: "",
+              warn: "",
+              isSuccessful: ""
+            }));
+          }, 500);
+        }, 3000);
+      }
+    };
+
+    if (fieldInfo.message.length > 0) {
+      showNotification(fieldMessageRef);
+    } else if (fieldInfo.warn.length > 0){
+      showNotification(fieldWarnRef);
+    } else if (fieldInfo.isSuccessful.length > 0) {
+      showNotification(fieldIsSuccessfulRef);
+    }
+  }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
+  
   if (userType.userType !== undefined) {
   return (
     <React.Fragment>
+      <div className="field_message" ref={fieldMessageRef}>
+        {fieldInfo.message}
+      </div>
+      <div className="field_warn" ref={fieldWarnRef}>
+        {fieldInfo.warn}
+      </div>
+      <div className="field_is_successful" ref={fieldIsSuccessfulRef}>
+        {fieldInfo.isSuccessful}
+      </div>
+
       <main id='purchase_container' className='purchase_container_class'>
+      {fieldInfo.loading ? (<span className="loader"></span>) : null}
         <section id='hybrid_info'>
           <SelectPsychologicalTest
           psyc={psychologicalAssessment}
@@ -212,10 +276,12 @@ const Purchase = () => {
           fieldInfo = {fieldInfo}
           setFieldInfo = {setFieldInfo}
           setPsyc={setPsychologicalAssessment}
+          loading={fieldInfo.fetchingData}
           />
         </section>
         <section id='hybrid_purchase'>
           <SelectedHybrid
+          handleResetSelectionField={handleResetSelectionField}
           selectedHybrid = {hybrid.selectedHybrid}
           hyrbidType={hybrid.selectedHybridType}
           setHybrid={setHybrid}
@@ -251,7 +317,7 @@ const DisplayHybrids = ({
   hybrid, setHybrid,
   handleHybridSelection,
   setFieldInfo,
-  setPsyc
+  setPsyc, loading
 }) => {
 
   const selectedHybrid = (hyb) => {
@@ -302,6 +368,10 @@ const DisplayHybrids = ({
     </ul>
 
     <div id='display_hybrids'>
+      {loading ? (<>
+        <div class="lds-ellipsis"><div></div><div></div><div></div></div>
+        </>) : null
+      }
       {hybrid.receivedData ? 
       hybrid.receivedData.map((prod) => {
         if (hybrid.currentView === "all" || hybrid.currentView === prod.hybrid) {
@@ -437,7 +507,7 @@ const SelectedHybrid = ({
   receipt, setReceipt,
   psyc, setPsyc, 
   setFieldInfo, handleShowFillTrans,
-  transaction
+  transaction, handleResetSelectionField
 }) => {
 
   const handleHybridSelection = (id) => {
@@ -451,6 +521,9 @@ const SelectedHybrid = ({
       psyTestSelection: [],
       selectedTest: []
     }))
+    if (selectedHybridType === 'service') {
+    handleResetSelectionField();
+    }
   }
 
   const handleCalculateTotalPrice = () => {
@@ -482,7 +555,11 @@ const SelectedHybrid = ({
 
   const getTests = async (id) => {
     try {
+      if (selectedHybridType === 'service') {
+        setFieldInfo((prev) => ({...prev, loading: true}));
+      }
       const response = await axios.get(`${config.Configuration.database}/psycTest/${id}`);
+
       if (response.data.status === "success") {
         setPsyc((prev) => ({
           ...prev,
@@ -494,11 +571,16 @@ const SelectedHybrid = ({
           message: response.data.message
         }))
       }
+
     } catch (error) {
-      setFieldInfo((prev) => ({
-        ...prev,
-        warn: error.message
-      }))
+      if (selectedHybridType === 'service') {
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: error.message
+        }))
+      }
+    } finally {
+      setFieldInfo((prev) => ({...prev, loading: false}))
     }
   }
 
@@ -715,7 +797,8 @@ const FillTransaction = ({
   const changeModeOfPayment = (mode) => {
     setTransaction((prev) => ({
       ...prev,
-      modeOfPayment: mode
+      modeOfPayment: mode,
+      accNo: mode === "cash" ? "N/A" : ""
     }))
     handleToggleModeOfpayment();
   }
@@ -769,18 +852,24 @@ const FillTransaction = ({
   }, [transaction.cash, transaction.typeOfPayment, receipt.totalPrice]);
   
   const paymentTransation = async () => {
-    console.log(hybrid.selectedHybrid)
     const { cash, modeOfPayment, typeOfPayment, platform, accNo } = transaction;
     const { quantity, totalPrice, change, client, discount, discounted } = receipt;
-    const everyFieldRequired = [cash, client, accNo];
+    const everyFieldRequired = [cash, accNo];
+
     // Check the field requirements
-    if (everyFieldRequired.every(prev => prev.length === 0)) {
+    if (!everyFieldRequired.every(prev => prev.length > 0)) {
       setFieldInfo((prev) => ({
         ...prev,
-        warn: cash.length < 0 ? "Cash amount required!": 
-        client[0].length < 0 ? "Please select your client/customer first." : "Account number required!"
+        warn: cash.length < 1 ? "Cash amount required!" : "Account number required!"
       }));
-      alert("field req")
+      return;
+    }
+
+    if (!(client[0].id > 0)) {
+      setFieldInfo(prev => ({
+        ...prev,
+        warn: "Please select your client/customer first."
+      }));
       return;
     }
 
@@ -790,11 +879,16 @@ const FillTransaction = ({
         ...prev,
         warn: "Insufficient cash amount!"
       }));
-      alert("change")
       return;
     }
 
     try {
+      const currentDate = new Date();
+      currentDate.setHours(currentDate.getHours() + 8);
+      currentDate.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+      const formattedDate = currentDate.toISOString();
+
+      setFieldInfo((prev) => ({...prev, loading: true}));
       const response = await axios.post(`${config.Configuration.database}/recordTransactions`, { 
         items: quantity, 
         total: discount > 0 ? discounted : totalPrice, 
@@ -806,13 +900,14 @@ const FillTransaction = ({
         typeOfPayment: typeOfPayment, 
         platform: platform,
         discount: discount,
-        hybridData: hybrid.selectedHybrid
+        hybridData: hybrid.selectedHybrid,
+        currentDate: formattedDate
        });
 
        if (response.data.isSuccessful) {
         setFieldInfo((prev) => ({
           ...prev,
-          message: response.data.message
+          isSuccessful: response.data.message
         }))
         handleResetSelectionField();
       } else {
@@ -826,10 +921,11 @@ const FillTransaction = ({
       if (error) {
         setFieldInfo((prev) => ({
           ...prev,
-          warn: error.message,
-          message: "Transaction failed, Please try again later."
+          warn: error.message
         }))
       }
+    } finally {
+      setFieldInfo((prev) => ({...prev, loading: false}));
     }
   }
 
@@ -1027,7 +1123,11 @@ const FillTransaction = ({
 }
 
 const Receipt = ({}) => {
+  return (
+    <React.Fragment>
 
+    </React.Fragment>
+  )
 }
 
 export default Purchase;

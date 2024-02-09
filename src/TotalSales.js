@@ -19,6 +19,9 @@ function TotalSales() {
   const userType = userTypeJSON.userType;
   const [values, setValues] = useState(initialValues);
   const componentRef = useRef(null);
+  const [fieldInfo, setFieldInfo] = useState({
+    loading: false
+  })
 
   useEffect(() => {
     getTransactions();
@@ -27,6 +30,7 @@ function TotalSales() {
 
   const fetchStoreInfo = async () => {
     try {
+      setFieldInfo((prev) => ({...prev, loading: true }))
       const response = await axios.post(`${config.Configuration.database}/storeInfo`, values);
       setStoreInfo(response.data.storeInfo);
     } catch (error) {
@@ -37,6 +41,8 @@ function TotalSales() {
       } else {
         console.log("Error:", error.message);
       }
+    } finally {
+      setFieldInfo((prev) => ({...prev, loading: false }))
     }
   };
 
@@ -215,6 +221,10 @@ function TotalSales() {
            <option value="yearly">Yearly</option>
          </select>
       </div>
+      {fieldInfo.loading ? (<>
+      <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+      </>) : null
+      }
 
       <div className="print-sales-bttn-container">
       <ReactToPrint

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import config from "./Config.json";
 
@@ -92,9 +92,20 @@ const Products = () => {
           hybrid: hybrid.currentView === "all" ? null : hybrid.currentView,
         },
       });
-      setHybrid((prev) => ({ ...prev, receivedData: response.data }));
+      if (response.data.isSuccessful) {
+        setHybrid((prev) => ({ ...prev, receivedData: response.data.result }));
+      } else {
+        setFieldInfo((prev) => ({
+          ...prev,
+          message: response.data.message
+        }))
+      }
     } catch (error) {
       console.error('Error fetching hybrids:', error);
+        setFieldInfo(prev => ({
+          ...prev,
+          message: error.response.data.message
+        }));
     } finally {
       setFieldInfo((prev) => ({ ...prev, fetchingData: false }));
     }
@@ -183,15 +194,8 @@ const Products = () => {
       } else {
         setFieldInfo((prev) => ({
           ...prev, 
-          warn: "already exists"
+          warn: "Test already exists"
         }))
-
-        setTimeout(() => {
-          setFieldInfo((prev) => ({
-            ...prev,
-            warn: ""
-          }));
-        }, 2000);
       }
     }
   };
@@ -288,26 +292,12 @@ const Products = () => {
           ...prev,
           message: hybrid.selectedHybrid === "service" ? "Psychological Assessment is empty" : prev.message
         }));
-        
-        setTimeout(() => {
-          setFieldInfo((prev) => ({
-            ...prev,
-            message: ""
-          }));
-        }, 2000);
       }
     } else {
       setFieldInfo((prev) => ({
         ...prev,
         message: "Please fill all the fields"
       }));
-      
-      setTimeout(() => {
-        setFieldInfo((prev) => ({
-          ...prev,
-          message: ""
-        }));
-      }, 2000);
     }
   }
 
@@ -357,7 +347,6 @@ const Products = () => {
               option: "Add"
             }))
           }
-    
         } catch (error) {
           setFieldInfo((prev) => ({
             ...prev,
@@ -429,8 +418,51 @@ const Products = () => {
     }))
     addNewHybrid("product", false);
   }
+
+  const fieldMessageRef = useRef(null);
+  const fieldWarnRef = useRef(null);
+  const fieldIsSuccessfulRef = useRef(null);
+  
+  useEffect(() => {
+    const showNotification = (elementRef) => {
+      const element = elementRef.current;
+      if (element) {
+        element.classList.add("field_show");
+        setTimeout(() => {
+          element.classList.remove("field_show");
+          setTimeout(() => {
+            setFieldInfo((prev) => ({
+              ...prev,
+              message: "",
+              warn: "",
+              isSuccessful: ""
+            }));
+          }, 500);
+        }, 3000);
+      }
+    };
+
+    if (fieldInfo.message.length > 0) {
+      showNotification(fieldMessageRef);
+    } else if (fieldInfo.warn.length > 0){
+      showNotification(fieldWarnRef);
+    } else if (fieldInfo.isSuccessful.length > 0) {
+      showNotification(fieldIsSuccessfulRef);
+    }
+  }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
   
   return (
+    <React.Fragment>
+      <div className="field_message" ref={fieldMessageRef}>
+        {fieldInfo.message}
+      </div>
+      <div className="field_warn" ref={fieldWarnRef}>
+        {fieldInfo.warn}
+      </div>
+      <div className="field_is_successful" ref={fieldIsSuccessfulRef}>
+        {fieldInfo.isSuccessful}
+      </div>
+    
     <div id='hybrid_container'>
       {fieldInfo.loading ? (<span className="loader"></span>) : null}
         <section className='grid_hybrid manage_hybrid'>
@@ -481,7 +513,7 @@ const Products = () => {
                   <label htmlFor='hybrid-price'>Price</label>
                   <input
                     className='inp-hybrid-price'
-                    type='text'
+                    type='number'
                     name='hybrid-price'
                     value={hybridInfo.price}
                     onChange={(e) => {
@@ -495,7 +527,7 @@ const Products = () => {
                   <label htmlFor='product-quantity'>Quantity</label>
                   <input
                     className='inp-product-quantity'
-                    type='text'
+                    type='number'
                     name='product-quality'
                     value={hybridInfo.quantity}
                     onChange={(e) => {
@@ -509,7 +541,7 @@ const Products = () => {
                   </>
                 ): (
                     <>
-                    <label htmlFor='hybrid-price'>Price</label>
+                    <label htmlFor='hybrid-price'>Actual Price</label>
                     <input
                       className='inp-hybrid-price'
                       type='text'
@@ -618,6 +650,7 @@ const Products = () => {
           />
         </section>
     </div>
+    </React.Fragment>
   )
 }
 

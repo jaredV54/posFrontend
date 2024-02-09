@@ -20,7 +20,8 @@ class Store extends React.Component {
       option: 'Add',
       currentId: 0,
       checkEmail: '',
-      userType: JSON.parse(localStorage.getItem("currentUserType")).userType
+      userType: JSON.parse(localStorage.getItem("currentUserType")).userType,
+      loading: false
     };
   }
 
@@ -30,10 +31,13 @@ class Store extends React.Component {
 
   getStore = async () => {
     try {
+      this.setState({ loading: true });
       const response = await axios.get(`${config.Configuration.database}/store`);
       this.setState({ store: response.data, filteredStore: response.data });
     } catch (error) {
       console.error(error);
+    } finally {
+      this.setState({ loading: false });
     }
   };
 
@@ -182,7 +186,7 @@ class Store extends React.Component {
   };
 
   render() {
-    const { filteredStore, userType, searchQuery, storeName, address, contactNo, email, birTin, branch, checkinput, option, checkEmail } = this.state;
+    const { filteredStore, userType, searchQuery, storeName, address, contactNo, email, birTin, branch, checkinput, option, checkEmail, loading } = this.state;
     
     if (userType === 'admin') {
       return (
@@ -192,8 +196,8 @@ class Store extends React.Component {
           </div>
           <div id='page-container'>
           <div className='grid-store add-store-wrapper'>
-            <h2 className='prod-label'>Add Store</h2>
-            <label htmlFor='store-name label-first'>Store name: </label>
+            <h2 className='prod-label'>Add Place</h2>
+            <label htmlFor='store-name label-first'>Place name: </label>
             <input
               className='inp-store-name'
               type='text'
@@ -271,7 +275,7 @@ class Store extends React.Component {
           </div>
   
           <div className='grid-store stores-wrapper'>
-            <h2 className='prod-label'>Stores</h2>
+            <h2 className='prod-label'>Places</h2>
             <div className='search-form'>
               <input
                 className='search-bar'
@@ -283,9 +287,17 @@ class Store extends React.Component {
               />
               <i className='bx bx-search search-icon'></i>
             </div>
-  
+            {loading ? (<>
+            <div class="lds-ellipsis"><div></div><div></div><div></div></div>
+            </>) : null
+            }
             <div className='overflow-store-description'>
-              {filteredStore.length === 0 && <p className='not-found'>None</p>}
+              {filteredStore.length === 0 && <p 
+              style={{position: "absolute",
+            left: '50%',
+          top: "50%",
+        transform: "translate(-50%, -50%)"}}
+              className='not-found'>None</p>}
               {filteredStore
                 .sort((a, b) => a.storeName.localeCompare(b.storeName))
                 .map((store) => (

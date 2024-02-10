@@ -213,11 +213,11 @@ const Purchase = () => {
       }
     };
 
-    if (fieldInfo.message.length > 0) {
+    if (fieldInfo.message) {
       showNotification(fieldMessageRef);
-    } else if (fieldInfo.warn.length > 0){
+    } else if (fieldInfo.warn){
       showNotification(fieldWarnRef);
-    } else if (fieldInfo.isSuccessful.length > 0) {
+    } else if (fieldInfo.isSuccessful) {
       showNotification(fieldIsSuccessfulRef);
     }
   }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);

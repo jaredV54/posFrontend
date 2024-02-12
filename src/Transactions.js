@@ -261,8 +261,8 @@ class Transactions extends React.Component {
                 <th>Money</th>
                 <th>Change</th>
                 <th>Trans Date</th>
-                <th>Customer ID</th>
-                <th>Customer</th>
+                <th>Client ID</th>
+                <th>Client</th>
                 <th>Receipt No#</th>
                 <th>Mode of Payment</th>
                 <th>Acc No#</th>

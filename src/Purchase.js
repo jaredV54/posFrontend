@@ -885,7 +885,6 @@ const FillTransaction = ({
 
     try {
       const currentDate = new Date();
-      currentDate.setHours(currentDate.getHours() + 8);
       currentDate.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
       const formattedDate = currentDate.toISOString();
 

@@ -1,6 +1,6 @@
 {
     "Configuration": {
-      "localdatabase": "http://localhost:8082",
+      "ldatabase": "http://localhost:8082",
       "database": "https://pos-psyzygy.v54.online"
     }
 }

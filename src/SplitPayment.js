@@ -3,11 +3,9 @@ import axios from 'axios';
 import config from "./Config.json";
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import ReactToPrint from 'react-to-print';
 
 function SplitPayment() {
     const initialValues = JSON.parse(localStorage.getItem('transId'));
-    const [sales, setSales] = useState([]);
     const [cashValue, setCashValue] = useState(false);
     const [checkReceiptNo, setCheckReceiptNo] = useState(false);
     const [modeOfPayment, setModeOfPayment] = useState('Cash');
@@ -22,7 +20,53 @@ function SplitPayment() {
     const componentRef = React.createRef();
     const userTypeJSON = JSON.parse(localStorage.getItem("currentUserType"))
     const userType = userTypeJSON.userType;
+    const [transFieldInfo, setTransFieldInfo] = useState({
+      selectingModeOfPayment: false,
+      selectingPlatform: false,
+    });
 
+    const [fieldInfo, setFieldInfo] = useState({
+      searchQuery: "",
+      currentIdToUpdate: 0,
+      message: "",
+      warn: "",
+      isSuccessful: "",
+      loading: false,
+      fetchingData: false
+    })
+
+    const fieldMessageRef = useRef(null);
+    const fieldWarnRef = useRef(null);
+    const fieldIsSuccessfulRef = useRef(null);
+  
+    useEffect(() => {
+      const showNotification = (elementRef) => {
+        const element = elementRef.current;
+        if (element) {
+          element.classList.add("field_show");
+          setTimeout(() => {
+            element.classList.remove("field_show");
+            setTimeout(() => {
+              setFieldInfo((prev) => ({
+                ...prev,
+                message: "",
+                warn: "",
+                isSuccessful: ""
+              }));
+            }, 500);
+          }, 3000);
+        }
+      };
+
+      if (fieldInfo.message) {
+        showNotification(fieldMessageRef);
+      } else if (fieldInfo.warn){
+        showNotification(fieldWarnRef);
+      } else if (fieldInfo.isSuccessful) {
+        showNotification(fieldIsSuccessfulRef);
+      }
+    }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
+  
     useEffect(() => {
       window.onpopstate = (event) => {
         const shouldNavigate = window.location.search.includes('refresh=true');
@@ -47,21 +91,20 @@ function SplitPayment() {
     switch (true) {
       case accNo.toString().length <= 0:
         setCheckAccNo(true);
+        setFieldInfo((prev) => ({...prev, warn: "Account number required!"}));
         break;
     
       case !cashValue:
-        setCheckChange(true);
+        setFieldInfo((prev) => ({...prev, message: "Please insert cash amount."}));
         break;
     
       case receiptNo.length === 0:
-        setCheckReceiptNo(true);
+        setFieldInfo((prev) => ({...prev, warn: "Please enter receipt number!"}));
         break;
     
       default:
-        setCheckChange(false);
-        setCheckAccNo(false);
-        setCheckReceiptNo(false);
         try {
+          setFieldInfo((prev) => ({...prev, loading: true}));
           const response = await axios.post(`${config.Configuration.database}/splitPayment`, {
               transId: initialValues.id,
               items: initialValues.items,
@@ -77,7 +120,6 @@ function SplitPayment() {
           const { success, id, message } = response.data;
           setSplitId(id)
           if (success) {
-            showReceipt();
             localStorage.setItem('transId', JSON.stringify(
               {
               id: initialValues.id, 
@@ -85,65 +127,52 @@ function SplitPayment() {
               customerId: initialValues.customerId, 
               items: initialValues.items
             }));
-            alert("Payment Successful");
+            setFieldInfo((prev) => ({
+              ...prev,
+              isSuccessful: message
+            }));
+            setTimeout(() => {
+              navigate("/Transactions");
+            }, 3000);
           } else {
-            alert(message + ". Please insert unique numbers.");
+            setFieldInfo((prev) => ({
+              ...prev,
+              warn: message
+            }))
           }
         } catch (error) {
           console.error(error);
+          setFieldInfo((prev) => ({
+            ...prev,
+            warn: error.response.data.message
+          }))
+        } finally {
+          setFieldInfo((prev) => ({...prev, loading: false}));
         }
         break;
     }   
     };  
-
-    const showReceipt = () => {
-      const receipt = document.getElementById("receipt");
-      if (receipt) {
-        receipt.classList.add("show-receipt")
-      }
-    }
     
     useEffect(() => {
       getClient();
-      getProductsById();
     }, [])
 
     const getClient = async () => {
       try {
+        setFieldInfo((prev) => ({...prev, loading: true}));
         const response = await axios.get(`${config.Configuration.database}/customerId`, {
           params: { id: initialValues.customerId }
         });
-        setCustomer(response.data[0]);
+        if (response.data.result) {
+          setCustomer(response.data.result[0]);
+        }
       } catch(error) {
         console.error(error);
+        setFieldInfo((prev) => ({...prev, warn: error.response.data.message}));
+      } finally {
+        setFieldInfo((prev) => ({...prev, loading: false}));
       }
     };   
-
-    const getProductsById = async () => {
-      try {
-        const response = await axios.get(`${config.Configuration.database}/salesRecord`, {
-          params: { id: initialValues.id }
-        });
-        setSales(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    useEffect(() => {
-        let timeoutId;
-        if (checkChange || checkAccNo || checkReceiptNo) {
-          timeoutId = setTimeout(() => {
-            setCheckChange(false);
-            setCheckAccNo(false);
-            setCheckReceiptNo(false);
-          }, 1500);
-        }
-      
-        return () => {
-          clearTimeout(timeoutId);
-        };
-      }, [modeOfPayment, checkChange, checkAccNo, checkReceiptNo]);    
 
     const handleAccNo = (e) => {
         setAccNo(e.target.value);
@@ -153,36 +182,24 @@ function SplitPayment() {
       setReceiptNo(e.target.value)
     }
 
-    const handleRemoveReceipt = () => {
-      const removeReceipt = document.getElementById("receipt");
-      removeReceipt.classList.remove("show-receipt");
-      setSales([]);
-      setCashValue();
-      setChange();
-      setReceiptNo('')
-      setAccNo('N/A')
-      setModeOfPayment('Cash')
-      navigate("/Transactions");
-    }
+      const handleCash = (e) => {
+        const { value } = e.target;
+        let parsedValue = parseFloat(value) || '';
+      
+        if (parsedValue <= 0 || isNaN(parsedValue)) {
+          parsedValue = '';
+        } else if (Number.isInteger(parsedValue)) {
+          parsedValue = parsedValue.toString();
+        } else {
+          parsedValue = parsedValue.toFixed(2); 
+        }
 
-    const handleCash = (e) => {
-      const { value } = e.target;
-      let parsedValue = parseFloat(value) || '';
-    
-      if (parsedValue <= 0 || isNaN(parsedValue)) {
-        parsedValue = '';
-      } else if (Number.isInteger(parsedValue)) {
-        parsedValue = parsedValue.toString();
-      } else {
-        parsedValue = parsedValue.toFixed(2); 
-      }
-
-      if (initialValues.balance - value < 0) {
-        setCashValue(initialValues.balance);
-      } else {
-        setCashValue(parsedValue);
-      }
-    };
+        if (initialValues.balance - value < 0) {
+          setCashValue(initialValues.balance);
+        } else {
+          setCashValue(parsedValue);
+        }
+      };
 
       const handlePaymentMethod = (option) => {
         const showPaymentMethod = document.getElementById("payment-method");
@@ -194,100 +211,42 @@ function SplitPayment() {
         }
         navigate("/Transactions")
       };  
-    
-      const handleChoosePaymentMode = () => {
-        const show = document.getElementById("show-mode-of-payment")
-        if (show) {
-          show.classList.toggle("show-mode-of-payment")
+
+      const handleToggleModeOfpayment = () => {
+        const element = document.querySelector('.mode_of_pay_bttn_selection_hidden');
+        if (element) {
+          element.classList.toggle('mode_of_pay_bttn_selection_show');
+          setTransFieldInfo((prev) => ({
+            ...prev,
+            selectingModeOfPayment: !prev.selectingModeOfPayment
+          }))
         }
       }
 
-      const handleModeOfPayment = (mode) => {
+      const changeModeOfPayment = (mode) => {
         setModeOfPayment(mode);
-        const cashMethod = document.getElementById("input-acc-no");
-        
-        if (mode === "Cash") {
-          setAccNo("N/A");
-          cashMethod.classList.add("cash");
-        } else {
-          setAccNo("");
-          cashMethod.classList.remove("cash");
-        }
-        
-        const showMode = document.getElementById("show-mode-of-payment")
-        if (showMode) {
-          showMode.classList.remove("show-mode-of-payment")
-        }
-      }
-
-      const formatDate = (dateString) => {
-        const options = { month: '2-digit', day: '2-digit', year: '2-digit', hour: 'numeric', minute: 'numeric' };
-        const date = new Date(dateString);
-        const formattedDate = date.toLocaleDateString('en-US', options).replace(',', ' -');;
-        return formattedDate;
-      };
-
-      function getDate() {
-        const currentDate = new Date();
-        return currentDate.toLocaleString();
+        setAccNo(mode === "cash" ? "N/A" : "")
+        handleToggleModeOfpayment();
       }
 
     if (userType !== undefined) {
     return (
         <React.Fragment>
+          <div className="field_message" ref={fieldMessageRef}>
+            {fieldInfo.message}
+          </div>
+          <div className="field_warn" ref={fieldWarnRef}>
+            {fieldInfo.warn}
+          </div>
+          <div className="field_is_successful" ref={fieldIsSuccessfulRef}>
+            {fieldInfo.isSuccessful}
+          </div>
           <div className="go-back" >
           <Link to="/Transactions"><i className='bx bx-chevron-left' ></i></Link>
           </div>
-          
-        <div id='receipt' className='split-receipt-container' style={{
-          width: "calc(100vw - 220px)",
-          height: "100vh",
-          position: "absolute",
-          zIndex: "120",
-          backgroundColor: "#1a1a1a65"
-        }}>
-              <div className='receipt-table' ref={componentRef} style={{
-                backgroundColor: "#e1e1e1",
-                width: "530px",
-                padding: "10px"
-              }}>
-              <h1 style={{
-                fontWeight: "500",
-                textAlign: "center"
-              }}>Receipt</h1>
-              <p style={{
-                paddingTop: "5px"
-              }}>Client: {customer.fName} {customer.lName}</p>
-              <p>Receipt No#: {receiptNo}</p>
-              <p>Date: {formatDate(getDate())}</p>
-              <p style={{
-                paddingBottom: "5px"
-              }}>Split No#: {splitId}</p>
-              <p style={{textAlign: "right"}} className='total-'>Total: <span style={{fontWeight: "500"}}>₱{initialValues.balance}</span></p>
-              <p style={{textAlign: "right"}} >Cash: <span style={{fontWeight: "500"}}>₱{cashValue}</span></p>
-              <p style={{textAlign: "right"}} className='change-'>Balance left: <span style={{fontWeight: "500"}}>₱{balance}</span></p>
-          </div>
-          <div className='bttn-container'>
-          <ReactToPrint
-              trigger={() => (
-                <button onClick={() => handleRemoveReceipt()}>
-                  Print
-                </button>
-              )}
-              content={() => componentRef.current}
-              documentTitle="Receipt"
-            />
-          <button onClick={() => handleRemoveReceipt()}>
-            Proceed
-          </button>
-          </div>
-          </div>
             
-
             <div className='split-payment-wrapper'>
-            {checkChange && <p className='check-change'>Please insert amount</p>}
-            {checkAccNo && <p className='check-change'>Please enter account number </p>}
-            {checkReceiptNo && <p className='check-change'>Please enter receipt number </p>}
+            {fieldInfo.loading ? (<span className="loader"></span>) : null}
                 <div className='split-payment-container'>
                     <h1>Split Payment</h1>
                     <table className='payment'>
@@ -342,32 +301,47 @@ function SplitPayment() {
 
                         <tr>
                           <td>Mode of Payment</td>
+                          
                           <td>
-                            {modeOfPayment ?? modeOfPayment}
-                          <button 
-                          type="button"
-                          className='drop-down'
-                          onClick={() => handleChoosePaymentMode()}>
-                            <i className='bx bxs-down-arrow'></i>
-                          </button>
-                          <div id='show-mode-of-payment' className='change-mode-of-payment'>
-                          <div className='payment-button payment-cash'
-                          onClick={() => handleModeOfPayment("Cash")}>
-                          Cash
-                          </div>
-                          <div className='payment-button payment-credit-card'
-                          onClick={() => handleModeOfPayment("Credit Card")}>
-                            Credit Card
-                          </div>
-                          <div className='payment-button payment-debit-card'
-                          onClick={() => handleModeOfPayment("Debit Card")}>
-                            Debit Card
-                          </div>
-                          <div className='payment-button payment-gcash'
-                          onClick={() => handleModeOfPayment("GCash")}>
-                            GCash
-                          </div>
-                          </div>
+                            <button type="button" className='mode_of_pay_bttn' 
+                              onClick={(e) => {
+                                e.preventDefault(); 
+                                handleToggleModeOfpayment();
+                              }}
+                              style={{
+                                backgroundColor: transFieldInfo.selectingModeOfPayment ? "#373737": null,
+                              }}>
+                              {transFieldInfo.selectingModeOfPayment ? (<i  style={{fontSize: "1.2rem"}} className='bx bx-x'></i>): modeOfPayment}</button>
+                            <div className='mode_of_pay_bttn_selection_hidden'>
+                              <div
+                              onClick={(e) => {
+                                e.preventDefault();
+                                changeModeOfPayment("cash");
+                              }}>
+                                Cash
+                              </div>
+                              <div
+                              onClick={(e) => {
+                                e.preventDefault();
+                                changeModeOfPayment("gcash");
+                              }}>
+                                Gcash
+                              </div>
+                              <div
+                              onClick={(e) => {
+                                e.preventDefault();
+                                changeModeOfPayment("credit card");
+                              }}>
+                                Credit Card
+                              </div>
+                              <div
+                              onClick={(e) => {
+                                e.preventDefault();
+                                changeModeOfPayment("debit card");
+                              }}>
+                                Debit Card
+                              </div>
+                            </div>
                           </td>
                         </tr>
 
@@ -394,12 +368,20 @@ function SplitPayment() {
                       <button 
                       className='cancel-payment-bttn'
                       type="button"
+                      disabled = {fieldInfo.isSuccessful ? true : false}
+                      style={{
+                        pointerEvents: fieldInfo.isSuccessful ? "none" : null
+                      }}
                       onClick={() => handlePaymentMethod("cancel")}>
                         Cancel
                       </button>
                       <button
                         type="submit"
                         className='purchase-bttn'
+                        disabled = {fieldInfo.isSuccessful ? true : false}
+                        style={{
+                          pointerEvents: fieldInfo.isSuccessful ? "none" : null
+                        }}
                         onClick={() => handlePurchase()}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {

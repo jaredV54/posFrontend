@@ -978,6 +978,20 @@ const FillTransaction = ({
                 }}>
                   Gcash
                 </div>
+                <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  changeModeOfPayment("credit card");
+                }}>
+                  Credit Card
+                </div>
+                <div
+                onClick={(e) => {
+                  e.preventDefault();
+                  changeModeOfPayment("debit card");
+                }}>
+                  Debit Card
+                </div>
               </div>
               </td>
             </tr>

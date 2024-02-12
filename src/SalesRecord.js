@@ -21,14 +21,14 @@ function SalesRecord() {
 
   const getSalesRecord = async () => {
     try {
-      setFieldInfo((prev) => ({...prev, loading: true }))
+      setFieldInfo((prev) => ({...prev, loading: true }));
       const response = await axios.get(`${config.Configuration.database}/sales`);
       setSales(response.data);
       setFilteredSales(response.data);
     } catch (error) {
       console.error(error);
     } finally {
-      setFieldInfo((prev) => ({...prev, loading: false }))
+      setFieldInfo((prev) => ({...prev, loading: false }));
     }
   };
 
@@ -114,7 +114,7 @@ function SalesRecord() {
                   <td>{formatDate(sale.dateTimePurchased)}</td>
                   <td>{sale.price}</td>
                   <td>{sale.hybrid === 'service' ? "N/A" : sale.quantity}</td>
-                  <td>{(sale.price * sale.quantity).toFixed(2)}</td>
+                  <td>{sale.hybrid === 'service' ? sale.price : (sale.price * sale.quantity).toFixed(2)}</td>
                 </tr>
             ))}
             {filteredSales.length >= displayCount ? (

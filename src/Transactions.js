@@ -38,10 +38,13 @@ class Transactions extends React.Component {
 
   getSplitPayment = async () => {
     try {
+      this.setState({ loading: true });
       const response = await axios.get(`${config.Configuration.database}/splitPayment`);
       this.setState({ splitPayment: response.data });
     } catch(error) {
       console.error(error)
+    } finally {
+      this.setState({ loading: false });
     }
   }
 
@@ -91,12 +94,9 @@ class Transactions extends React.Component {
 
   handleSplitPayment = async (id, balance, customerId, items) => {
     const {splitPayment} = this.state;
-    console.log(id, balance, customerId, items)
-    console.log(splitPayment)
     if (splitPayment.length > 0) {
       splitPayment.map((split) => {
         if (split.transId == id && split.balance !== 0) {
-          console.log("okay")
           localStorage.setItem('transId', JSON.stringify(
             {
             id: id, 
@@ -104,10 +104,8 @@ class Transactions extends React.Component {
             customerId: customerId, 
             items: items
           }));
-          console.log("okay")
           window.location.assign("/SplitPayment");
         } else {
-          console.log("okay")
           localStorage.setItem('transId', JSON.stringify(
             {
             id: id, 

@@ -65,7 +65,7 @@
         height: 500px;
         background-color: #212121;
         border-radius: 10px;
-        margin-top: 110px;
+        margin-top: 90px;
         display: grid;
         justify-content: center;
 
@@ -91,14 +91,14 @@
                   input {
                     background-color: transparent;
                     font-size: .9rem;
-                    height: 20px;
+                    height: 25px;
                     border: none;
                     text-align: left;
                     outline: none;
-                    color: #e1e1e1;
-                    color: #ff8503;
+                    color: #262626;
+                    background-color: #ededed;
                     font-weight: 600;
-                    border-bottom: 2px solid #fff;
+                    padding: 5px;
                     transition: all ease .25s;
           
                     &.cash {
@@ -107,7 +107,7 @@
                     }
               
                     &::placeholder {
-                      color: #818181;
+                      color: #464646;
                       opacity: 1;
                       font-weight: 400;
                       transition: all ease .25s;
@@ -123,55 +123,88 @@
                     }
               
                     &:focus {
-                    border-bottom: #6878e0 2px solid !important;
+                      opacity: 1;
                     }
                   }
-          
-                  .drop-down {
-                    padding: 3px;
-                    cursor: pointer;
-                    font-size: .85rem;
-                    border: none;
-                    margin-left: 5px;
-                    background-color: transparent;
-                    outline: none;
-                    color: #ff8502;
-                    transition: all ease .25s;
-          
-                      &:hover {
-                        color: #6878e0;
-                      }
-                  }
-          
-                  .change-mode-of-payment {
-                    animation: modeChange ease .25s;
-                    position: absolute;
-                    z-index: 25;
-                    top: 25px;
-                    left: 0;
-                    background-color: #1a1a1a;
-                    padding: 10px;
-                    display: none;
-                    transform: translateX(-60px);
-                    flex-direction: column;
-                    gap: 5px;
-          
-                    div {
-                      background-color: #313a72;
-                      padding: 5px;
-                      cursor: pointer;
-                      transition: all ease .25s;
-          
-                      &:hover {
-                        background-color: #f7860e;
-                      }
-                    }
-                  }
-          
-                  .show-mode-of-payment {
-                    display: flex;
-                    transform: translateX(0px);
-                  }
+                  // Mode of payment selection
+                            button {
+                                width: 100px;
+                                height: 25px;
+                                background-color: #f7860e;
+                                color: #ededed;
+                                border: none;
+                                font-weight: 600;
+                                outline: none;
+                                cursor: pointer;
+                                border: #00000000 solid 2px;
+                                transition: all ease .25s;
+                                position: relative;
+
+                                &::first-letter {
+                                    text-transform: uppercase;   
+                                }
+                            }
+
+                            button.pay_bttn {
+                                width: 100%;
+                                background-color: #6878e0;
+                            }
+
+                            button:hover {
+                                border: #ededed solid 2px;
+                            }
+
+                            div.mode_of_pay_bttn_selection_hidden {
+                                position: absolute;
+                                left: 140px;
+                                top: 50%;
+                                transform: translate(0, -50%);
+                                z-index: -1;
+                                opacity: 0;
+                                transition: all ease .25s;
+                                width: 300px;
+                                
+                                div {
+                                    width: 120px;
+                                    margin-bottom: 5px;
+                                    display: inline-block;
+                                    transform: scale(.5);
+                                    padding: 3px;
+                                    font-weight: 600;
+                                    height: 25px;
+                                    background-color: #ededed;
+                                    color: #262626;
+                                    font-weight: 500;
+                                    cursor: pointer;
+                                    text-align: center;
+                                    border: #00000000 solid 2px;
+                                    transition: all ease .25s;
+
+                                    &:nth-child(1), &:nth-child(3) {
+                                      margin-left: 20px;
+                                    }
+
+                                    &:nth-child(2), &:nth-child(4) {
+                                      margin-left: 5px;
+                                    }
+
+                                    &:hover {
+                                        color: #ededed;
+                                        background-color: #6878e0;
+                                        border: #ededed solid 2px;
+                                    }
+                                }
+                            }
+
+                            div.mode_of_pay_bttn_selection_show {
+                                left: 105px !important;
+                                z-index: 45 !important;
+                                opacity: 1 !important;
+
+                                div {
+                                    transform: scale(1);
+                                }
+                            }
                 }
               }
             }

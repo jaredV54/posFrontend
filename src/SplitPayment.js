@@ -7,11 +7,8 @@ import { Link } from 'react-router-dom';
 function SplitPayment() {
     const initialValues = JSON.parse(localStorage.getItem('transId'));
     const [cashValue, setCashValue] = useState(false);
-    const [checkReceiptNo, setCheckReceiptNo] = useState(false);
     const [modeOfPayment, setModeOfPayment] = useState('Cash');
     const [accNo, setAccNo] = useState('N/A');
-    const [checkAccNo, setCheckAccNo] = useState(false);
-    const [checkChange, setCheckChange] = useState(false);
     const navigate = useNavigate();
     const [customer, setCustomer] = useState([]);
     const [receiptNo, setReceiptNo] = useState('');
@@ -90,7 +87,6 @@ function SplitPayment() {
     if (e && e.key === 'Enter') e.preventDefault();
     switch (true) {
       case accNo.toString().length <= 0:
-        setCheckAccNo(true);
         setFieldInfo((prev) => ({...prev, warn: "Account number required!"}));
         break;
     

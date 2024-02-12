@@ -349,7 +349,7 @@ const DisplayHybrids = ({
     } else {
       setFieldInfo((info) => ({
         ...info,
-        warn: `The current selected type is ${hybrid.selectedHybridType}. Please empty the field if you want to select other type (Product/Service).`
+        warn: `The current selected type is ${hybrid.selectedHybridType}.`
       }))
     }
   }
@@ -883,6 +883,7 @@ const FillTransaction = ({
       return;
     }
 
+  
     try {
       const currentDate = new Date();
       currentDate.toLocaleString('en-US', { timeZone: 'Asia/Manila' });

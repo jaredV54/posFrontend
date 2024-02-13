@@ -265,9 +265,11 @@ class Transactions extends React.Component {
                 <th>Client</th>
                 <th>Receipt No#</th>
                 <th>Mode of Payment</th>
-                <th>Acc No#</th>
+                <th>Acc No#/Ref No#</th>
                 <th>Type of Payment</th>
                 <th>Platform</th>
+                <th>Remarks</th>
+                <th>Providers</th>
                 <th></th>
               </tr>
             </thead>
@@ -293,6 +295,8 @@ class Transactions extends React.Component {
                   <td>{trans.accNo}</td>
                   <td>{trans.typeOfPayment}</td>
                   <td>{trans.platform}</td>
+                  <td>{trans.remarks}</td>
+                  <td>{trans.providers}</td>
                   {trans.typeOfPayment === 'straight' ? (
                     <td className='select-split-row' style={{
                       backgroundColor: "#2c3157",

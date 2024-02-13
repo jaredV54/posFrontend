@@ -86,7 +86,7 @@ function SalesRecord() {
             />
             <i className='bx bx-search search-icon' ></i>
           </div>
-          <Receipt trackReceipt={filteredSales} searchQuery={searchQuery} formatDate={formatDate} />
+          {/* <Receipt trackReceipt={filteredSales} searchQuery={searchQuery} formatDate={formatDate} /> */}
           <table className='sales-table'>
           {fieldInfo.loading ? (<>
             <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
@@ -140,7 +140,7 @@ function SalesRecord() {
   } 
 }
 
-class Receipt extends React.Component {
+/* class Receipt extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -302,5 +302,5 @@ class Receipt extends React.Component {
     }
   }
 }
-
+ */
 export default SalesRecord;

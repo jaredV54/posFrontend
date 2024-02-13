@@ -26,14 +26,20 @@ const Purchase = () => {
       mName: '',
       email: '',
       contactNo: '',
-      address: ''
+      address: '',
+      remarks: '',
+      providers: ''
     }],
     quantity: 1,
+    currentPrice: 0,
     totalPrice: 0,
     discount: 0,
     discounted: 0,
     change: 0,
-    receiptNo: ""
+    receiptNo: "",
+    professionalFee: 0,
+    withProfessionalFee: 0,
+    profFeeForDiscount: 0
   })
 
   const [transaction, setTransaction] = useState({
@@ -278,6 +284,7 @@ const Purchase = () => {
           setFieldInfo = {setFieldInfo}
           setPsyc={setPsychologicalAssessment}
           loading={fieldInfo.fetchingData}
+          setReceipt={setReceipt}
           />
         </section>
         <section id='hybrid_purchase'>
@@ -318,7 +325,8 @@ const DisplayHybrids = ({
   hybrid, setHybrid,
   handleHybridSelection,
   setFieldInfo,
-  setPsyc, loading
+  setPsyc, loading,
+  setReceipt
 }) => {
 
   const selectedHybrid = (hyb) => {
@@ -339,6 +347,14 @@ const DisplayHybrids = ({
         setPsyc((prev) => ({
           ...prev,
           selectedTest: []
+        }))
+        setReceipt((prev) => ({
+          ...prev,
+          discount: 0,
+          discounted: 0,
+          professionalFee: 0,
+          withProfessionalFee: 0,
+          profFeeForDiscount: 0
         }))
       }
     } else if (fieldAlreadyExist) {
@@ -421,7 +437,8 @@ const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) =>
   const handleCheckboxChange = (list) => {
     setReceipt((prev) => ({
       ...prev, 
-      discount: 0
+      discount: 0,
+      professionalFee: 0
     }))
     setPsyc((prev) => {
       const isSelected = prev.selectedTest.some((selectedItem) => selectedItem.id === list.id);
@@ -527,18 +544,15 @@ const SelectedHybrid = ({
     }
   }
 
-  const handleCalculateTotalPrice = () => {
-    if (psyc.selectedTest.length > 0) {
+  useEffect(() => {
+    const {discounted, withProfessionalFee, professionalFee, profFeeForDiscount} = receipt
+    if ((parseFloat(professionalFee) || parseFloat(isNaN(professionalFee))) || parseFloat(professionalFee) === 0) {
       setReceipt((prev) => ({
         ...prev,
-        totalPrice: psyc.selectedTest.reduce((sum, total) => sum + parseFloat(total.standardRate), 0).toFixed(2)
-      }))
+        totalPrice: !isNaN(withProfessionalFee) ? prev.withProfessionalFee : prev.currentPrice
+      }));
     }
-  }
-
-  useEffect(() => {
-    handleCalculateTotalPrice();
-  }, [psyc.selectedTest]);
+  }, [receipt.professionalFee]);
 
   useEffect(() => {
     const selectedHybridTypeClass = document.querySelector('.selected_hybrid');
@@ -552,7 +566,7 @@ const SelectedHybrid = ({
     }
     productTotalPrice();
     
-  }, [selectedHybrid])
+  }, [selectedHybrid]);
 
   const getTests = async (id) => {
     try {
@@ -585,26 +599,87 @@ const SelectedHybrid = ({
     }
   }
 
-  const handleDiscount = (e) => {
-    const value = parseFloat(e.target.value);
-    if (value <= receipt.discount) {
+  const handleCalculateTotalPrice = () => {
+    if (psyc.selectedTest.length > 0) {
+      const totalPrice = psyc.selectedTest.reduce((sum, total) => sum + parseFloat(total.standardRate), 0).toFixed(2);
       setReceipt((prev) => ({
-        ...prev, 
-        discount: 0,
-        discounted: 0
-      }))
-    } else if (value > receipt.totalPrice) {
-      setReceipt((prev) => ({
-        ...prev, 
-        discount: prev.totalPrice.toFixed(2),
-        discounted: 0
-      }))
-    } else {
-      setReceipt((prev) => ({
-        ...prev, 
-        discount: value,
-        discounted: (prev.totalPrice - value).toFixed(2)
-      }))
+          ...prev,
+          currentPrice: parseFloat(totalPrice).toFixed(2),
+          totalPrice: parseFloat(totalPrice).toFixed(2),
+          discount: 0,
+          discounted: 0,
+          professionalFee: 0,
+          withProfessionalFee: 0,
+          profFeeForDiscount: 0
+      }));
+    }  
+  }
+
+  useEffect(() => {
+    handleCalculateTotalPrice();
+  }, [psyc.selectedTest]);
+
+  // Checking for changes in Professional fee and Discount
+  const [discountWithFee, setdiscountWithFee] = useState({
+    prevDiscountWithFee: 0,
+    currentDiscountWithFee: 0,
+    condition: false
+  })
+
+  const handleDiscount = (e, type) => {
+    const value = !isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0;
+    
+    if (type === "discount") {
+      if (value > receipt.totalPrice) {
+        setReceipt((prev) => ({
+          ...prev, 
+          discount: prev.totalPrice,
+          discounted: 0,
+          profFeeForDiscount: 0,
+        }))
+      } else {
+        let currentDiscountWithFee = parseFloat(receipt.withProfessionalFee) > 0 ? parseFloat(parseFloat(receipt.withProfessionalFee) - value).toFixed(2) : parseFloat(parseFloat(receipt.totalPrice - value)).toFixed(2);
+
+        setdiscountWithFee((prev) => ({
+          ...prev,
+          currentDiscountWithFee: currentDiscountWithFee,
+          condition: value > 0 ? currentDiscountWithFee >= prev.prevDiscountWithFee && prev.prevDiscountWithFee > 0 : false,
+        }))
+
+        setReceipt((prev) => ({
+          ...prev, 
+          discount: value,
+          discounted: currentDiscountWithFee,
+          profFeeForDiscount: currentDiscountWithFee
+        }));
+      }
+    } else if (type === "fee") {
+      if (parseFloat(receipt.discounted) > 0) {
+        let prevDiscountWithFee = (parseFloat(receipt.profFeeForDiscount) + value).toFixed(2);
+        setReceipt((prev) => ({
+          ...prev, 
+          professionalFee: value,
+          discounted: discountWithFee.condition ? ((parseFloat(prev.profFeeForDiscount) + value) - parseFloat(prev.discount)).toFixed(2) : (parseFloat(prev.profFeeForDiscount) + value).toFixed(2),
+          withProfessionalFee: (parseFloat(prev.currentPrice) + value).toFixed(2)
+        }));
+        setdiscountWithFee((prev) => ({
+          ...prev,
+          prevDiscountWithFee: prevDiscountWithFee,
+          currentDiscountWithFee: value > 0 ? prevDiscountWithFee : 0
+        }))
+      } else {
+        setReceipt((prev) => ({
+          ...prev, 
+          professionalFee: value,
+          withProfessionalFee: (parseFloat(prev.currentPrice) + value).toFixed(2)
+        }));
+        setdiscountWithFee((prev) => ({
+          ...prev,
+          condition: false,
+          prevDiscountWithFee: 0,
+          currentDiscountWithFee: 0
+        }))
+      }
     }
   }
 
@@ -674,7 +749,23 @@ const SelectedHybrid = ({
               </div>
               </div>
             )): null}
-            {receipt.totalPrice > 0 && psyc.selectedTest.length > 0 && (<>
+            {parseFloat(receipt.totalPrice) > 0 && psyc.selectedTest.length > 0 ? (<>
+              <div className='discount_conainer'>
+                <label htmlFor="professional_fee">Professional fee: </label>
+                <input 
+                style={{
+                  display: "block"
+                }}
+                type="number" 
+                placeholder='₱ ###'
+                name="professional_fee" 
+                value={receipt.professionalFee === 0 ? '' : receipt.professionalFee}
+                onChange={(e) => {
+                  e.preventDefault();
+                  handleDiscount(e, "fee");
+                }}
+              />
+              </div>
               <div className='discount_conainer'>
                 <label htmlFor="discount">Discount: </label>
                 <input 
@@ -687,7 +778,7 @@ const SelectedHybrid = ({
                 value={receipt.discount === 0 ? '' : receipt.discount}
                 onChange={(e) => {
                   e.preventDefault();
-                  handleDiscount(e);
+                  handleDiscount(e, "discount");
                 }}
               />
               </div>
@@ -702,7 +793,7 @@ const SelectedHybrid = ({
               </span>
               
               </p>
-            </>)}
+            </>) : null}
             {list.hybrid === "product" ? (
               <>
               <div className='qty_bttn_wrapper'>
@@ -714,13 +805,15 @@ const SelectedHybrid = ({
               {list.quantity} qty
               </div>
               </>
-            ): <button type="button"
-             className='psy_test_bttn'
-             onClick={(e) => {
-              getTests(list.id);
-             }}>
+            ): (
+              <button type="button"
+                className='psy_test_bttn'
+                onClick={(e) => {
+                 getTests(list.id);
+                }}>
               Psychological Tests
-              </button>}
+              </button>
+              )}
             <button 
             type="button" 
             className='psy_test_bttn'
@@ -856,7 +949,6 @@ const FillTransaction = ({
     const { cash, modeOfPayment, typeOfPayment, platform, accNo } = transaction;
     const { quantity, totalPrice, change, client, discount, discounted, receiptNo } = receipt;
     const everyFieldRequired = [cash, accNo, receiptNo];
-
     // Check the field requirements
     if (!everyFieldRequired.every(prev => prev.length > 0)) {
       setFieldInfo((prev) => ({
@@ -903,7 +995,9 @@ const FillTransaction = ({
         discount: discount,
         hybridData: hybrid.selectedHybrid,
         currentDate: formattedDate,
-        receiptNo: receiptNo
+        receiptNo: receiptNo,
+        remarks: client[0].remarks,
+        providers: client[0].providers
        });
 
        if (response.data.isSuccessful) {

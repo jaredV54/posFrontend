@@ -381,6 +381,7 @@ main#purchase_container {
                                 opacity: 0;
                                 transition: all ease .25s;
                                 width: 100%;
+
                                 div {
                                     display: inline-block;
                                     margin-left: 5px;
@@ -506,7 +507,6 @@ main#purchase_container {
                 border-radius: 10px;
                 overflow: hidden;
                 
-
                 div.s_hybrid_name {
                     font-size: 1rem;
                     font-weight: 600;
@@ -625,6 +625,17 @@ main#purchase_container {
                             color: #ededed;
                         }
                     }
+                }
+
+                button.prof_fee_bttn {
+                    display: block;
+                    margin-top: 10px;
+                    width: 100%;
+                    padding: 7px;
+                    border: none;
+                    outline: none;
+                    background-color: #313a72;
+                    color: #fff;
                 }
 
                 button.psy_test_bttn {

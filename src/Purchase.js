@@ -180,7 +180,8 @@ const Purchase = () => {
       totalPrice: 0,
       discount: 0,
       discounted: 0,
-      change: 0
+      change: 0,
+      receiptNo: ""
     }));
 
     setHybrid((prev) => ({
@@ -975,7 +976,6 @@ const FillTransaction = ({
       return;
     }
 
-  
     try {
       const currentDate = new Date();
       currentDate.toLocaleString('en-US', { timeZone: 'Asia/Manila' });

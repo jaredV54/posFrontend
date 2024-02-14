@@ -227,7 +227,7 @@
     table.sales-table {
         font-size: .8rem;
         width: 95%;
-        margin: 30px auto 0;
+        margin: 30px auto 0 auto;
         border: 1px solid #fff;
         text-align: left;
 
@@ -251,7 +251,6 @@
             tr {
               td#expand {
                 background-color: #313a72;
-                text-align: center;
                 transition: all ease .25s;
                 cursor: pointer;
                 &:hover {

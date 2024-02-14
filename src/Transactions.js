@@ -29,6 +29,7 @@ class Transactions extends React.Component {
       this.setState({ loading: true });
       const response = await axios.get(`${config.Configuration.database}/transactions`);
       this.setState({ transactions: response.data, filteredTransactions: response.data });
+      console.log(response.data)
     } catch (error) {
       console.error(error);
     } finally {
@@ -255,18 +256,18 @@ class Transactions extends React.Component {
           <table className='sales-table'>
             <thead className='table-column'>
               <tr className='sales-column'>
-                <th>Trans ID</th>
+                <th>ID</th>
                 <th>Items</th>
                 <th>Amount</th>
                 <th>Money</th>
                 <th>Change</th>
-                <th>Trans Date</th>
-                <th>Client ID</th>
-                <th>Client</th>
-                <th>Receipt No#</th>
-                <th>Mode of Payment</th>
-                <th>Acc No#/Ref No#</th>
-                <th>Type of Payment</th>
+                <th>Date</th>
+                <th>Client_ID</th>
+                <th>Client_Name</th>
+                <th>Receipt_No#</th>
+                <th>MoP</th>
+                <th>Acc/Ref_No#</th>
+                <th>ToP</th>
                 <th>Platform</th>
                 <th>Remarks</th>
                 <th>Providers</th>

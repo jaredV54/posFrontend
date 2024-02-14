@@ -105,9 +105,14 @@ const Client = () => {
         handleReset();
     }
 
-    const handleEditCustomer = (id) => {
+    const handleEditCustomer = (id, isAlreadySelected) => {
         const { client } = clientData;
         const selectedCustomer = client.find((c) => c.id === id);
+
+        if (isAlreadySelected) {
+          localStorage.setItem('selectedCustomer', JSON.stringify({}));
+        } 
+
         if (selectedCustomer) {
           const { id, isDeleted, ...newObject } = selectedCustomer;
           const button = document.getElementById("add-bttn");
@@ -125,7 +130,8 @@ const Client = () => {
 
           setClientData((prev) => ({
             ...prev,
-            currentId: id
+            currentId: id,
+            storedClientId: {}
           }));
         }
     }
@@ -352,7 +358,7 @@ const Client = () => {
                             return (
                                 <tr className='customer-row' key={cust.id}>
                                 <td className="edit-customer edit-button" 
-                                onClick={() => handleEditCustomer(cust.id)}>
+                                onClick={() => handleEditCustomer(cust.id, cust.id === storedClientId.id)}>
                                 Edit
                                 </td>
     
@@ -364,7 +370,7 @@ const Client = () => {
                                 <td
                                   className="edit-customer select-button"
                                   onClick={() => {
-                                    handleSelectCustomer(cust, cust.id == storedClientId.id);
+                                    handleSelectCustomer(cust, cust.id === storedClientId.id);
                                   }}
                                 >
                                 {cust.id == storedClientId.id ? (

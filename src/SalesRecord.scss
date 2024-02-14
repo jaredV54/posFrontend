@@ -229,7 +229,6 @@
         width: 95%;
         margin: 30px auto 0 auto;
         border: 1px solid #fff;
-        text-align: left;
 
         thead.table-column {
             font-family: 'Raleway', sans-serif;
@@ -244,11 +243,14 @@
 
         tbody {
             outline: #fff;
+
             .table-rows {
                 background-color: #212121;
                 font-family: 'Montserrat', sans-serif;
             }
+
             tr {
+
               td#expand {
                 background-color: #313a72;
                 transition: all ease .25s;
@@ -260,19 +262,23 @@
                   background-color: #6878e0;
                 }
               }
+
               td {
                 background-color: #212121;
                 padding: 5px;
+
                 &.select-split-row {
                   padding: 0 10px !important;
                   background-color: #f7860e;
                   color: #eeeeee;
                   cursor: pointer;
                   transition: all ease .25s;
+
                   &:hover {
                     background-color: #ff8400;
                     transform: scale(1.05);
                   }
+
                   &:active {
                     background-color: #f7860e;
                     transform: scale(1);
@@ -284,6 +290,13 @@
                   background-color: #2c3157 !important;
                   text-decoration: line-through !important;
                 }
+              }
+            }
+
+            tr:hover {
+              
+              td {
+                background-color: #373737;
               }
             }
         }

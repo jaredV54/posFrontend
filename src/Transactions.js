@@ -256,18 +256,18 @@ class Transactions extends React.Component {
           <table className='sales-table'>
             <thead className='table-column'>
               <tr className='sales-column'>
-                <th>ID</th>
+                <th title='Transaction ID'>ID</th>
                 <th>Items</th>
                 <th>Amount</th>
                 <th>Money</th>
                 <th>Change</th>
                 <th>Date</th>
-                <th>Client_ID</th>
+                <th title='Client ID Number'>CID</th>
                 <th>Client_Name</th>
                 <th>Receipt_No#</th>
-                <th>MoP</th>
+                <th title='Mode of Payment'>MoP</th>
                 <th>Acc/Ref_No#</th>
-                <th>ToP</th>
+                <th title='Type of Payment'>ToP</th>
                 <th>Platform</th>
                 <th>Remarks</th>
                 <th>Providers</th>

@@ -94,8 +94,8 @@ function SalesRecord() {
           }
             <thead className='table-column'>
               <tr className='sales-column'>
-                <th>Sales ID</th>
-                <th>Trans No#</th>
+                <th>ID</th>
+                <th>Trans ID</th>
                 <th>Hybrid</th>
                 <th>Name</th>
                 <th>Date Time Purchased</th>

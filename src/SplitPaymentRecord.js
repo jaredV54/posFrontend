@@ -198,15 +198,15 @@ function SplitPaymentRecord() {
         <table className='sales-table'>
           <thead className='table-column'>
             <tr className='sales-column'>
-              <th>Split ID</th>
+              <th>ID</th>
               <th>Trans ID</th>
               <th>Items</th>
               <th>Amount</th>
               <th>Cash</th>
               <th>Balance</th>
               <th>Transaction Date</th>
-              <th>Receipt No</th>
-              <th>Customer ID</th>
+              <th>Receipt No#</th>
+              <th>Client ID</th>
               <th>Mode of Payment</th>
               <th>Acc Number</th>
             </tr>

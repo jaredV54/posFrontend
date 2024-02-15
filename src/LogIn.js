@@ -29,17 +29,14 @@ function LogIn({ values, setValues, handleLogin  }) {
         .then((res) => {
           if (res.data && res.data.data) {
             const { userType, storeId } = res.data.data[0];
-  
-            if (userType && storeId) {
+            if (userType && (storeId || userType === "admin")) {
               localStorage.setItem('currentUserType', JSON.stringify({ userType, storeId }));
               if (res.data.message === 'Requirements Matched') {
                 localStorage.setItem('loginValues', JSON.stringify({ email: values.email }));
                 handleLogin(true);
                 navigate('/Purchase');
               }
-            } else {
-              alert("Incomplete user data");
-            }
+            } 
           } if (res.data) {
             switch (res.data) {
               case 'Wrong Password':

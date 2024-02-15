@@ -69,7 +69,7 @@
           }
         }
 
-        input {
+        input, textarea {
           position: relative;
           z-index: 20;
           color: #151515;
@@ -82,6 +82,11 @@
           padding: 2px 5px;
           font-size: .78rem;
           font-weight: 600; 
+        }
+
+        textarea {
+          height: 78px;
+          position: absolute !important;
         }
 
         i {

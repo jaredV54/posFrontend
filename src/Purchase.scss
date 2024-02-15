@@ -68,7 +68,7 @@ main#purchase_container {
             position: relative;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(95%, 1fr));
-            grid-template-rows: repeat(auto-fill, 85px);
+            grid-template-rows: repeat(auto-fill, 65px);
             letter-spacing: .025em;
             padding: 15px 25px;
             row-gap: 1.5%;
@@ -86,7 +86,7 @@ main#purchase_container {
             div.hybrid_info_displayed {
                 background-color: #373737;
                 border-radius: 10px;
-                height: 85px;
+                height: 65px;
                 padding: 10px;
                 cursor: pointer;
                 border: solid 2px #00000000;

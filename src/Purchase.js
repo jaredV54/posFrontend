@@ -11,6 +11,7 @@ const Purchase = () => {
     selectedHybridType: "",
     currentView: localStorage.getItem("currentSelectedHybrid_"),
   });
+
   if (!hybrid.currentView) {
     localStorage.setItem("currentSelectedHybrid_", "all")
   }
@@ -340,6 +341,7 @@ const DisplayHybrids = ({
           selectedHybridType: hyb.hybrid
         }))
       } else {
+        console.log(hyb)
         setHybrid((prev) => ({
           ...prev,
           selectedHybrid: [hyb],
@@ -739,7 +741,7 @@ const SelectedHybrid = ({
             <div className='s_hybrid_name'>
               {list.name}
             </div>
-            <p className='s_hybrid_price'>{selectedHybrid[0].hybrid === "product" ? "Price:" : "Actual Price:"} ₱{list.newPrice !== list.price ? list.newPrice : list.price}</p>
+            <p className='s_hybrid_price'>{selectedHybrid[0].hybrid === "product" ? "Price:" : "Actual Price:"} ₱{list.newPrice === list.price ? list.newPrice : list.price}</p>
             {psyc.selectedTest ? psyc.selectedTest.map((list) => (
               <div className="s_hybrid_psycList" key={list.id}>
                 <div className='selected_psyc_test'>

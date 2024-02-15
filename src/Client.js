@@ -141,8 +141,8 @@ const Client = () => {
         const { email } = clientFilter;
         const { option } = inputs;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      
-        if (!emailRegex.test(email)) {
+
+        if (!emailRegex.test(email) && email !== "N/A") {
           confirmInputs((prev) => ({
             ...prev,
             checkInput: "Invalid email"
@@ -297,6 +297,14 @@ const Client = () => {
                                 value={clientFilter[key]}
                                 onChange={(e) => handleClientFilter(e.target.value, e.target.name)}
                             />
+                        ): key === 'remarks' ? (
+                          <textarea
+                          type="text"
+                          name={key}
+                          placeholder="---"
+                          value={clientFilter[key]}
+                          onChange={(e) => handleClientFilter(e.target.value, e.target.name)}
+                          />
                         ) : (
                             <input
                                 type="text"

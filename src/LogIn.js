@@ -8,6 +8,11 @@ function LogIn({ values, setValues, handleLogin  }) {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
 
+  const [fieldInfo, setFieldInfo] = useState({
+    loading: false,
+    loggedInAs: ""
+  })
+
   const handleInput = (event) => {
     setValues((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   };
@@ -19,6 +24,7 @@ function LogIn({ values, setValues, handleLogin  }) {
 
   useEffect(() => {
     if (errors.email === '' && errors.password === '') {
+      setFieldInfo((prev) => ({...prev, loading: true}));
       axios.post(`${config.Configuration.database}/login`, values)
         .then((res) => {
           if (res.data && res.data.data) {
@@ -50,7 +56,10 @@ function LogIn({ values, setValues, handleLogin  }) {
             alert("No user data received, Please check your internet");
           }
         })
-        .catch((err) => console.log(err));
+        .catch((err) => console.log(err))
+        .finally(() => {
+          setFieldInfo((prev) => ({...prev, loading: false}))
+      });
     }
   }, [values, errors, navigate, handleLogin]);
   
@@ -64,6 +73,7 @@ function LogIn({ values, setValues, handleLogin  }) {
 
   return (
     <div className='wrapper'>
+      {fieldInfo.loading ? (<span className="loader"></span>) : null}
       <div className="container">
       <fieldset><legend className='page-name'>Log In</legend></fieldset>
         <form action="" onSubmit={handleSubmit}>

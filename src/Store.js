@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import config from "./Config.json";
 
-class Store extends React.Component {
+class Place extends React.Component {
   constructor(props) {
     super(props);
+    this.fieldMessageRef = React.createRef();
+    this.fieldWarnRef = React.createRef();
+    this.fieldIsSuccessfulRef = React.createRef();
     this.state = {
       store: [],
       searchQuery: '',
@@ -16,26 +19,31 @@ class Store extends React.Component {
       email: '',
       birTin: '',
       branch: '',
-      checkinput: '',
       option: 'Add',
       currentId: 0,
-      checkEmail: '',
       userType: JSON.parse(localStorage.getItem("currentUserType")).userType,
-      loading: false
+      loading: false,
+      fetchingData: false,
+      message: "",
+      warn: "",
+      isSuccessful: ""
     };
   }
 
   componentDidMount() {
     this.getStore();
+    this.showNotification();
   }
 
   getStore = async () => {
     try {
       this.setState({ loading: true });
       const response = await axios.get(`${config.Configuration.database}/store`);
-      this.setState({ store: response.data, filteredStore: response.data });
+      if (response.data.isSuccessful) this.setState({ store: response.data.result, filteredStore: response.data.result });
     } catch (error) {
-      console.error(error);
+      this.setState({
+        message: error.response.data.message
+      })
     } finally {
       this.setState({ loading: false });
     }
@@ -89,21 +97,26 @@ class Store extends React.Component {
   }
 
   editStore = async () => {
-    const {storeName, address, contactNo, email, birTin, branch, option, currentId, checkEmail} = this.state;
+    const {storeName, address, contactNo, email, birTin, branch, option, currentId} = this.state;
     const id = currentId;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (email.length <= 0) {
-    this.setState({checkinput: "Please don't leave blanks"})
+    this.setState({message: "Please don't leave blanks"})
     } else if (!emailRegex.test(email)) {
-      this.setState({ checkEmail: 'Invalid email' });
+      this.setState({ 
+        message: "Invalid email"
+      });
       return;
     }
 
-    if (storeName.length > 0 && address.length > 0 && contactNo.length > 0 && email.length > 0 && birTin.length > 0 && branch.length > 0) {
-      this.setState({checkinput: ""})
-      if (option === "Add" && checkEmail === "") {
+    const filedInfo = [storeName, address, contactNo, email, birTin, branch]
+
+    if (filedInfo.every((req) => req.length > 0)) {
+      if (option === "Add") {
+
         try {
-          await axios.post(`${config.Configuration.database}/store`, {
+          this.setState({ fetchingData: true });
+          const response = await axios.post(`${config.Configuration.database}/store`, {
             storeName,
             address,
             contactNo,
@@ -111,18 +124,30 @@ class Store extends React.Component {
             birTin,
             branch
           });
-          this.getStore();
-          this.handleReset();
-        this.setState({checkinput: "Store Added!"})
-        setTimeout(() => {
-        this.setState({checkinput: ""})
-        }, 2000)
+
+          if (response.data.isSuccessful) {
+            this.setState({
+              isSuccessful: response.data.message
+            });
+            this.getStore();
+            this.handleReset();
+          } else {
+            this.setState({
+              message: response.data.message
+            })
+          }
         } catch (error) {
-          console.error(error);
+          this.setState({
+            warn: error.response.data.message
+          })
+        } finally {
+          this.setState({ fetchingData: false });
         }
-      } else if (option === "Change" && checkEmail === "") {
+
+      } else if (option === "Change") {
         try {
-          await axios.put(`${config.Configuration.database}/store/${id}`, {
+          this.setState({ fetchingData: true });
+          const response = await axios.put(`${config.Configuration.database}/store/${id}`, {
             storeName,
             address,
             contactNo,
@@ -130,24 +155,36 @@ class Store extends React.Component {
             birTin,
             branch
           });
-          this.getStore();
-          this.handleReset();
-        this.setState({option: "Add", checkinput: "Change Successful!"})
-        setTimeout(() => {
-          this.setState({checkinput: ""})
-        }, 2000)
+
+          if (response.data.isSuccessful) {
+            this.getStore();
+            this.handleReset();
+            this.setState({
+              option: "Add",
+              isSuccessful: response.data.message
+            });
+          } else {
+            this.setState({
+              option: "Add",
+              warn: response.data.message
+            });
+            this.getStore();
+            this.handleReset();
+          }
+
         } catch (error) {
-          console.error(error);
+          this.setState({
+            warn: error.response.data.message
+          });
+        } finally {
+          this.setState({ fetchingData: false });
         }
       }
+
   } else {
-    this.setState({checkinput: "Please don't leave blanks"})
-    setTimeout(() => {
-      this.setState({checkinput: ""})
-    }, 2000)
+    this.setState({message: "Please don't leave blanks."})
   }
   };
-
 
   handleReset = () => {
     this.setState({ 
@@ -178,23 +215,88 @@ class Store extends React.Component {
 
   deleteStore = async (id) => {
     try {
-      await axios.delete(`${config.Configuration.database}/store/${id}`);
-      this.getStore();
+      this.setState({ fetchingData: true });
+      const response = await axios.delete(`${config.Configuration.database}/store/${id}`);
+      if (response.data.isSuccessful) {
+        this.getStore();
+        this.setState({
+          isSuccessful: response.data.message
+        })
+      } else {
+        this.setState({
+          warn: response.data.message
+        })
+        this.getStore();
+      }
     } catch (error) {
-      console.error(error);
+      this.setState({
+        warn: error.response.data.message
+      })
+    } finally {
+      this.setState({ fetchingData: false });
+    }
+  };
+
+  componentDidUpdate(prevProps, prevState) {
+    if (
+      prevState.message !== this.state.message ||
+      prevState.warn !== this.state.warn ||
+      prevState.isSuccessful !== this.state.isSuccessful
+    ) {
+      this.showNotification();
+    }
+  }
+
+  showNotification = () => {
+    const { message, warn, isSuccessful } = this.state;
+
+    if (message) {
+      this.animateNotification(this.fieldMessageRef);
+    } else if (warn) {
+      this.animateNotification(this.fieldWarnRef);
+    } else if (isSuccessful) {
+      this.animateNotification(this.fieldIsSuccessfulRef);
+    }
+  };
+
+  animateNotification = (elementRef) => {
+    const element = elementRef.current;
+    if (element) {
+      element.classList.add("field_show");
+      setTimeout(() => {
+        element.classList.remove("field_show");
+        this.setState({
+          message: "",
+          warn: "",
+          isSuccessful: ""
+        });
+      }, 3000);
     }
   };
 
   render() {
-    const { filteredStore, userType, searchQuery, storeName, address, contactNo, email, birTin, branch, checkinput, option, checkEmail, loading } = this.state;
+    const { filteredStore, userType, searchQuery, storeName, address, fetchingData,
+    contactNo, email, birTin, branch, option, checkEmail, loading,
+    message, warn, isSuccessful } = this.state;
     
     if (userType === 'admin') {
       return (
         <div>
+          <div className="field_message" ref={this.fieldMessageRef}>
+          {message}
+          </div>
+          <div className="field_warn" ref={this.fieldWarnRef}>
+            {warn}
+          </div>
+          <div className="field_is_successful" ref={this.fieldIsSuccessfulRef}>
+            {isSuccessful}
+          </div>
+
           <div className="go-back">
           <Link to="/Purchase"><i className='bx bx-chevron-left' ></i></Link>
           </div>
           <div id='page-container'>
+          {fetchingData ? (<span className="loader"></span>) : null}
           <div className='grid-store add-store-wrapper'>
             <h2 className='prod-label'>Add Place</h2>
             <label htmlFor='store-name label-first'>Place name: </label>
@@ -204,7 +306,7 @@ class Store extends React.Component {
               name='store-name'
               value={storeName}
               onChange={(e) => this.handleStoreName(e.target.value)}
-              placeholder='Enter name'
+              placeholder='---'
             />
             <label htmlFor='store-address'>Address: </label>
             <input
@@ -213,7 +315,7 @@ class Store extends React.Component {
               name='store-address'
               value={address}
               onChange={(e) => this.handleAddress(e.target.value)}
-              placeholder='Enter address'
+              placeholder='---'
             />
             <label htmlFor='store-contactNo'>Contact Number: </label>
             <input
@@ -222,7 +324,7 @@ class Store extends React.Component {
               name='store-contactNo'
               value={contactNo}
               onChange={(e) => this.handleContactNo(e.target.value)}
-              placeholder='Enter #'
+              placeholder='---'
             />
             <label htmlFor='store-email'>Email: 
             <p className='check-input'>
@@ -235,7 +337,7 @@ class Store extends React.Component {
               name='store-email'
               value={email}
               onChange={(e) => this.handleEmail(e.target.value)}
-              placeholder='Enter email'
+              placeholder='---'
             />
             <label htmlFor='store-birTin'>Bir/Tin: </label>
             <input
@@ -244,7 +346,7 @@ class Store extends React.Component {
               name='store-birTin'
               value={birTin}
               onChange={(e) => this.handleBirTin(e.target.value)}
-              placeholder='Enter bir tin'
+              placeholder='---'
             />
             <label htmlFor='store-branch'>Branch: </label>
             <input
@@ -253,25 +355,27 @@ class Store extends React.Component {
               name='store-branch'
               value={branch}
               onChange={(e) => this.handleBranchName(e.target.value)}
-              placeholder='Enter branch'
+              placeholder='---'
             />
             <div id='add-bttn'>
-            <button className='create-store-bttn add-bbtn' onClick={this.editStore}>
-            {option === "Invalid email" ? "Add" : option }
-            </button>
-            {option === "Change" ? 
-            <button 
-            type="button"
-            name="submit"
-            className="cancel-bttn"
-            onClick={() => this.handleCancel()}
-            >
-              Cancel
-            </button>: null}
+              {option === "Change" ? 
+              <button 
+              type="button"
+              name="submit"
+              style={{pointerEvents: fetchingData ? "none" : null}}
+              className="cancel-bttn"
+              onClick={() => this.handleCancel()}
+              >
+                Cancel
+              </button>: null}
+              <button 
+              className='create-store-bttn add-bttn' 
+              onClick={this.editStore}
+              style={{pointerEvents: fetchingData ? "none" : null}}
+              >
+              {option === "Invalid email" ? "Add" : option }
+              </button>
             </div>
-            <p className='check-input'>
-              {checkinput ?? checkinput}
-            </p>
           </div>
   
           <div className='grid-store stores-wrapper'>
@@ -294,9 +398,9 @@ class Store extends React.Component {
             <div className='overflow-store-description'>
               {filteredStore.length === 0 && <p 
               style={{position: "absolute",
-            left: '50%',
-          top: "50%",
-        transform: "translate(-50%, -50%)"}}
+              left: '50%',
+              top: "50%",
+              transform: "translate(-50%, -50%)"}}
               className='not-found'>None</p>}
               {filteredStore
                 .sort((a, b) => a.storeName.localeCompare(b.storeName))
@@ -306,7 +410,7 @@ class Store extends React.Component {
                     <p className='store-description-text'><span className='desc-label'>Address:</span><span className='desc'>{store.address}</span></p>
                     <p className='store-description-text'><span className='desc-label'>Contact#:</span><span className='desc'>{store.contactNumber}</span></p>
                     <p className='store-description-text'><span className='desc-label'>Email:</span><span className='desc'><a href="#" target="_blank">{store.email}</a></span></p>
-                    <p className='store-description-text'><span className='desc-label'>Bir/Tin:</span><span className='desc'>{store.birTin}</span></p>
+                    <p className='birtin'><span className='desc-label'>Bir/Tin:</span><span className='desc'>{store.birTin}</span></p>
                     <p className='store-description-text'><span className='desc-label'>Branch:</span><span className='desc'>{store.branchName}</span></p>
                     <div className='buttons-container'>
                       <button className='update-store-bttn' onClick={() => this.updateStore(store.id)}>
@@ -333,4 +437,4 @@ class Store extends React.Component {
   }
 }
 
-export default Store;
+export default Place;

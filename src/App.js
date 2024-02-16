@@ -7,7 +7,7 @@ import Purchase from './Purchase';
 import SalesRecord from './SalesRecord';
 import Transactions from './Transactions';
 import TotalSales from './TotalSales';
-import Store from './Store';
+import Place from './Store';
 import Client from './Client';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import SplitPayment from './SplitPayment';
@@ -35,7 +35,7 @@ const AuthenticatedRoutes = ({ values, authenticated }) => {
             <Route path='/SalesRecord' element={<SalesRecord />} />
             <Route path='/Transactions' element={<Transactions />} />
             <Route path='/TotalSales' element={<TotalSales />} />
-            <Route path='/Store' element={<Store />} />
+            <Route path='/Place' element={<Place />} />
             <Route path='/Customer' element={<Client />} />
             <Route path='/SplitPayment' element={<SplitPayment />} />
             <Route path='/SplitPaymentRecord' element={<SplitPaymentRecord />} />

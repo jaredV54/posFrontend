@@ -498,6 +498,7 @@ div#hybrid_container {
                     
                 }
             }
+
             .added_test_wrapper {
                 overflow-y: auto;
                 overflow-x: hidden;
@@ -667,14 +668,15 @@ div#hybrid_container {
                 .hybrid_name {
                     font-weight: 600;
                     width: 70%;
-                    font-size: 1rem;
+                    font-size: .9rem;
                     margin-bottom: 7px;
                 }
 
                 .hybrid_price_range {
                     font-weight: 500;
                     width: 70%;
-                    font-size: .9rem;
+                    font-size: .883rem;
+                    
                     p {
                         color: #6878e0;
                         display: inline-block;

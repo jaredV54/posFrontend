@@ -256,17 +256,17 @@ const Client = () => {
     const { checkInput, option } = inputs;
     const clientKeys = [
         "Id",
-        "Name",
+        "Client_Name",
         "Address",
-        "Contact No",
+        "Contact_No",
         "Email",
-        "Birth Day",
+        "Birth_Day",
         "Contact Person Name",
         "Contact Person No",
         "Remarks",
-        "Source of Referral",
+        "Source_of_Referral",
         "Providers",
-        "Case Number"
+        "Case_Number"
     ];
 
     if (userType !== undefined) {

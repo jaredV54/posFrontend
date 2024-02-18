@@ -441,9 +441,10 @@ main#purchase_container {
             position: relative;
             color: #ededed;
             .client_name {
-                font-size: .88rem;
+                font-size: .85rem;
                 font-family: 'Poppins', sans-serif;
                 display: inline-block;
+                font-weight: 400;
 
                 @media (max-width: 1050px) {
                     font-size: 0.8rem;
@@ -657,6 +658,12 @@ main#purchase_container {
                     &:last-child {
                         background-color: #ff8502;
                         color: #ededed;
+                    }
+                }
+
+                @media (max-width: 1300px) {
+                    button.psy_test_bttn {
+                        font-size: .8rem;
                     }
                 }
 

@@ -725,8 +725,12 @@ const SelectedHybrid = ({
         </button>
         </Link>
         <div className='client_name'>
-          <span>Name: {client.lName && `${client.lName}, ${client.fName} ${client.mName}`}</span>
-          <span>Email: {`${client.email}`}</span>
+          <span>{client.id ? 
+          `CID: ${client.id}` :
+          "---"}</span>
+          <span>{client.lName ? 
+          `${client.lName}, ${client.fName} ${client.mName}` :
+          "---"}</span>
         </div>
       </div>
 
@@ -814,7 +818,7 @@ const SelectedHybrid = ({
                 onClick={(e) => {
                  getTests(list.id);
                 }}>
-              Psychological Tests
+              Tests
               </button>
               )}
             <button 

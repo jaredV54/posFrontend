@@ -755,7 +755,8 @@ const DisplayHybrids = ({hybrid, updateSelectedHybrid, currentId, loading}) => {
     currentSelectedId: 0,
     hybridName: '',
     hybrid: ''
-  })
+  });
+  
   const deleteHybrid = (id, name, type) => {
     setDisplayedHybridInfo((prev) => ({
       ...prev,

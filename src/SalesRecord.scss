@@ -149,7 +149,8 @@
           }
         }
       }
-      .no-receipt {
+
+      /* .no-receipt {
         font-size: 1rem;
         display: flex;
         justify-content: center;
@@ -176,16 +177,19 @@
         }
     
         table.receipt-table {
+          position: relative;
           thead {
             background-color: #c3c3c3;
             color: #1a1a1a;
             position: sticky;
             tr {
+
               th {
                 padding: 5px 10px;
               }
             }
           }
+
           tbody {
             background-color: #d3d3d3;
             color: #1a1a1a;
@@ -206,24 +210,25 @@
           align-items: end;
           width: 100%;
          }
-      }
-      .print-button {
-        outline: none;
-        background-color: #313a72;
-        color: #fff;
-        padding: 10px 15px;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        position: relative;
-        left: 50%;
-        transform: translateX(-50%);
-        transition: all ease .25s;
+      } */
+      
+    .print-button {
+      outline: none;
+      background-color: #313a72;
+      color: #fff;
+      padding: 10px 15px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: all ease .25s;
 
-        &:hover {
-          background-color: #f7860e;
-        }
-       }
+      &:hover {
+        background-color: #f7860e;
+      }
+     }
       
     table.sales-table {
         font-size: .8rem;
@@ -234,11 +239,18 @@
         thead.table-column {
             font-family: 'Raleway', sans-serif;
             font-weight: 400;
+            position: sticky !important;
             tr {
               th {
                 padding: 5px;
                 background-color: #333;
               }
+            }
+
+            th {
+              position: sticky;
+              top: 0;
+              z-index: 100;
             }
         } 
 
@@ -298,6 +310,10 @@
               
               td {
                 background-color: #373737;
+              }
+
+              td.select-split-row {
+                background-color: #f7860e;
               }
             }
         }

@@ -70,7 +70,7 @@ const Purchase = () => {
   const getHybrids = async () => {
     try {
       setFieldInfo((prev) => ({ ...prev, fetchingData: true }));
-      const response = await axios.get(`${config.Configuration.database}/product`, {
+      const response = await axios.get(`${config.Configuration.database}/hybridData`, {
         params: {
           hybrid: hybrid.currentView === "all" ? null : hybrid.currentView,
         },
@@ -114,7 +114,7 @@ const Purchase = () => {
 
   useEffect(() => {
     getHybrids();
-  }, [])
+  }, [hybrid.currentView])
 
   useEffect(() => {
     if (!(hybrid.selectedHybrid.length > 0)) {
@@ -126,7 +126,7 @@ const Purchase = () => {
     localStorage.setItem("currentSelectedHybrid_", current);
     setHybrid((prev) => ({
       ...prev, currentView: current
-    }))
+    }));
   }
 
   useEffect(() => {
@@ -148,7 +148,7 @@ const Purchase = () => {
     }
   }
 
-  const handleResetSelectionField = () => {
+  const handleResetSelectionField = (isProduct) => {
     if (containerRef.current) {
       containerRef.current.classList.remove("psyc_list_fetched");
     }
@@ -159,10 +159,10 @@ const Purchase = () => {
     if (showTransactionField && togglePaymentBttn) {
       showTransactionField.classList.remove("fill_trans_show");
       togglePaymentBttn.classList.remove("payment_cancel_bttn_show");
-      setTransaction((prev) => ({
-        ...prev,
-        opened: !prev.opened
-      }))
+    }
+
+    if (isProduct) {
+      return;
     }
 
     setTransaction(prev => ({
@@ -303,6 +303,7 @@ const Purchase = () => {
           setFieldInfo={setFieldInfo}
           handleShowFillTrans={handleShowFillTrans}
           transaction={transaction}
+          setTransaction={setTransaction}
           selectedHybridType={hybrid.selectedHybridType}
           />
         </section>
@@ -372,6 +373,7 @@ const DisplayHybrids = ({
       }))
     }
   }
+
   return (<React.Fragment>
     <ul id='hybrid_selection'>
     <li className={hybrid.currentView === "all" ? "selectedHybrid" : ""} data-hybrid="all" onClick={(e) => handleHybridSelection(e.currentTarget.dataset.hybrid)}>All</li>
@@ -389,7 +391,7 @@ const DisplayHybrids = ({
 
     <div id='display_hybrids'>
       {loading ? (<>
-        <div class="lds-ellipsis"><div></div><div></div><div></div></div>
+        <div className="lds-ellipsis"><div></div><div></div><div></div></div>
         </>) : null
       }
       {hybrid.receivedData ? 
@@ -410,14 +412,11 @@ const DisplayHybrids = ({
               </div>
               <div 
               className='hybrid_price_range'>
-                ₱{prod.price}
+                ₱{prod.price} 
+                {prod.hybrid === 'product' ? (
+                  <p> {prod.quantity}qty</p>
+                ): null}
               </div>
-              {prod.hybrid === 'product' ? (
-                <div 
-                className='hybrid_quantity'>
-                  <p>Quantity:</p> {prod.quantity}
-                </div>
-              ): null}
               <div 
               className='hybrid_type'>
                 {prod.hybrid}
@@ -528,7 +527,7 @@ const SelectedHybrid = ({
   receipt, setReceipt,
   psyc, setPsyc, 
   setFieldInfo, handleShowFillTrans,
-  transaction, handleResetSelectionField
+  setTransaction, transaction, handleResetSelectionField
 }) => {
 
   const handleHybridSelection = (id) => {
@@ -536,14 +535,18 @@ const SelectedHybrid = ({
       ...hyb,
       selectedHybrid: hyb.selectedHybrid.filter(item => item.id !== id),
       selectedHybridType: hyb.selectedHybrid.length < 2 ? "" : hyb.selectedHybridType
-    }))
+    }));
+
     setPsyc((prev) => ({
       ...prev,
       psyTestSelection: [],
       selectedTest: []
     }))
+
     if (selectedHybridType === 'service') {
-    handleResetSelectionField();
+      handleResetSelectionField(false);
+    } else {
+      handleResetSelectionField(true);
     }
   }
 
@@ -622,7 +625,7 @@ const SelectedHybrid = ({
     handleCalculateTotalPrice();
   }, [psyc.selectedTest]);
 
-  // Checking for changes in Professional fee and Discount
+  // Checking for constant changes in Professional fee and Discount
   const [discountWithFee, setdiscountWithFee] = useState({
     prevDiscountWithFee: 0,
     currentDiscountWithFee: 0,
@@ -984,7 +987,7 @@ const FillTransaction = ({
 
     try {
       const currentDate = new Date();
-      currentDate.toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+      currentDate.toLocaleString('en-US');
       const formattedDate = currentDate.toISOString();
 
       setFieldInfo((prev) => ({...prev, loading: true}));
@@ -1019,6 +1022,7 @@ const FillTransaction = ({
         }))
       }
     } catch (error) {
+      console.error(error)
       if (error) {
         setFieldInfo((prev) => ({
           ...prev,

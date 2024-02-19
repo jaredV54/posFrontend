@@ -68,7 +68,7 @@ main#purchase_container {
             position: relative;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(95%, 1fr));
-            grid-template-rows: repeat(auto-fill, 65px);
+            grid-template-rows: repeat(auto-fill, 75px);
             letter-spacing: .025em;
             padding: 15px 25px;
             row-gap: 1.5%;
@@ -86,7 +86,7 @@ main#purchase_container {
             div.hybrid_info_displayed {
                 background-color: #373737;
                 border-radius: 10px;
-                height: 65px;
+                height: 75px;
                 padding: 10px;
                 cursor: pointer;
                 border: solid 2px #00000000;
@@ -113,6 +113,11 @@ main#purchase_container {
                     margin-top: 3px;
                     font-size: .85rem;
                     transition: all ease .25s;
+
+                    p {
+                        color: #bcbcbc;
+                        font-size: .7rem !important;
+                    }
                 }
         
                 .hybrid_quantity {

@@ -87,7 +87,7 @@ const Products = () => {
   const getHybrids = async () => {
     try {
       setFieldInfo((prev) => ({ ...prev, fetchingData: true }));
-      const response = await axios.get(`${config.Configuration.database}/product`, {
+      const response = await axios.get(`${config.Configuration.database}/hybridData`, {
         params: {
           hybrid: hybrid.currentView === "all" ? null : hybrid.currentView,
         },
@@ -113,7 +113,7 @@ const Products = () => {
   
   useEffect(() => {
     getHybrids();
-  }, []);
+  }, [hybrid.currentView]);
 
   const cancelHybridSelection = (viewData, removeDiplayedTests) => {
     if (removeDiplayedTests) {

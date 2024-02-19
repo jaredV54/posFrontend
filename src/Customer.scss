@@ -227,11 +227,16 @@
 
         thead {
             background-color: #151515;
-            position: sticky;
             tr {
               th {
                 padding: 5px;
               }
+            }
+
+            th {
+              position: sticky;
+              top: 0;
+              z-index: 100;
             }
           }
           

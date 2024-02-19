@@ -42,7 +42,7 @@ function SplitPaymentRecord() {
       const fetchStoreInfo = async () => {
         try {
           setFieldInfo((prev) => ({...prev, loading: true }))
-          const response = await axios.post(`${config.Configuration.database}/storeInfo`, values);
+          const response = await axios.post(`${config.Configuration.database}/placeInfo`, values);
           setStoreInfo(response.data.storeInfo);
         } catch (error) {
           if (error.response) {

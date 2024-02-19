@@ -298,21 +298,13 @@ class Transactions extends React.Component {
                   <td>{trans.platform}</td>
                   <td>{trans.remarks}</td>
                   <td>{trans.providers}</td>
-                  {trans.typeOfPayment === 'straight' ? (
-                    <td className='select-split-row' style={{
-                      backgroundColor: "#2c3157",
-                      pointerEvents: "none",
-                      textDecoration: "line-through"
-                    }}>Pay</td>
-                  ) : (
-                    <td
-                      id={`${trans.id}`}
-                      onClick={() => {
-                        this.handleSplitPayment(trans.id, trans.changeAmount, trans.customerId, trans.items);
-                      }}
-                      className={`select-split-row ${matchingSplitPayments[trans.id] ? 'split-balance-passed' : ''}`}
-                    >Pay</td>
-                  )}
+                  <td
+                    id={`${trans.id}`}
+                    onClick={() => {
+                      this.handleSplitPayment(trans.id, trans.changeAmount, trans.customerId, trans.items);
+                    }}
+                    className={`select-split-row ${matchingSplitPayments[trans.id] || trans.typeOfPayment === 'straight' ? 'split-balance-passed' : ''}`}
+                  >Pay</td>
                 </tr>
               ))}
               {filteredTransactions.length >= displayCount ? (

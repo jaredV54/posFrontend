@@ -290,7 +290,7 @@ class Transactions extends React.Component {
                   ) : (
                     <>
                     <td>0.00</td>
-                    <td>{trans.balance}.00</td>
+                    <td>{trans.balance}</td>
                     </>
                   )}
                   <td>{this.formatDate(trans.transDate)}</td>

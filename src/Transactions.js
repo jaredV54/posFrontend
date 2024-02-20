@@ -267,7 +267,7 @@ class Transactions extends React.Component {
                 <th>Client_Name</th>
                 <th>Receipt#</th>
                 <th title='Mode of Payment'>MoP</th>
-                <th>Acc/Ref_No#</th>
+                <th>Acc/Ref#</th>
                 <th title='Type of Payment'>ToP</th>
                 <th>Platform</th>
                 <th>Remarks</th>

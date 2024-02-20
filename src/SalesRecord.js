@@ -96,7 +96,7 @@ function SalesRecord() {
               <tr className='sales-column'>
                 <th>ID</th>
                 <th>Trans ID</th>
-                <th>Hybrid</th>
+                <th>Type</th>
                 <th>Name</th>
                 <th>Date Time Purchased</th>
                 <th>Actual Price</th>

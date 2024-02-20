@@ -46,7 +46,7 @@ function SplitPaymentRecord() {
           setStoreInfo(response.data.storeInfo);
         } catch (error) {
           if (error.response) {
-            console.log("Server Error:", error.response.data);
+            console.log("Server Error:", error.response.data.message);
           } else if (error.request) {
             console.log("No response from server");
           } else {
@@ -200,12 +200,12 @@ function SplitPaymentRecord() {
             <tr className='sales-column'>
               <th>ID</th>
               <th>Trans ID</th>
-              <th>Items</th>
-              <th>Amount</th>
+              <th>Item</th>
+              <th>Prev Balance</th>
               <th>Cash</th>
               <th>Balance</th>
               <th>Transaction Date</th>
-              <th>Receipt No#</th>
+              <th>Receipt#</th>
               <th>Client ID</th>
               <th>Mode of Payment</th>
               <th>Acc Number</th>
@@ -285,23 +285,6 @@ const Receipt = ({storeInfo, trackReceipt, formatDay, searchQuery, formatDate, s
               position: "relative",
               left: "0px"
             }}>
-              {storeInfo.userTypeIs === 'admin'? null : (
-                <div className="store-info" >
-                <div>
-                  <span>Store:</span> {storeInfo.storeName}
-                </div>
-                <div>
-                  <span>Address:</span> {storeInfo.address}
-                </div>
-                <div>
-                  <span>Contact No:</span> {storeInfo.contactNumber}
-                </div>
-                <div>
-                  <span>Bir/Tin:</span> {storeInfo.birTin}
-                </div>
-                
-              </div>
-              )}
             <table className='print-split-table' style={{
               marginTop: "20px",
               color: "#fff",

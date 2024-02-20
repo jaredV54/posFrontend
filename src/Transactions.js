@@ -28,8 +28,8 @@ class Transactions extends React.Component {
     try {
       this.setState({ loading: true });
       const response = await axios.get(`${config.Configuration.database}/transactions`);
-      this.setState({ transactions: response.data, filteredTransactions: response.data });
       console.log(response.data)
+      this.setState({ transactions: response.data, filteredTransactions: response.data });
     } catch (error) {
       console.error(error);
     } finally {
@@ -257,14 +257,15 @@ class Transactions extends React.Component {
             <thead className='table-column'>
               <tr className='sales-column'>
                 <th title='Transaction ID'>ID</th>
-                <th>Items</th>
+                <th>Item</th>
                 <th>Amount</th>
                 <th>Money</th>
-                <th>Change</th>
+                <th style={{color: "#6878e0"}}>Change</th>
+                <th style={{color: "#ff8808"}}>Balance</th>
                 <th>Date</th>
                 <th title='Client ID Number'>CID</th>
                 <th>Client_Name</th>
-                <th>Receipt_No#</th>
+                <th>Receipt#</th>
                 <th title='Mode of Payment'>MoP</th>
                 <th>Acc/Ref_No#</th>
                 <th title='Type of Payment'>ToP</th>
@@ -281,12 +282,16 @@ class Transactions extends React.Component {
                   <td>{trans.items}</td>
                   <td>{trans.amount}</td>
                   <td>{trans.cash}</td>
-                  {trans.typeOfPayment === "split" ? (
-                    <td style={{
-                      color: "#f7860e"
-                    }}>-{trans.changeAmount}</td>
-                  ) : (
+                  {trans.typeOfPayment === "straight" ? (
+                    <>
                     <td>{trans.changeAmount}</td>
+                    <td>0.00</td>
+                    </>
+                  ) : (
+                    <>
+                    <td>0.00</td>
+                    <td>{trans.balance}.00</td>
+                    </>
                   )}
                   <td>{this.formatDate(trans.transDate)}</td>
                   <td>{trans.customerId}</td>

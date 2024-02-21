@@ -22,7 +22,9 @@ class User extends React.Component {
             option: 'Add',
             currentStoreId: 0,
             displayCount: 150,
-            loading: false
+            loading: false,
+            deleteUser: false,
+            toBeDelete: []
         }
     }
 
@@ -59,7 +61,6 @@ class User extends React.Component {
       }
   }
 
-  
   componentDidUpdate(prevProps, prevState) {
     if (this.state.userType !== prevState.userType) {
       this.handleAdminClass();
@@ -98,10 +99,13 @@ class User extends React.Component {
     handleDeleteUser = async (id) => {
       this.removeClass()
       try {
+        this.setState({deleteUser: false, toBeDelete: [], loading: true})
         await axios.delete(`${config.Configuration.database}/deleteUser/${id}`);
         this.getUser();
       } catch (error) {
         console.error(error);
+      } finally {
+        this.setState({loading: false})
       }
     }    
 
@@ -164,7 +168,6 @@ class User extends React.Component {
       }
     };
         
-
     handleSubmit = async () => {
       const {
         name,
@@ -201,6 +204,7 @@ class User extends React.Component {
       if (allFieldsValid) {
         this.removeClass()
         this.setState({ checkinput: "" });
+        this.setState({loading: true})
     
         if (option === "Add" && checkEmail === "") {
           try {
@@ -220,6 +224,8 @@ class User extends React.Component {
             }, 2000);
           } catch (error) {
             console.error(error);
+          } finally {
+            this.setState({loading: false})
           }
         } else if (option === "Change" && checkEmail === "") {
           try {
@@ -241,6 +247,8 @@ class User extends React.Component {
             }, 2000);
           } catch (error) {
             console.error(error);
+          } finally {
+            this.setState({loading: false})
           }
         }
       } else {
@@ -301,12 +309,33 @@ class User extends React.Component {
 
     render() {
         const {  filteredUser, searchQuery, name, email, password, currentUserType,userType, checkEmail, checkinput, option, stores,
-        storeName, displayCount, loading } = this.state;
+        storeName, displayCount, loading, deleteUser, toBeDelete } = this.state;
 
         if (currentUserType === 'admin') {
         return (
             <div>
                 <div id="customer-info" className="customer-info-container">
+                {deleteUser && 
+                <div className="delete_confirmation">
+                  <p>Are you sure you want to delete user <span>
+                    {toBeDelete.name}
+                    </span></p>
+                  <button type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    this.setState({deleteUser: false, toBeDelete: []})
+                  }}>
+                    Cancel
+                  </button>
+                  <button type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    this.handleDeleteUser(toBeDelete.id)
+                  }}>
+                    Delete
+                  </button>
+                </div>}
+
                     <h1>User</h1>
                     <div className='search-form'>
                     <input
@@ -466,7 +495,10 @@ class User extends React.Component {
                             </td>
 
                             <td className="edit-customer delete-button" 
-                            onClick={() => this.handleDeleteUser(cust.id)}>
+                            onClick={(e) => {
+                              e.preventDefault();
+                             this.setState({deleteUser: true, toBeDelete: cust})
+                            }}>
                             Delete
                             </td>
                           </tr>

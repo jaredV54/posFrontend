@@ -64,7 +64,9 @@ const Purchase = () => {
   
   const [psychologicalAssessment, setPsychologicalAssessment] = useState({
     psyTestSelection: [],
-    selectedTest: []
+    selectedTest: [],
+    searchQuery: "",
+    filterSelectedList: []
   });
   
   const getHybrids = async () => {
@@ -107,7 +109,7 @@ const Purchase = () => {
     if (!(receipt.totalPrice > 0) && hybrid.selectedHybridType === "service") {
       setFieldInfo((prev) => ({
         ...prev,
-        warn: "Please select Psychological Test first."
+        warn: "Please select atleast 1 list first."
       }))
     }
   }
@@ -116,12 +118,6 @@ const Purchase = () => {
     getHybrids();
   }, [hybrid.currentView])
 
-  useEffect(() => {
-    if (!(hybrid.selectedHybrid.length > 0)) {
-      handleShowFillTrans();
-    }
-  }, [hybrid.selectedHybrid]);
-  
   const handleHybridSelection = (current) => {
     localStorage.setItem("currentSelectedHybrid_", current);
     setHybrid((prev) => ({
@@ -252,6 +248,8 @@ const Purchase = () => {
           containerRef={containerRef} 
           setReceipt={setReceipt}
           hybrid={hybrid}
+          setFieldInfo={setFieldInfo}
+          service={hybrid.selectedHybrid}
           />
           <FillTransaction
           receipt={receipt}
@@ -335,6 +333,10 @@ const DisplayHybrids = ({
   const selectedHybrid = (hyb) => {
     const fieldAlreadyExist = hybrid.selectedHybrid.find((list) => list.id === hyb.id);
     if (!fieldAlreadyExist && (hyb.hybrid === hybrid.selectedHybridType || !hybrid.selectedHybridType)) {
+      setPsyc((prev) => ({
+        ...prev,
+        searchQuery: ""
+      }))
       if (hybrid.selectedHybridType !== "service") {
         setHybrid((prev) => ({
           ...prev,
@@ -342,7 +344,6 @@ const DisplayHybrids = ({
           selectedHybridType: hyb.hybrid
         }))
       } else {
-        console.log(hyb)
         setHybrid((prev) => ({
           ...prev,
           selectedHybrid: [hyb],
@@ -350,7 +351,7 @@ const DisplayHybrids = ({
         }))
         setPsyc((prev) => ({
           ...prev,
-          selectedTest: []
+          selectedTest: [],
         }))
         setReceipt((prev) => ({
           ...prev,
@@ -429,13 +430,7 @@ const DisplayHybrids = ({
   </React.Fragment>)
 }
 
-const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) => {
-  const handleRemoveDisplayedList = () => {
-    if (containerRef.current) {
-      containerRef.current.classList.remove("psyc_list_fetched");
-    }
-  };
-
+const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt, service}) => {
   const handleCheckboxChange = (list) => {
     setReceipt((prev) => ({
       ...prev, 
@@ -445,6 +440,10 @@ const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) =>
     setPsyc((prev) => {
       const isSelected = prev.selectedTest.some((selectedItem) => selectedItem.id === list.id);
       if (isSelected) {
+        setReceipt((prev) => ({
+          ...prev,
+          totalPrice: 0
+        }))
         return {
           ...prev,
           selectedTest: prev.selectedTest.filter((selectedId) => selectedId.id !== list.id),
@@ -458,16 +457,57 @@ const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) =>
     });
   };
 
+  const handleRemoveDisplayedList = () => {
+    if (containerRef.current) {
+      containerRef.current.classList.remove("psyc_list_fetched");
+    }
+  };
+
   useEffect(() => {
     if (psyc.psyTestSelection.length > 0 && containerRef.current) {
       containerRef.current.classList.add("psyc_list_fetched");
     }
   }, [psyc.psyTestSelection]);
 
+  useEffect(() => {
+    if (psyc.searchQuery.trim() === '') {
+      setPsyc((prev) => ({
+        ...prev,
+        filterSelectedList: []
+      }));
+    } else {
+      const trimmedQuery = psyc.searchQuery.trim().toLowerCase();
+      const filteredList = psyc.psyTestSelection.filter((list) =>
+        list.psycTest.toLowerCase().includes(trimmedQuery) ||
+        list.standardRate.toLowerCase().includes(trimmedQuery) 
+      );
+
+      setPsyc((prev) => ({
+        ...prev,
+        filterSelectedList: filteredList
+      }));
+    }
+  }, [psyc.searchQuery])
+
   if (psyc.psyTestSelection.length > 0) {
     return (
       <React.Fragment>
         <div ref={containerRef} id='psyc_list_container' className='psyc_list_container'>
+            <div id='service_list_search_container'>
+              <input 
+              type="text" 
+              name="searchField" 
+              value={psyc.searchQuery}
+              placeholder='Search...'
+              onChange={(e) => {
+                e.preventDefault();
+                setPsyc((prev) => ({
+                  ...prev,
+                  searchQuery: e.target.value
+                }))
+              }} />
+            </div>
+
           <div className='view_first_section'
             onClick={(e) => {
               e.preventDefault();
@@ -480,14 +520,14 @@ const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) =>
           <table>
             <thead id='select_psyc_test_table'>
             <tr>
-              <th>Psychological Test</th>
-              <th>Standard Input</th>
+              <th>{service[0].listLabel}</th>
+              <th>{service[0].priceLabel}</th>
               <th>Select</th>
             </tr>
             </thead>
             <tbody>
-            {psyc.psyTestSelection ?
-              psyc.psyTestSelection
+            {psyc.filterSelectedList.length > 0 && psyc.psyTestSelection ?
+              psyc.filterSelectedList
                 .sort((a, b) => a.psycTest.localeCompare(b.psycTest))
                 .map((list) => (
                   <tr key={list.id}>
@@ -502,6 +542,30 @@ const SelectPsychologicalTest = ({ psyc, setPsyc, containerRef, setReceipt }) =>
                             value={list.id}
                             checked={psyc.selectedTest.some((selectedId) => selectedId.id === list.id)}
                             onChange={() => handleCheckboxChange(list)}
+                          />
+                          <div className="transition"></div>
+                        </label>
+                      </div>
+                    </td>
+                  </tr>
+                )) : psyc.psyTestSelection && !(psyc.searchQuery.length > 0) ? 
+                psyc.psyTestSelection
+                .sort((a, b) => a.psycTest.localeCompare(b.psycTest))
+                .map((list) => (
+                  <tr key={list.id}>
+                    <td>{list.psycTest}</td>
+                    <td><span>₱</span>{list.standardRate}</td>
+                    <td>
+                      <div className='check_list_column'>
+                        <label className="checkBox">
+                          <input 
+                            type="checkbox" 
+                            id={`psyTest${list.id}`}
+                            value={list.id}
+                            checked={psyc.selectedTest.some((selectedId) => selectedId.id === list.id)}
+                            onChange={() => {
+                              handleCheckboxChange(list)
+                            }}
                           />
                           <div className="transition"></div>
                         </label>
@@ -540,7 +604,8 @@ const SelectedHybrid = ({
     setPsyc((prev) => ({
       ...prev,
       psyTestSelection: [],
-      selectedTest: []
+      selectedTest: [],
+      filterSelectedList: []
     }))
 
     if (selectedHybridType === 'service') {
@@ -563,7 +628,7 @@ const SelectedHybrid = ({
   useEffect(() => {
     const selectedHybridTypeClass = document.querySelector('.selected_hybrid');
     if (selectedHybrid.length > 0) {
-      getTests(selectedHybrid[0].id);
+      getList(selectedHybrid[0].id);
       if (selectedHybridTypeClass && selectedHybrid[0].hybrid === "service") {
       selectedHybridTypeClass.classList.add('overflow-scroll');
     } else {
@@ -574,7 +639,7 @@ const SelectedHybrid = ({
     
   }, [selectedHybrid]);
 
-  const getTests = async (id) => {
+  const getList = async (id) => {
     try {
       if (selectedHybridType === 'service') {
         setFieldInfo((prev) => ({...prev, loading: true}));
@@ -738,6 +803,16 @@ const SelectedHybrid = ({
       </div>
 
       <div id='display_selected'>
+        
+      {selectedHybridType === "service" &&
+      <div className='list_length'>
+        {psyc.selectedTest.length}
+      </div>}
+      {selectedHybridType === "product" && 
+      <div className='list_length'>
+        {selectedHybrid.length}
+      </div>}
+
       {selectedHybrid ? 
       selectedHybrid.map((list) => {
         return (
@@ -745,6 +820,7 @@ const SelectedHybrid = ({
           key={list.id}
           className='selected_hybrid'
           >
+
             <div className='s_hybrid_name'>
               {list.name}
             </div>
@@ -819,9 +895,9 @@ const SelectedHybrid = ({
               <button type="button"
                 className='psy_test_bttn'
                 onClick={(e) => {
-                 getTests(list.id);
+                 getList(list.id);
                 }}>
-              Tests
+              List
               </button>
               )}
             <button 
@@ -1006,7 +1082,8 @@ const FillTransaction = ({
         currentDate: formattedDate,
         receiptNo: receiptNo,
         remarks: client[0].remarks,
-        providers: client[0].providers
+        providers: client[0].providers,
+        service: client[0].service
        });
 
        if (response.data.isSuccessful) {
@@ -1240,8 +1317,7 @@ const FillTransaction = ({
             <tr>
               <td></td>
               <td><button type="button" className='pay_bttn'
-              onClick={e => {
-                e.preventDefault();
+              onClick={() => {
                 paymentTransation();
               }}>Pay</button></td>
             </tr>

@@ -72,6 +72,66 @@ ul#hybrid_selection * {
     }
 }
 
+.delete_confirmation {
+    position: absolute;
+    width: 350px;
+    background-color: #ededed;
+    z-index: 50;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    display: grid;
+    justify-content: center;
+    grid-template-columns: repeat(2, 45%);
+
+    p {
+        font-weight: 500;
+        text-align: center;
+        grid-column: span 2;
+        color: #262626;
+
+        span {
+            color: #35418b;
+            font-weight: 600;
+        }
+    }
+
+    button {
+        border: 2px solid #00000000;
+        outline: none;
+        height: 35px;
+        margin: 25px auto 5px;
+        font-size: .9rem;
+        font-weight: 500;
+        cursor: pointer;
+        width: 100%;
+        display: inline-block;
+        transition: all ease .25s;
+    }
+
+    :nth-child(2) {
+        background-color: #262626;
+        color: #ededed;
+
+        &:hover {
+        border: 2px solid #262626;
+        color: #262626;
+        background-color: #ededed;
+        }
+    }
+
+    :nth-child(3) {
+        background-color: #f7860e;
+        color: #ededed;
+
+        &:hover {
+        border: 2px solid #262626;
+        }
+    }
+
+}
+
 
   //display product
   .lds-ellipsis {
@@ -496,9 +556,6 @@ div#hybrid_container {
 
                 div, button {
                     display: inline-block;
-                    label {
-                        font-weight: 500;
-                    }
                     input {
                         width: 100%;
                         margin-top: 5px;
@@ -508,6 +565,18 @@ div#hybrid_container {
                         outline: none;
                         color: #f3f3f3;
                         background-color: #373737;
+                        &::placeholder {
+                            color: #c4c4c4;
+                            font-weight: 500;
+                            opacity: 1;
+                            transition: all ease .25s;
+                        }
+                    }
+
+                    input:focus {
+                        &::placeholder {
+                            opacity: 0;
+                        }
                     }
                     
                 }
@@ -516,7 +585,7 @@ div#hybrid_container {
             .added_test_wrapper {
                 overflow-y: auto;
                 overflow-x: hidden;
-                height: 72svh;
+                height: 71svh;
                 max-height: 550px;
                 width: 100%;
                 margin: 20px auto;
@@ -609,65 +678,6 @@ div#hybrid_container {
             grid-column-gap: 2%;
             overflow-y: auto;
             overflow-x: hidden;
-
-            .delete_confirmation {
-                position: absolute;
-                width: 350px;
-                background-color: #ededed;
-                z-index: 20;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                padding: 10px;
-                display: grid;
-                justify-content: center;
-                grid-template-columns: repeat(2, 45%);
-
-                p {
-                    font-weight: 500;
-                    text-align: center;
-                    grid-column: span 2;
-
-                    span {
-                        color: #35418b;
-                        font-weight: 600;
-                    }
-                }
-
-                button {
-                    border: 2px solid #00000000;
-                    outline: none;
-                    height: 35px;
-                    margin: 25px auto 5px;
-                    font-size: .9rem;
-                    font-weight: 500;
-                    cursor: pointer;
-                    width: 100%;
-                    display: inline-block;
-                    transition: all ease .25s;
-                }
-
-                :nth-child(2) {
-                    background-color: #262626;
-                    color: #ededed;
-
-                    &:hover {
-                    border: 2px solid #262626;
-                    color: #262626;
-                    background-color: #ededed;
-                    }
-                }
-
-                :nth-child(3) {
-                    background-color: #f7860e;
-                    color: #ededed;
-
-                    &:hover {
-                    border: 2px solid #262626;
-                    }
-                }
-
-            }
 
             .hybrid_info {
                 background-color: #373737;

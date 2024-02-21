@@ -270,6 +270,7 @@ class Transactions extends React.Component {
                 <th>Acc/Ref#</th>
                 <th title='Type of Payment'>ToP</th>
                 <th>Platform</th>
+                <th>Service</th>
                 <th>Remarks</th>
                 <th>Providers</th>
                 <th></th>
@@ -301,6 +302,7 @@ class Transactions extends React.Component {
                   <td>{trans.accNo}</td>
                   <td>{trans.typeOfPayment}</td>
                   <td>{trans.platform}</td>
+                  <td>{trans.service ? trans.service : "N/A"}</td>
                   <td>{trans.remarks}</td>
                   <td>{trans.providers}</td>
                   <td

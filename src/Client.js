@@ -13,6 +13,7 @@ const Client = () => {
         bDate: '',
         contactPersonName: '',
         contactPersonNo: '',
+        service: '',
         remarks: '',
         sourceOfReferral: '',
         providers: '',
@@ -20,7 +21,9 @@ const Client = () => {
     };
 
     const [fieldInfo, setFieldInfo] = useState({
-      loading: false
+      loading: false,
+      delete: false,
+      toBeDelete: null
     })
 
     const [clientFilter, setClientFilter] = useState(initialClient);
@@ -72,9 +75,7 @@ const Client = () => {
                 (client) => 
                 client.fName.toLowerCase().includes(value.trim()) ||
                 client.lName.toLowerCase().includes(value.trim()) ||
-                client.bDate.toLowerCase().includes(value.trim()) ||
-                client.contactPersonName.toLowerCase().includes(value.trim()) ||
-                client.company.toLowerCase().includes(value.trim()) ||
+                client.id === parseFloat(value) ||
                 client.email.toLowerCase().includes(value.trim()) 
             );
             setClientData((data) => ({...data, filteredClient: filtered}))
@@ -85,13 +86,18 @@ const Client = () => {
         const id = client.id;
         const { storedClientId } = clientData;
         try {
-            await axios.put(`${config.Configuration.database}/deleteCustomer/${id}`, {
+            const response = await axios.put(`${config.Configuration.database}/deleteCustomer/${id}`, {
                 isDeleted: true
             });
             if (storedClientId.id === id) {
                 localStorage.setItem('selectedCustomer', JSON.stringify({}));
             }
-    
+            console.log(response)
+            setFieldInfo((prev) => ({
+              ...prev,
+              delete: false,
+              toBeDelete: null
+            }))
             getClients();
         } catch (error) {
             console.error(error);
@@ -138,31 +144,15 @@ const Client = () => {
 
     const handleSubmit = async () => {
         const { currentId } = clientData;
-        const { email } = clientFilter;
         const { option } = inputs;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!emailRegex.test(email) && email !== "N/A") {
-          confirmInputs((prev) => ({
-            ...prev,
-            checkInput: "Invalid email"
-          }));
-          setTimeout(() => {
-            confirmInputs((prev) => ({
-                ...prev,
-                checkInput: ""
-              }))
-          }, 2000);
-          return;
-        }
-
-        const requiredFields = Object.values(clientFilter);
+        const { mName, email, contactPersonName, contactPersonNo, service, remarks, ...necessaryInfo } = clientFilter;
+        const requiredFields = Object.values(necessaryInfo);
       
         if (requiredFields.every((field) => field.length > 0)) {
             confirmInputs((prev) => ({
                 ...prev,
                 checkInput: ""
-            }))
+            }));
           if (option === "Add") {
             try {
               await axios.post(`${config.Configuration.database}/customer`, clientFilter);
@@ -206,7 +196,7 @@ const Client = () => {
         } else {
             confirmInputs((prev) => ({
                 ...prev,
-                checkInput: "Please fill the blanks"
+                checkInput: "Necessary info required"
             }));
             setTimeout(() => {
                 confirmInputs((prev) => ({
@@ -247,6 +237,7 @@ const Client = () => {
         "Birth Day: ",
         "Contact Person Name: ",
         "Contact Person No: ",
+        "Service: ",
         "Remarks: ",
         "Source of Referral: ",
         "Providers: ",
@@ -257,14 +248,15 @@ const Client = () => {
     const clientKeys = [
         "Id",
         "Client_Name",
-        "Address",
-        "Contact_No",
+        "Residential_Address",
+        "Contact No",
         "Email",
         "Birth_Day",
         "Contact Person Name",
         "Contact Person No",
+        "Service",
         "Remarks",
-        "Source_of_Referral",
+        "Source of Referral",
         "Providers",
         "Case_Number"
     ];
@@ -285,6 +277,31 @@ const Client = () => {
                 />
                 <i className='bx bx-search search-icon'></i>
                 </div>
+
+                {fieldInfo.delete && 
+                <div className="delete_confirmation">
+                  <p>Are you sure you want to delete <span>
+                    {fieldInfo.toBeDelete.fName + " " + fieldInfo.toBeDelete.mName + " "  + fieldInfo.toBeDelete.lName}
+                    </span></p>
+                  <button type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setFieldInfo((prev) => ({
+                      ...prev,
+                      delete: false,
+                      toBeDelete: null
+                    }))
+                  }}>
+                    Cancel
+                  </button>
+                  <button type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDeleteCustomer(fieldInfo.toBeDelete)
+                  }}>
+                    Delete
+                  </button>
+                </div>}
                 
                 <div id="deploy-customer" className="add-customer">
                 {clientFilterToRender.map((key, index) => (
@@ -297,15 +314,7 @@ const Client = () => {
                                 value={clientFilter[key]}
                                 onChange={(e) => handleClientFilter(e.target.value, e.target.name)}
                             />
-                        ): key === 'remarks' ? (
-                          <textarea
-                          type="text"
-                          name={key}
-                          placeholder="---"
-                          value={clientFilter[key]}
-                          onChange={(e) => handleClientFilter(e.target.value, e.target.name)}
-                          />
-                        ) : (
+                        ): (
                             <input
                                 type="text"
                                 name={key}
@@ -371,7 +380,15 @@ const Client = () => {
                                 </td>
     
                                 <td className="edit-customer delete-button" 
-                                onClick={() => handleDeleteCustomer(cust)}>
+                                onClick={(e) => {
+                                  console.log(cust)
+                                  e.preventDefault();
+                                  setFieldInfo((prev) => ({
+                                    ...prev,
+                                    delete: true,
+                                    toBeDelete: cust
+                                  }))
+                                }}>
                                 Delete
                                 </td>
     
@@ -395,11 +412,12 @@ const Client = () => {
                                 <td>{cust.lName}, {cust.fName} {cust.mName}</td>
                                 <td>{cust.address}</td>
                                 <td>{cust.contactNo}</td>
-                                <td>{cust.email}</td>
+                                <td>{cust.email.length ? cust.email : "N/A"}</td>
                                 <td>{cust.bDate.slice(0, 10)}</td>
-                                <td>{cust.contactPersonName}</td>
-                                <td>{cust.contactPersonNo}</td>
-                                <td>{cust.remarks}</td>
+                                <td>{cust.contactPersonName ? cust.contactPersonName : "N/A"}</td>
+                                <td>{cust.contactPersonNo ? cust.contactPersonNo : "N/A"}</td>
+                                <td>{cust.service ? cust.service : "N/A"}</td>
+                                <td>{cust.remarks? cust.remarks : "N/A"}</td>
                                 <td>{cust.sourceOfReferral}</td>
                                 <td>{cust.providers}</td>
                                 <td>{cust.caseNumber}</td>

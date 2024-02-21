@@ -42,6 +42,8 @@ const Products = () => {
     psycTest: "",
     standardRate: "",
     branch: [],
+    listLabel: "",
+    priceLabel: "",
     manageBy: "Add"
   })
 
@@ -72,6 +74,8 @@ const Products = () => {
       ...prev,
       psycTest: "",
       standardRate: "",
+      listLabel: "",
+      priceLabel: "",
       branch: []
     }))
 
@@ -194,7 +198,7 @@ const Products = () => {
       } else {
         setFieldInfo((prev) => ({
           ...prev, 
-          warn: "Test already exists"
+          warn: "list already exists"
         }))
       }
     }
@@ -207,14 +211,20 @@ const Products = () => {
         setFieldInfo((prev) => ({
           ...prev,
           loading: true
-        }))
+        }));
+
+        const { branch, listLabel, priceLabel } = psychologicalAssessment;
+
         switch (fieldInfo.option) {
           case "Add": 
+          if (listLabel && priceLabel) {
             try {
               const response = await axios.post(`${config.Configuration.database}/hybrid`, {
                 ...hybridInfo,
                 hybrid: hybrid.selectedHybrid,
-                branch: psychologicalAssessment.branch
+                branch: branch,
+                listLabel: listLabel,
+                priceLabel: priceLabel
               })
               cancelHybridSelection(false, true);
               setFieldInfo((prev) => ({
@@ -222,22 +232,49 @@ const Products = () => {
                 isSuccessful: response.data
               }))
               getHybrids();
-            } catch(err) {
-              console.error(err)
+            } catch(error) {
+              console.log(error.response.data.message)
+              if (error.response) {
+                setFieldInfo((prev) => ({
+                  ...prev,
+                  warn: `Error: ${error.response.data.message}`
+                }));
+              } else if (error.request) {
+                setFieldInfo((prev) => ({
+                  ...prev,
+                  warn: 'Network error. Please try again later.'
+                }));
+              } else {
+                setFieldInfo((prev) => ({
+                  ...prev,
+                  warn: `Error: ${error.message}`
+                }));
+              }
+              cancelHybridSelection(false, true);
             } finally {
               setFieldInfo((prev) => ({
                 ...prev,
                 loading: false
               }))
             }
+          } else {
+            setFieldInfo((prev) => ({
+              ...prev,
+              message: "List label and Price label is required!",
+              loading: false
+            }))
+          }
           break;
         
           case "Update" :
+          if (listLabel && priceLabel) {
             try {
               const response = await axios.post(`${config.Configuration.database}/hybrid/${fieldInfo.currentIdToUpdate}`, {
                   ...hybridInfo,
                   hybrid: hybrid.selectedHybrid,
-                  branch: psychologicalAssessment.branch
+                  branch: psychologicalAssessment.branch,
+                  listLabel: listLabel,
+                  priceLabel: priceLabel
                 });
 
                 if (response.data.message === 'Data updated successfully') {
@@ -259,30 +296,36 @@ const Products = () => {
                   console.error('Server Error:', error.response.data);
                   setFieldInfo((prev) => ({
                     ...prev,
-                    isSuccessful: `Error: ${error.response.data.message}`
+                    warn: `Error: ${error.response.data.message}`
                   }));
                 } else if (error.request) {
                   console.error('Network Error:', error.request);
                   setFieldInfo((prev) => ({
                     ...prev,
-                    isSuccessful: 'Network error. Please try again later.'
+                    warn: 'Network error. Please try again later.'
                   }));
                 } else {
                   console.error('Error:', error.message);
                   setFieldInfo((prev) => ({
                     ...prev,
-                    isSuccessful: `Error: ${error.message}`
+                    warn: `Error: ${error.message}`
                   }));
                 }
                 cancelHybridSelection(false, true);
-              } finally {
+            } finally {
                 setFieldInfo((prev) => ({
                   ...prev,
                   loading: false
                 }))
-              }
-
-            break;
+            }
+          } else {
+            setFieldInfo((prev) => ({
+              ...prev,
+              message: "List label and Price label is required!",
+              loading: false
+            }))
+          }
+          break;
     
           default: 
           break;
@@ -290,7 +333,7 @@ const Products = () => {
       } else {
         setFieldInfo((prev) => ({
           ...prev,
-          message: hybrid.selectedHybrid === "service" ? "Psychological Assessment is empty" : prev.message
+          message: hybrid.selectedHybrid === "service" ? "Lists required" : prev.message
         }));
       }
     } else {
@@ -395,7 +438,9 @@ const Products = () => {
   const editService = (service, data) => {
   setPsychologicalAssessment((list) => ({
     ...list,
-    branch: [...data]
+    listLabel: service.listLabel,
+    priceLabel: service.priceLabel,
+    branch: [...data],
   }))
 
   setHybridInfo((info) => ({
@@ -563,7 +608,7 @@ const Products = () => {
                         isService.classList.add("display_assessment_field")
                       }
                     }}>
-                      <span>Psychological Assessment</span> <i className='bx bx-chevron-right'></i>
+                      <span>List</span> <i className='bx bx-chevron-right'></i>
                     </button>
                     </>
                 )}
@@ -610,7 +655,7 @@ const Products = () => {
         </section>
 
         <section className='grid_hybrid display_hybrid_info'>
-          {psychologicalTest(psychologicalAssessment, setPsychologicalAssessment, handlePsycTest, managePsycTable, psychologicalAssessment.manageBy, fieldInfo.warn, cancelHybridSelection)}
+          {psychologicalTest(psychologicalAssessment, setPsychologicalAssessment, handlePsycTest, managePsycTable, psychologicalAssessment.manageBy, cancelHybridSelection)}
 
           <div className='search_bar_container'>
           <input 
@@ -654,7 +699,7 @@ const Products = () => {
   )
 }
 
-const psychologicalTest = (psychologicalAssessment, setPsychologicalAssessment, handlePsycTest, managePsycTable, option, warn, cancelHybridSelection) => {
+const psychologicalTest = (psychologicalAssessment, setPsychologicalAssessment, handlePsycTest, managePsycTable, option, cancelHybridSelection) => {
   return (
   <>
   <div id='assessmet_field' className='assessmet_field'>
@@ -667,7 +712,18 @@ const psychologicalTest = (psychologicalAssessment, setPsychologicalAssessment, 
     </div>
     <div className='wrap_center'>
     <div id='psychological_test'>
-      <label htmlFor="psycTest">Psychological Test <span style={{color: "#f7860e"}}>{warn}</span></label>
+      <input 
+      type="text" 
+      name='list'
+      placeholder='List/Category/Label'
+      value={psychologicalAssessment.listLabel}
+      onChange={(e) => {
+        e.preventDefault();
+        setPsychologicalAssessment((prev) => ({
+          ...prev, listLabel: e.target.value
+        }))
+      }}
+      />
       <input 
       type="text" 
       name='psycTest'
@@ -682,7 +738,18 @@ const psychologicalTest = (psychologicalAssessment, setPsychologicalAssessment, 
       />
     </div>
     <div id='standard_input'>
-      <label htmlFor="standardRate">Standard Rate</label>
+      <input 
+      type="text" 
+      name='price'
+      placeholder='Price'
+      value={psychologicalAssessment.priceLabel}
+      onChange={(e) => {
+        e.preventDefault();
+        setPsychologicalAssessment((prev) => ({
+          ...prev, priceLabel: e.target.value
+        }))
+      }}
+      />
       <input 
       type="number" 
       name='standardRate'
@@ -712,8 +779,8 @@ const psychologicalTest = (psychologicalAssessment, setPsychologicalAssessment, 
         <table>
           <thead>
             <tr>
-              <th>Psychological Test</th>
-              <th>Standard Rate</th>
+              <th>{psychologicalAssessment.listLabel}</th>
+              <th>{psychologicalAssessment.priceLabel}</th>
               <th style={{backgroundColor: "#00000000"}}></th>
               <th style={{backgroundColor: "#00000000"}}></th>
             </tr>

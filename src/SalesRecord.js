@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import ReactToPrint from 'react-to-print';
 import config from "./Config.json";
+import OPIImage from './OIP.jpg';
 
 function SalesRecord() {
   const [sales, setSales] = useState([]);
@@ -16,17 +17,50 @@ function SalesRecord() {
   }, []);
 
   const [fieldInfo, setFieldInfo] = useState({
-    loading: false
+    loading: false,
+    message: "",
+    warn: "",
+    isSuccessful: "",
+    fetching: false
+  });
+
+  const [receiptContainer, setReceiptContainer] = useState ({
+    transId: 0,
+    container: [],
+    hybridName: "",
+    actualPrice: "",
+    hybridType: ""
   })
 
   const getSalesRecord = async () => {
     try {
       setFieldInfo((prev) => ({...prev, loading: true }));
       const response = await axios.get(`${config.Configuration.database}/sales`);
-      setSales(response.data);
-      setFilteredSales(response.data);
+      if (response.data !== 'Error retrieving sales record') {
+        setSales(response.data);
+      } else {
+        setFieldInfo((prev) => ({
+          ...prev,
+          message: response.data
+        }))
+      }
     } catch (error) {
-      console.error(error);
+      if (error.response) {
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: error.response.data
+        }))
+      } else if (error.request) {
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: "Network issue please try again!"
+        }))
+      } else {
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: error.message
+        }))
+      }
     } finally {
       setFieldInfo((prev) => ({...prev, loading: false }));
     }
@@ -34,15 +68,23 @@ function SalesRecord() {
 
   const filterSales = () => {
     const query = searchQuery.trim();
-    if (query === '') {
-      setFilteredSales(sales);
+    const filteredSalesQuery = sales.filter((sale) => {
+      const transId = String(sale.transId);
+      return transId === query;
+    });
+
+    if (filteredSalesQuery.length > 0) {
+      setReceiptContainer(prev => ({
+        ...prev, 
+        transId: parseFloat(query),
+        hybridName: filteredSalesQuery[0].name,
+        actualPrice: filteredSalesQuery[0].price,
+        hybridType: filteredSalesQuery[0].hybrid
+      }))
     } else {
-      const filteredSales = sales.filter((sale) => {
-        const transId = String(sale.transId);
-        return transId === query;
-      });
-      setFilteredSales(filteredSales);
+      setReceiptContainer(prev => ({...prev, transId: 0}))
     }
+    setFilteredSales(filteredSalesQuery);
   };
 
   const formatDate = (dateString) => {
@@ -67,9 +109,57 @@ function SalesRecord() {
     filterSales();
   }, [searchQuery]);
 
+  const handleRetriveReceipt = (query) => {
+    const id = query.toString()
+    setSearchQuery(id);
+  }
+
+  const fieldMessageRef = useRef(null);
+  const fieldWarnRef = useRef(null);
+  const fieldIsSuccessfulRef = useRef(null);
+
+  useEffect(() => {
+    const showNotification = (elementRef) => {
+      const element = elementRef.current;
+      if (element) {
+        element.classList.add("field_show");
+        setTimeout(() => {
+          element.classList.remove("field_show");
+          setTimeout(() => {
+            setFieldInfo((prev) => ({
+              ...prev,
+              message: "",
+              warn: "",
+              isSuccessful: ""
+            }));
+          }, 500);
+        }, 3000);
+      }
+    };
+
+    if (fieldInfo.message) {
+      showNotification(fieldMessageRef);
+    } else if (fieldInfo.warn){
+      showNotification(fieldWarnRef);
+    } else if (fieldInfo.isSuccessful) {
+      showNotification(fieldIsSuccessfulRef);
+    }
+  }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
+
   if (userType !== 'user' && userType !== undefined) {
     return (
       <div>
+        {fieldInfo.fetching ? (<span className="loader"></span>) : null}
+        <div className="field_message" ref={fieldMessageRef}>
+        {fieldInfo.message}
+        </div>
+        <div className="field_warn" ref={fieldWarnRef}>
+          {fieldInfo.warn}
+        </div>
+        <div className="field_is_successful" ref={fieldIsSuccessfulRef}>
+          {fieldInfo.isSuccessful}
+        </div>
+
         <div className="go-back">
           <Link to="/Purchase"><i className='bx bx-chevron-left' ></i></Link>
         </div>
@@ -82,11 +172,19 @@ function SalesRecord() {
               name='search-bar'
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder='Transaction No#'
+              placeholder='Transaction ID'
             />
             <i className='bx bx-search search-icon' ></i>
           </div>
-          {/* <Receipt trackReceipt={filteredSales} searchQuery={searchQuery} formatDate={formatDate} /> */}
+          <Receipt 
+          trackReceipt={filteredSales} 
+          searchQuery={searchQuery} 
+          receiptContainer={receiptContainer} 
+          setReceiptContainer={setReceiptContainer}
+          fieldInfo={fieldInfo}
+          setFieldInfo={setFieldInfo}
+          setSearchQuery={setSearchQuery}
+          />
           <table className='sales-table'>
           {fieldInfo.loading ? (<>
             <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
@@ -102,10 +200,11 @@ function SalesRecord() {
                 <th>Actual Price</th>
                 <th>Quantity</th>
                 <th>Amount</th>
+                <th>Receipt</th>
               </tr>
             </thead>
             <tbody className='table-rows' >
-            {filteredSales.slice(0, displayCount).map((sale) => (
+            {filteredSales.length > 0 ? filteredSales.slice(0, displayCount).map((sale) => (
                 <tr className='sales-row' key={sale.salesId}>
                   <td>{sale.salesId}</td>
                   <td>{sale.transId}</td>
@@ -115,8 +214,21 @@ function SalesRecord() {
                   <td>{sale.price}</td>
                   <td>{sale.hybrid === 'service' ? "N/A" : sale.quantity}</td>
                   <td>{sale.hybrid === 'service' ? sale.price : (sale.price * sale.quantity).toFixed(2)}</td>
+                  <td onClick={() => handleRetriveReceipt(sale.transId)} className='view_receipt_bttn'>View</td>
                 </tr>
-            ))}
+            )) : sales.length > 0 ? sales.slice(0, displayCount).map((sale) => (
+              <tr className='sales-row' key={sale.salesId}>
+                <td>{sale.salesId}</td>
+                <td>{sale.transId}</td>
+                <td>{sale.hybrid}</td>
+                <td>{sale.name}</td>
+                <td>{formatDate(sale.dateTimePurchased)}</td>
+                <td>{sale.price}</td>
+                <td>{sale.hybrid === 'service' ? "N/A" : sale.quantity}</td>
+                <td>{sale.hybrid === 'service' ? sale.price : (sale.price * sale.quantity).toFixed(2)}</td>
+                <td onClick={() => handleRetriveReceipt(sale.transId)} className='view_receipt_bttn'>View</td>
+              </tr>
+            )) : null}
             {filteredSales.length >= displayCount ? (
               <tr>
               <td></td>
@@ -140,167 +252,294 @@ function SalesRecord() {
   } 
 }
 
-/* class Receipt extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      transactions: [],
-      customer: []
-    }
-    this.componentRef = React.createRef();
-  }
-
-  componentDidMount() {
-    this.getTransactions();
-    this.getClients();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { searchQuery, trackReceipt } = this.props;
-
-    if (searchQuery !== prevProps.searchQuery) {
-      this.getTransactions();
-    }
-
-    if (trackReceipt !== prevProps.trackReceipt && trackReceipt.length > 0) {
-      this.getTransactions();
-    }
-  }
-
-  getTransactions = async () => {
-    try {
-      const { trackReceipt, searchQuery } = this.props;
-      if (searchQuery.length > 0 && trackReceipt.length !== 0) {
-        const firstReceipt = trackReceipt[0];
-        const response = await axios.get(`${config.Configuration.database}/transactions/${firstReceipt.transId}`);
-        this.setState({ transactions: response.data });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  getClients = async () => {
-    try {
-      const response = await axios.get(`${config.Configuration.database}/customer`);
-      this.setState({customer: response.data})
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  render() {
-    const {trackReceipt} = this.props;
-    const {searchQuery} = this.props;
-    const {transactions, customer} = this.state;
-
-    if (searchQuery.length > 0) {
-    if (trackReceipt.length === 0) {
-      return <div className='no-receipt'>
-        <div>
-        No receipt data available.
-        </div>
-      </div>;
-    }
-    const firstReceipt = trackReceipt[0];
-
-    return (
-      <div>
-        <div id='receipt' className='receipt-container'>
-        <div ref={this.componentRef} className='receipt-closed print-table'
-        style={{
-          backgroundColor: '#eeeeee'
-        }}>
-        <h1 style={{
-          color: '#1a1a1a',
-          fontSize: '1.9rem',
-          fontFamily: 'Raleway, sans-serif',
-          fontWeight: '600',
-          marginBottom: '10px',
-          textAlign: 'center'
-        }}
-        >
-          Receipt
-        </h1>
-        {
-          customer.map(cust => (
-            cust.isSelected ? (
-              <div className='client-info' key={cust.id}>
-                <p className='date'
-                style={{color: '#212121', fontWeight: 500, fontSize: '1rem', marginBottom: "10px"}}>
-                  Client: {cust.fName} {cust.lName}
-                </p>
-              </div>
-            ) : null
-          ))
+const stylesForReceipt = {
+  container: {
+    width: "600px",
+    height: "auto",
+    padding: "15px",
+    position: "relative",
+    margin: "75px auto 0",
+    zIndex: 120,
+    backgroundColor: "#fefefe",
+    color: "#262626"
+  },
+  row1: {
+    hybridInfo: {
+      container: {
+        height: "auto",
+      },
+      divBorder: {
+        borderBottom: "double 6px #373737"
+      },
+      serviceBckgrnd: {
+        container: {
+          backgroundColor: "#e1e1e1",
+          padding: "10px",
+          display: "inlineBlock",
+          width: "450px",
+          borderRadius: "10px",
+          height: "110px",
+          marginBottom: "20px"
+        },
+        div1: {
+          fontSize: ".95rem",
+          fontWeight: 700,
+          textTransform: "uppercase",
+          textAlign: "center"
+        },
+        div2: {
+          fontSize: ".87rem",
+          fontWeight: 500,
+          marginTop: "5px",
         }
-        <p style={{color: '#212121', fontWeight: 500, fontSize: '1rem'}} className='date'>Date Time Purchased: {this.props.formatDate(firstReceipt.dateTimePurchased)}</p>
-        <p style={{color: '#212121', fontWeight: 500, fontSize: '1rem', margin: '10px 0' }} className='transNo'>Trans No#: <span
-        style={{color: '#313a72'}}>{firstReceipt.transId}</span></p>
-          <table className='receipt-table' style={{borderCollapse: 'collapse', border: 'solid 1px #000'}} border="3">
-          <thead className='receipt-head' style={{color: '#1a1a1a', backgroundColor: '#c3c3c3'}}>
-          <tr className='receipt-row'>
-            <th style={{padding: '5px 10px'}} >QTY</th>
-            <th style={{padding: '5px 10px'}}>Product</th>
-            <th style={{padding: '5px 10px'}}>Price</th>
-            <th style={{padding: '5px 10px'}}>Amount</th>
-          </tr>
-          </thead>     
-        {trackReceipt.map((prod) => (
-                <tbody className='receipt-body' key={prod.salesId} style={{color: '#1a1a1a', backgroundColor: '#d3d3d3'}}>
-                  <tr className='receipt-row'>
-                    <td style={{padding: '5px 10px', fontWeight: '400'}}>{prod.quantity}</td>
-                    <td style={{padding: '5px 10px', fontWeight: '400'}}><span
-                    style={{fontWeight: '600'}}>{prod.name}</span> - {prod.description.slice(0, 20)}...</td>
-                    <td style={{padding: '5px 10px', fontWeight: '400'}}>₱{prod.price}</td>
-                    <td style={{padding: '5px 10px', fontWeight: '400'}}>₱{(prod.price * prod.quantity).toFixed(2)}</td>
-                  </tr>
-                </tbody>
-          ))}
-          </table>
-          
-          {transactions.map((prod) => {
-            if (prod.id === firstReceipt.transId) {
-              return (
-                <div className='show-payment' key={prod.id}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'end',
-                  width: '100%'
-                  }}>
-                  <p style={{marginTop: '10px'}} className='total-'>Total: <span>₱{prod.amount}</span></p>
-                  <p>Cash: <span>₱{prod.cash}</span></p>
-                  {prod.typeOfPayment === "straight" ? (
-                    <p style={{marginBottom: '10px'}} className='change-'>Change: <span
-                    style={{
-                      color: '#f7860e'
-                    }}>₱{prod.changeAmount}</span></p>
-                  ): (
-                  <p style={{marginBottom: '10px'}} className='change-'>Balance: <span
-                  style={{
-                    color: '#f7860e'
-                  }}>₱{prod.changeAmount}</span></p>
-                  )}
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-        <ReactToPrint 
-        trigger={() => {
-          return <button className='print-button'>Print Receipt</button>
-        }}
-        content={() => this.componentRef.current}
-        documentTitle='Recent Transaction'
-        pageStyle='print'
-        />
-        </div>
-      </div>
-    )
+      },
+      img: {
+        width: "130px",
+        position: "absolute",
+        top: "0",
+        right: "0"
+      }
+    },
+  },
+  row2: {
+    purchaseInfo: {
+      container: {
+        padding: "20px 0",
+        width: "100%",
+        height: "auto",
+        borderBottom: "double 6px #373737"
+      },
+      table: {
+        container: {
+          fontSize: ".9rem",
+          fontWeight: 500,
+          width: "100%"
+        }
+      }
+    }
+  },
+  row3: {
+    placeInfo: {
+      container: {
+        padding: "20px 0 0 0",
+        width: "100%",
+        height: "auto",
+      },
+      table: {
+        container: {
+          fontSize: ".9rem",
+          fontWeight: 500,
+          width: "100%"
+        }
+      }
     }
   }
 }
- */
+
+const Receipt = ({
+  receiptContainer,
+  setReceiptContainer,
+  setFieldInfo,
+  setSearchQuery
+}) => {
+  const componentRef = useRef(null);
+  const { 
+    transId,
+    hybridType,
+    actualPrice,
+    hybridName
+  } = receiptContainer;
+
+  const {
+    fName,
+    lName,
+    transDate,
+    modeOfPayment,
+    typeOfPayment,
+    amount,
+    changeAmount,
+    cash,
+    receiptNo,
+    balance,
+    storeName,
+    contactNumber,
+    birTin,
+    branchName,
+    address,
+    email
+  } = receiptContainer.container;
+
+  const getRecords = async () => {
+    try {
+      setFieldInfo(prev => ({...prev, fetching: true}));
+      const response = await axios.get(`${config.Configuration.database}/receipt/${transId}`); 
+      if (response.data.isSuccessful) {
+        setReceiptContainer((prev) => ({
+          ...prev,
+          container: response.data.result[0]
+        }))
+      } else {
+        setFieldInfo(prev => ({...prev, warn: response.data.message}));
+      }
+    } catch (error) {
+      if (error.response) {
+        setFieldInfo(prev => ({...prev, warn: error.response.data.message}));
+      } else if (error.request) {
+        setFieldInfo(prev => ({...prev, warn: "Network issue. Please try again later."}));
+      } else {
+        setFieldInfo(prev => ({...prev, warn: error.message}));
+      }
+    } finally {
+      setFieldInfo(prev => ({...prev, fetching: false}));
+    }
+  }
+
+  const formatDate = (dateString) => {
+    const options = {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    };
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString(undefined, options);
+    return formattedDate;
+  };
+
+  const formatTime = (dateString) => {
+    const options = {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    };
+    const date = new Date(dateString);
+    const formattedTime = date.toLocaleTimeString(undefined, options);
+    return formattedTime;
+  };
+
+  useEffect(() => {
+    if (transId) {
+      getRecords();
+    }
+  }, [transId]);
+
+  return (
+    <React.Fragment>
+    <div className='react_to_print_sales'>
+          {transId> 0 && 
+          <>
+
+          <div className='print_bttn_container'
+          style={{
+            top: "120px"
+          }}>
+            <button onClick={() => setSearchQuery("")} type="button">Remove</button>
+            <ReactToPrint
+              trigger={() => (
+                <button className="print-sales-bttn" >
+                  Print Receipt
+                </button>
+              )}
+              content={() => componentRef.current}
+              documentTitle="Total Sales"
+            />
+          </div>
+
+          <div ref={componentRef} id='receipt' style={stylesForReceipt.container}>
+              <div id='hybrid_info' style={stylesForReceipt.row1.hybridInfo.container}>
+                <div style={stylesForReceipt.row1.hybridInfo.divBorder}>
+                <div id='service_bckgrnd' style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.container}>
+                <div style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.div1}>
+                  -------------------------- {hybridType} --------------------------
+                </div>
+                <div style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.div2}>
+                  <p style={{fontSize: ".92rem", fontWeight: 600}}>{hybridName}</p>
+                  <p><span style={{fontWeight: 600}}>Price: </span>{actualPrice}</p>
+                </div>
+                </div>
+                <img src={OPIImage} alt="OPI Logo" style={stylesForReceipt.row1.hybridInfo.img} />
+                </div>
+              </div>
+
+              <div id='purchase_info' style={stylesForReceipt.row2.purchaseInfo.container}>
+                <table style={stylesForReceipt.row2.purchaseInfo.table.container}>
+                  <tbody>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Client</td>
+                      <td>{`${fName} ${lName}`}</td>
+                      <td style={{fontWeight: 600}}>Mode of payment</td>
+                      <td>{modeOfPayment}</td>
+                    </tr>
+
+                    <tr>
+                      <td style={{fontWeight: 600}}>Date</td>
+                      <td>{formatDate(transDate)}</td>
+                      <td style={{fontWeight: 600}}>Type of payment</td>
+                      <td>{typeOfPayment}</td>
+                    </tr>
+
+                    <tr>
+                      <td style={{fontWeight: 600}}>Time</td>
+                      <td>{formatTime(transDate)}</td>
+                      <td style={{fontWeight: 600}}>Total</td>
+                      <td>{amount}</td>
+                    </tr>
+
+                    <tr>
+                      <td style={{fontWeight: 600}}>Receipt No</td>
+                      <td style={{color: "#0204AB"}}>#{receiptNo}</td>
+                      <td style={{fontWeight: 600}}>Amount paid</td>
+                      <td>{cash}</td>
+                    </tr>
+
+                    <tr>
+                      <td style={{fontWeight: 600}}>Trans ID</td>
+                      <td style={{color: "#E30403"}}>#{transId}</td>
+                      <td style={{fontWeight: 600}}>{typeOfPayment === "split" ? "Balance" : "Change"}</td>
+                      <td>{typeOfPayment === "split" ? parseFloat(balance).toFixed(2) : changeAmount}</td> 
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+
+              <div id='place_info' style={stylesForReceipt.row3.placeInfo.container}>
+                <table style={stylesForReceipt.row3.placeInfo.table.container}>
+                  <tbody>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Place</td>
+                      <td>{storeName}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Address</td>
+                      <td>{address}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Contact Number</td>
+                      <td>{contactNumber}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Email</td>
+                      <td>{email}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>BIR TIN</td>
+                      <td>{birTin}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Branch</td>
+                      <td>{branchName}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+          </div>
+          
+          </>
+          }
+        </div>
+    </React.Fragment>
+  )
+}
+
 export default SalesRecord;

@@ -15,7 +15,8 @@ class Transactions extends React.Component {
       splitPayment: [],
       userType: JSON.parse(localStorage.getItem("currentUserType")).userType,
       displayCount: 150,
-      loading: false
+      loading: false,
+      message: ""
     };
   }
 
@@ -28,8 +29,11 @@ class Transactions extends React.Component {
     try {
       this.setState({ loading: true });
       const response = await axios.get(`${config.Configuration.database}/transactions`);
-      console.log(response.data)
-      this.setState({ transactions: response.data, filteredTransactions: response.data });
+      if (response.data !== "Error retrieving transaction records") {
+        this.setState({ transactions: response.data, filteredTransactions: response.data });
+      } else {
+        this.setState({ message: response.data });
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -291,7 +295,7 @@ class Transactions extends React.Component {
                   ) : (
                     <>
                     <td>0.00</td>
-                    <td>{trans.balance}</td>
+                    <td>{parseFloat(trans.balance).toFixed(2)}</td>
                     </>
                   )}
                   <td>{this.formatDate(trans.transDate)}</td>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ReactToPrint from 'react-to-print';
 import config from "./Config.json";
+import OPIImage from './OIP.jpg';
 
 const Purchase = () => {
   const [hybrid, setHybrid] = useState({
@@ -43,13 +44,19 @@ const Purchase = () => {
     profFeeForDiscount: 0
   })
 
+  const [receiptContainer, setReceiptContainer] = useState ({
+    showReceipt: false,
+    totalPrice: 0
+  })
+
   const [transaction, setTransaction] = useState({
     modeOfPayment: "cash",
     typeOfPayment: "straight",
     platform: "Onsite",
     accNo: "N/A",
     cash: "",
-    opened: false
+    opened: false,
+    placeId: userType.storeId
   });
 
   const [fieldInfo, setFieldInfo] = useState({
@@ -68,7 +75,7 @@ const Purchase = () => {
     searchQuery: "",
     filterSelectedList: []
   });
-  
+
   const getHybrids = async () => {
     try {
       setFieldInfo((prev) => ({ ...prev, fetchingData: true }));
@@ -86,10 +93,20 @@ const Purchase = () => {
         }))
       }
     } catch (error) {
-        setFieldInfo(prev => ({
-          ...prev,
-          message: error.response.data.message
-        }));
+      console.log(error.response)
+        if (error.response) {
+          setFieldInfo(prev => ({
+            ...prev,
+            message: error.response.data.message
+          }));
+        } else if (error.request) {
+          setFieldInfo((prev) => ({
+            ...prev,
+            message: "No response from server. Please check your internet."
+          }))
+        } else {
+          console.log("Error:", error.message);
+        }
     } finally {
       setFieldInfo((prev) => ({ ...prev, fetchingData: false }));
     }
@@ -192,6 +209,12 @@ const Purchase = () => {
       psyTestSelection: [],
       selectedTest: []
     }))
+
+    setReceiptContainer((prev) => ({
+      ...prev,
+      showReceipt: false,
+      totalPrice: 0
+    }))
   }
 
   const fieldMessageRef = useRef(null);
@@ -225,7 +248,7 @@ const Purchase = () => {
       showNotification(fieldIsSuccessfulRef);
     }
   }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
-  
+
   if (userType.userType !== undefined) {
   return (
     <React.Fragment>
@@ -259,6 +282,8 @@ const Purchase = () => {
           setFieldInfo={setFieldInfo}
           hybrid={hybrid}
           handleResetSelectionField={handleResetSelectionField}
+          setReceiptContainer={setReceiptContainer}
+          userType={userType.userType}
           />
         <div className='search_bar_container'>
           <input 
@@ -308,7 +333,10 @@ const Purchase = () => {
       </main>
 
       <Receipt 
-      hybrid={hybrid}
+      receiptContainer={receiptContainer}
+      setReceiptContainer={setReceiptContainer}
+      handleReset={handleResetSelectionField}
+      setFieldInfo={setFieldInfo}
       />
     </React.Fragment>
   ) 
@@ -659,11 +687,12 @@ const SelectedHybrid = ({
       }
 
     } catch (error) {
-      if (selectedHybridType === 'service') {
-        setFieldInfo((prev) => ({
-          ...prev,
-          warn: error.message
-        }))
+      if (error.response) {
+        setFieldInfo(prev => ({...prev, warn: error.response.data.message}));
+      } else if (error.request) {
+        setFieldInfo(prev => ({...prev, warn: "Network issue. Please try again later."}));
+      } else {
+        setFieldInfo(prev => ({...prev, warn: error.message}));
       }
     } finally {
       setFieldInfo((prev) => ({...prev, loading: false}))
@@ -932,7 +961,8 @@ const FillTransaction = ({
   transaction, setTransaction,
   receipt, setReceipt,
   setFieldInfo,
-  hybrid, handleResetSelectionField
+  hybrid,
+  setReceiptContainer
 }) => {
   
   const [transFieldInfo, setTransFieldInfo] = useState({
@@ -1032,7 +1062,7 @@ const FillTransaction = ({
   }, [transaction.cash, transaction.typeOfPayment, receipt.totalPrice]);
   
   const paymentTransation = async () => {
-    const { cash, modeOfPayment, typeOfPayment, platform, accNo } = transaction;
+    const { cash, modeOfPayment, typeOfPayment, platform, accNo, placeId } = transaction;
     const { quantity, totalPrice, change, client, discount, discounted, receiptNo } = receipt;
     const everyFieldRequired = [cash, accNo, receiptNo];
     // Check the field requirements
@@ -1083,15 +1113,31 @@ const FillTransaction = ({
         receiptNo: receiptNo,
         remarks: client[0].remarks,
         providers: client[0].providers,
-        service: client[0].service
+        service: client[0].service,
+        placeId: placeId
        });
 
        if (response.data.isSuccessful) {
-        setFieldInfo((prev) => ({
+        const isSplit = typeOfPayment === "split";
+        setReceiptContainer((prev) => ({
           ...prev,
-          isSuccessful: response.data.message
+          showReceipt: true,
+          totalPrice: discount > 0 ? discounted : totalPrice,
+          hybridType: hybrid.selectedHybridType,
+          clientName: `${client[0].fName} ${client[0].lName}`,
+          name: hybrid.selectedHybrid[0].name,
+          price: hybrid.selectedHybrid[0].price,
+          receiptNo: receiptNo,
+          dateTime: formattedDate,
+          modeOfPayment: modeOfPayment,
+          typeOfPayment: typeOfPayment,
+          transId: response.data.transId,
+          amountPaid: cash,
+          change: !isSplit ? change : 0,
+          balance: isSplit ? change : 0,
+          placeId: placeId,
+          place: {}
         }))
-        handleResetSelectionField();
       } else {
         setFieldInfo((prev) => ({
           ...prev,
@@ -1125,6 +1171,11 @@ const FillTransaction = ({
             <tr>
               <td>Client Name:</td>
               <td>{receipt.client[0].id > 0 && `${receipt.client[0].fName}, ${receipt.client[0].lName} ${receipt.client[0].mName}`}</td>
+            </tr>
+
+            <tr>
+              <td>Place ID:</td>
+              <td>{transaction.placeId}</td>
             </tr>
 
             <tr>
@@ -1330,12 +1381,280 @@ const FillTransaction = ({
   
 }
 
-const Receipt = ({}) => {
-  return (
-    <React.Fragment>
+const stylesForReceipt = {
+  container: {
+    width: "600px",
+    height: "auto",
+    padding: "15px",
+    position: "absolute",
+    top: "130px",
+    left: "50%",
+    transform: "translate(-50%, 0)",
+    zIndex: 120,
+    backgroundColor: "#fefefe",
+  },
+  row1: {
+    hybridInfo: {
+      container: {
+        height: "auto",
+      },
+      divBorder: {
+        borderBottom: "double 6px #373737"
+      },
+      serviceBckgrnd: {
+        container: {
+          backgroundColor: "#e1e1e1",
+          padding: "10px",
+          display: "inlineBlock",
+          width: "450px",
+          borderRadius: "10px",
+          height: "110px",
+          marginBottom: "20px"
+        },
+        div1: {
+          fontSize: ".95rem",
+          fontWeight: 700,
+          textTransform: "uppercase",
+          textAlign: "center"
+        },
+        div2: {
+          fontSize: ".87rem",
+          fontWeight: 500,
+          marginTop: "5px",
+        }
+      },
+      img: {
+        width: "130px",
+        position: "absolute",
+        top: "0",
+        right: "0"
+      }
+    },
+  },
+  row2: {
+    purchaseInfo: {
+      container: {
+        padding: "20px 0",
+        width: "100%",
+        height: "auto",
+        borderBottom: "double 6px #373737"
+      },
+      table: {
+        container: {
+          fontSize: ".9rem",
+          fontWeight: 500,
+          width: "100%"
+        }
+      }
+    }
+  },
+  row3: {
+    placeInfo: {
+      container: {
+        padding: "20px 0 0 0",
+        width: "100%",
+        height: "auto",
+      },
+      table: {
+        container: {
+          fontSize: ".9rem",
+          fontWeight: 500,
+          width: "100%"
+        }
+      }
+    }
+  }
+}
 
-    </React.Fragment>
-  )
+const Receipt = ({receiptContainer, setReceiptContainer, handleReset, setFieldInfo, hybridData}) => {
+  const componentRef = useRef(null);
+  const { 
+    hybridType, 
+    clientName,
+    totalPrice, 
+    name, price,
+    dateTime, 
+    receiptNo, 
+    typeOfPayment,
+    amountPaid, 
+    change, 
+    balance, 
+    transId, 
+    place, 
+    modeOfPayment, 
+    placeId
+  } = receiptContainer;
+
+  const getPlace = async () => {
+    const id = placeId;
+    try {
+      setFieldInfo((prev) => ({...prev, loading: true}));
+      const response = await axios.get(`${config.Configuration.database}/place/${id}`);
+      if (response.data.isSuccessful) {
+        setReceiptContainer((prev) => ({...prev, showReceipt: true, place: response.data.result}));
+        setFieldInfo((prev) => ({...prev, isSuccessful: "Payment successful!"}));
+      } else {
+        setFieldInfo((prev) => ({...prev, warn: response.data.message}));
+      }
+    } catch (error) {
+      if (error.response) {
+        setFieldInfo((prev) => ({...prev, warn: error.response.data.message}));
+      } else if (error.request) {
+        setFieldInfo((prev) => ({...prev, message: "Payment successful, but cannot view receipt right now due to a network issue."}));
+      } else {
+        setFieldInfo((prev) => ({...prev, warn: error.message}));
+      }
+    } finally {
+      setFieldInfo((prev) => ({...prev, loading: false}));
+    }
+  }
+
+  useEffect(() => {
+    if (receiptContainer.totalPrice) {
+      getPlace();
+    }
+  }, [receiptContainer.showReceipt]);
+
+  const formatDate = (dateString) => {
+    const options = {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    };
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString(undefined, options);
+    return formattedDate;
+  };
+
+  const formatTime = (dateString) => {
+    const options = {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    };
+    const date = new Date(dateString);
+    const formattedTime = date.toLocaleTimeString(undefined, options);
+    return formattedTime;
+  };
+
+  if (receiptContainer.showReceipt) {
+  return (
+      <React.Fragment>
+        <div className='react_to_print'>
+          <div className='print_bttn_container'
+          style={{
+            display: "inline-block"
+          }}>
+            <ReactToPrint
+              trigger={() => (
+                <button className="print-sales-bttn" >
+                  Print Receipt
+                </button>
+              )}
+              content={() => componentRef.current}
+              documentTitle="Total Sales"
+            />
+            <button 
+            type="button"
+            onClick={() => handleReset()}>
+              Proceed 
+            </button>
+          </div>
+  
+          <div ref={componentRef} id='receipt' style={stylesForReceipt.container}>
+              <div id='hybrid_info' style={stylesForReceipt.row1.hybridInfo.container}>
+                <div style={stylesForReceipt.row1.hybridInfo.divBorder}>
+                <div id='service_bckgrnd' style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.container}>
+                <div style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.div1}>
+                  -------------------------- {hybridType} --------------------------
+                </div>
+                <div style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.div2}>
+                  <p style={{fontSize: ".92rem", fontWeight: 600}}>{name}</p>
+                  <p><span style={{fontWeight: 600}}>Price: </span>{price}</p>
+                </div>
+                </div>
+                <img src={OPIImage} alt="OPI Logo" style={stylesForReceipt.row1.hybridInfo.img} />
+                </div>
+              </div>
+
+              <div id='purchase_info' style={stylesForReceipt.row2.purchaseInfo.container}>
+                <table style={stylesForReceipt.row2.purchaseInfo.table.container}>
+                  <tbody>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Client</td>
+                      <td>{clientName}</td>
+                      <td style={{fontWeight: 600}}>Mode of payment</td>
+                      <td>{modeOfPayment}</td>
+                    </tr>
+
+                    <tr>
+                      <td style={{fontWeight: 600}}>Date</td>
+                      <td>{formatDate(dateTime)}</td>
+                      <td style={{fontWeight: 600}}>Type of payment</td>
+                      <td>{typeOfPayment}</td>
+                    </tr>
+
+                    <tr>
+                      <td style={{fontWeight: 600}}>Time</td>
+                      <td>{formatTime(dateTime)}</td>
+                      <td style={{fontWeight: 600}}>Total</td>
+                      <td>{totalPrice}</td>
+                    </tr>
+
+                    <tr>
+                      <td style={{fontWeight: 600}}>Receipt No</td>
+                      <td style={{color: "#0204AB"}}>#{receiptNo}</td>
+                      <td style={{fontWeight: 600}}>Amount paid</td>
+                      <td>{amountPaid}</td>
+                    </tr>
+
+                    <tr>
+                      <td style={{fontWeight: 600}}>Trans ID</td>
+                      <td style={{color: "#E30403"}}>#{transId}</td>
+                      <td style={{fontWeight: 600}}>{typeOfPayment === "split" ? "Balance" : "Change"}</td>
+                      <td>{typeOfPayment === "split" ? balance : change}</td> 
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+
+              <div id='place_info' style={stylesForReceipt.row3.placeInfo.container}>
+                <table style={stylesForReceipt.row3.placeInfo.table.container}>
+                  <tbody>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Place</td>
+                      <td>{place.storeName}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Address</td>
+                      <td>{place.address}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Contact Number</td>
+                      <td>{place.contactNumber}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Email</td>
+                      <td>{place.email}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>BIR TIN</td>
+                      <td>{place.birTin}</td>
+                    </tr>
+                    <tr>
+                      <td style={{fontWeight: 600}}>Branch</td>
+                      <td>{place.branchName}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+          </div>
+        </div>
+      </React.Fragment>
+    )
+  }
 }
 
 export default Purchase;

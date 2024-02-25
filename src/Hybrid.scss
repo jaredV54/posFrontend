@@ -132,7 +132,6 @@ ul#hybrid_selection * {
 
 }
 
-
   //display product
   .lds-ellipsis {
     display: inline-block;
@@ -218,7 +217,7 @@ ul#hybrid_selection * {
   position: absolute;
   left: 50%;
   top: 50%;
-  z-index: 80;
+  z-index: 200;
   transform: translate(-50%, -50%);
   animation: rotation_19 1s linear infinite;
 

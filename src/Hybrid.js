@@ -198,7 +198,7 @@ const Products = () => {
       } else {
         setFieldInfo((prev) => ({
           ...prev, 
-          warn: "list already exists"
+          warn: "List already exists"
         }))
       }
     }
@@ -345,14 +345,28 @@ const Products = () => {
   }
 
   const managePsycTable = (name, price, action) => {
+    const { manageBy } = psychologicalAssessment;
     if (action === "edit") {
-      setPsychologicalAssessment((prev) => ({
-        ...prev,
-        psycTest: name,
-        standardRate: price,
-        branch: prev.branch.filter((item) => item.psycTest !== name),
-        manageBy: "Update"
-      }));
+      if (manageBy === "Update") {
+        setPsychologicalAssessment((prev) => ({
+          ...prev,
+          psycTest: "",
+          standardRate: "",
+          branch: [
+            { psycTest: prev.psycTest, standardRate: prev.standardRate },
+            ...prev.branch
+          ],
+          manageBy: "Add"
+        }));
+      } else {
+        setPsychologicalAssessment((prev) => ({
+          ...prev,
+          psycTest: name,
+          standardRate: price,
+          branch: prev.branch.filter((item) => item.psycTest !== name),
+          manageBy: "Update"
+        }));
+      }
     } else if (action === "delete") {
       setPsychologicalAssessment((prev) => ({
         ...prev,

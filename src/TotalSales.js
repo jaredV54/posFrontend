@@ -20,7 +20,9 @@ function TotalSales() {
   const [values, setValues] = useState(initialValues);
   const componentRef = useRef(null);
   const [fieldInfo, setFieldInfo] = useState({
-    loading: false
+    loading: false,
+    message: "",
+    warn: ""
   })
 
   useEffect(() => {
@@ -35,9 +37,16 @@ function TotalSales() {
       setStoreInfo(response.data.storeInfo);
     } catch (error) {
       if (error.response) {
-        console.log("Server Error:", error.response.data);
+        console.log("Server Error:", error.response);
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: error.response.statusText
+        }))
       } else if (error.request) {
-        console.log("No response from server");
+        setFieldInfo((prev) => ({
+          ...prev,
+          message: "No response from server. Please check your internet."
+        }))
       } else {
         console.log("Error:", error.message);
       }

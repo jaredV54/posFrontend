@@ -31,7 +31,6 @@ class User extends React.Component {
     componentDidMount() {
         this.getUser();
         this.getStores();
-        this.handleAdminClass();
     }
 
     handleExpandClick = () => {
@@ -55,30 +54,12 @@ class User extends React.Component {
     getStores = async () => {
       try {
           const response = await axios.get(`${config.Configuration.database}/store`);
-          this.setState({stores: response.data, currentStoreId: response.data[0].id});
+          this.setState({stores: response.data.result, currentStoreId: response.data.result[0].id});
       } catch (error) {
           console.error(error)
       }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.userType !== prevState.userType) {
-      this.handleAdminClass();
     }
-  }
-  
-  handleAdminClass() {
-    const { userType } = this.state;
-    const storeNameElement = document.getElementById('store-name');
 
-    if (userType === 'admin' && storeNameElement) {
-      storeNameElement.classList.add('isAdmin');
-      this.setState({ storeName: "" });
-    } else if (storeNameElement) {
-      storeNameElement.classList.remove('isAdmin');
-    }
-  }
-      
     handleSearch = (searchQuery) => {
       this.setState({ searchQuery }, () => {
         const { user, searchQuery } = this.state;
@@ -121,20 +102,8 @@ class User extends React.Component {
       this.removeClass()
       const { user } = this.state;
       const selectedCustomer = user.find((user) => user.id === id);
-      const isAdmin = user.find((user) => user.id === id && user.userType === 'admin');
     
-      if (isAdmin) {
-        this.setState({
-          name: isAdmin.name,
-          email: isAdmin.email,
-          password: isAdmin.password,
-          userType: isAdmin.userType,
-          option: "Change",
-          currentId: id,
-          checkEmail: "",
-          storeName: ""
-        });
-      } else if (selectedCustomer) {
+      if (selectedCustomer) {
         const {
           name,
           email,
@@ -196,7 +165,7 @@ class User extends React.Component {
         email,
         password,
         userType,
-        ...(userType === 'admin' ? [] : [storeName])
+        storeName
       ];
       
       const allFieldsValid = requiredFields.every((field) => field && field.length > 0);
@@ -264,7 +233,8 @@ class User extends React.Component {
         name: "",
         email: "",
         password: "",
-        userType: "admin"
+        userType: "",
+        storeName: ""
        })
     }   
 
@@ -402,10 +372,10 @@ class User extends React.Component {
                         </div>
                       </div>
                       <div className="input-customer-info">
-                      <label htmlFor="storeName">Store: </label>
+                      <label htmlFor="storeName">Place: </label>
                       <input 
                       name="storeName" 
-                      placeholder={userType === 'admin' ? 'N/A' : '---'}
+                      placeholder={'---'}
                       defaultValue={storeName} 
                       style={{
                         pointerEvents: "none",
@@ -487,7 +457,7 @@ class User extends React.Component {
                             <td>{cust.email}</td>
                             <td>{cust.password}</td>
                             <td>{cust.userType}</td>
-                            <td>{cust.userType === 'admin' ? "---": cust.storeName}</td>
+                            <td>{cust.storeName}</td>
 
                             <td className="edit-customer edit-button" 
                             onClick={() => this.handleEditUser(cust.id)}>

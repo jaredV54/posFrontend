@@ -438,7 +438,7 @@ class User extends React.Component {
                           <th>Email</th>
                           <th>Password</th>
                           <th>User Type</th>
-                          <th>Store</th>
+                          <th>Place</th>
                           <th style={{backgroundColor: '#1a1a1a'}}></th>
                           <th style={{backgroundColor: '#1a1a1a'}}></th>
                         </tr>

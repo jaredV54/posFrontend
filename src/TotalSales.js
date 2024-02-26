@@ -11,33 +11,29 @@ function TotalSales() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [viewOption, setViewOption] = useState('daily');
-  const initialValues = JSON.parse(localStorage.getItem('loginValues')) || {
-    email: '',
-    password: ''
-  };
   const userTypeJSON = JSON.parse(localStorage.getItem("currentUserType"));
   const userType = userTypeJSON.userType;
-  const [values, setValues] = useState(initialValues);
   const componentRef = useRef(null);
   const [fieldInfo, setFieldInfo] = useState({
     loading: false,
     message: "",
-    warn: ""
+    warn: "",
+    isSuccessful: ""
   })
 
   useEffect(() => {
     getTransactions();
-    fetchStoreInfo();
-  }, [values]);
+    //fetchStoreInfo();
+  }, []);
 
-  const fetchStoreInfo = async () => {
+  /* const fetchStoreInfo = async () => {
     try {
       setFieldInfo((prev) => ({...prev, loading: true }))
       const response = await axios.post(`${config.Configuration.database}/placeInfo`, values);
       setStoreInfo(response.data.storeInfo);
     } catch (error) {
       if (error.response) {
-        console.log("Server Error:", error.response);
+        console.log("Server Error:", error.response.data.message);
         setFieldInfo((prev) => ({
           ...prev,
           warn: error.response.statusText
@@ -53,7 +49,7 @@ function TotalSales() {
     } finally {
       setFieldInfo((prev) => ({...prev, loading: false }))
     }
-  };
+  }; */
 
   const getTransactions = async () => {
     try {
@@ -82,7 +78,7 @@ function TotalSales() {
       filterTransactions(startDate, endDate);
     }
   };
-//k
+
   const handleEndDateChange = (event) => {
     const endDate = event.target.value;
     setEndDate(endDate);

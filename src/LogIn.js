@@ -28,11 +28,10 @@ function LogIn({ values, setValues, handleLogin  }) {
       axios.post(`${config.Configuration.database}/login`, values)
         .then((res) => {
           if (res.data && res.data.data) {
-            const { userType, storeId } = res.data.data[0];
+            const { userType, storeId, userId } = res.data.data[0];
             if (userType && (storeId || userType === "admin")) {
-              localStorage.setItem('currentUserType', JSON.stringify({ userType, storeId }));
+              localStorage.setItem('currentUserType', JSON.stringify({ userType, storeId, userId }));
               if (res.data.message === 'Requirements Matched') {
-                localStorage.setItem('loginValues', JSON.stringify({ email: values.email }));
                 handleLogin(true);
                 navigate('/Purchase');
               }

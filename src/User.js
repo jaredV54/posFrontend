@@ -14,6 +14,8 @@ class User extends React.Component {
             email: '',
             password: '',
             currentUserType: JSON.parse(localStorage.getItem("currentUserType")).userType,
+            currentUserPlaceId: JSON.parse(localStorage.getItem("currentUserType")).storeId,
+            currentUserId: JSON.parse(localStorage.getItem("currentUserType")).userId,
             userType: '',
             storeName: '',
             currentId: 0,
@@ -24,7 +26,8 @@ class User extends React.Component {
             displayCount: 150,
             loading: false,
             deleteUser: false,
-            toBeDelete: []
+            toBeDelete: [],
+            processing: false
         }
     }
 
@@ -147,7 +150,8 @@ class User extends React.Component {
         checkEmail,
         option,
         storeName,
-        currentStoreId
+        currentStoreId,
+        currentUserId
       } = this.state;
     
       const id = currentId;
@@ -205,6 +209,14 @@ class User extends React.Component {
               userType,
               storeId: currentStoreId
             });
+
+            if (currentUserId === id) {
+              localStorage.setItem("currentUserType", JSON.stringify({
+                userType: userType,
+                storeId: currentStoreId,
+                userId: currentUserId
+              }));
+            }
     
             this.getUser();
             this.handleReset();

@@ -185,7 +185,11 @@ function SalesRecord() {
           setFieldInfo={setFieldInfo}
           setSearchQuery={setSearchQuery}
           />
-          <table className='sales-table'>
+          <table className='sales-table'
+          style={{
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}>
           {fieldInfo.loading ? (<>
             <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
             </>) : null

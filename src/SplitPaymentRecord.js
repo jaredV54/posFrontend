@@ -244,7 +244,11 @@ function SplitPaymentRecord() {
         formatTime={formatTime}
         />
 
-        <table className='sales-table'>
+        <table className='sales-table'
+        style={{
+          marginLeft: "auto",
+          marginRight: "auto",
+        }}>
           <thead className='table-column'>
             <tr className='sales-column'>
               <th>ID</th>

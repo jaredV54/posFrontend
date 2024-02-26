@@ -328,6 +328,8 @@ const Purchase = () => {
           transaction={transaction}
           setTransaction={setTransaction}
           selectedHybridType={hybrid.selectedHybridType}
+          listLabel={hybrid.selectedHybrid[0]?.listLabel}
+          priceLabel={hybrid.selectedHybrid[0]?.priceLabel}
           />
         </section>
       </main>
@@ -619,8 +621,24 @@ const SelectedHybrid = ({
   receipt, setReceipt,
   psyc, setPsyc, 
   setFieldInfo, handleShowFillTrans,
-  setTransaction, transaction, handleResetSelectionField
+  setTransaction, transaction, handleResetSelectionField,
+  listLabel, priceLabel
 }) => {
+
+  const buildInProfFee = [
+    ["Cancel", 0],
+    ["1 test:", 1800],
+    ["2 test:", 2300],
+    ["3 test:", 2800],
+    ["4 test:", 3300],
+    ["5 test:", 3800],
+    ["6 test:", 4300],
+    ["7 test:", 4800],
+    ["8 test:", 5000],
+    ["9 test:", 5300],
+    ["10 test:", 5700],
+    ["11 test:", 6200],
+  ]
 
   const handleHybridSelection = (id) => {
     setHybrid((hyb) => ({
@@ -656,8 +674,8 @@ const SelectedHybrid = ({
   useEffect(() => {
     const selectedHybridTypeClass = document.querySelector('.selected_hybrid');
     if (selectedHybrid.length > 0) {
+      if (selectedHybridTypeClass && selectedHybridType === "service") {
       getList(selectedHybrid[0].id);
-      if (selectedHybridTypeClass && selectedHybrid[0].hybrid === "service") {
       selectedHybridTypeClass.classList.add('overflow-scroll');
     } else {
       selectedHybridTypeClass.classList.remove('overflow-scroll');
@@ -689,6 +707,7 @@ const SelectedHybrid = ({
     } catch (error) {
       if (error.response) {
         setFieldInfo(prev => ({...prev, warn: error.response.data.message}));
+        console.log(error.response.data.message)
       } else if (error.request) {
         setFieldInfo(prev => ({...prev, warn: "Network issue. Please try again later."}));
       } else {
@@ -726,7 +745,7 @@ const SelectedHybrid = ({
     condition: false
   })
 
-  const handleDiscount = (e, type) => {
+  const handleDiscountAndProfFee = (e, type) => {
     const value = !isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0;
     
     if (type === "discount") {
@@ -813,6 +832,13 @@ const SelectedHybrid = ({
     } 
   }
 
+  const showProfessionalfees = () => {
+    const displayProfFee = document.querySelector(".prof_fee_container");
+    if (displayProfFee) {
+        displayProfFee.classList.toggle("prof_fee_container_show");
+    }
+  }
+
   return (
     <React.Fragment>
       <div id='select_client' className='client_info_container'>
@@ -831,16 +857,33 @@ const SelectedHybrid = ({
         </div>
       </div>
 
+      <div className='prof_fee_container'>
+      <p>Professional fee</p>
+      <div className='built_in_prof_fee'>
+        {buildInProfFee.map(fees => (
+          <button type='button' 
+            key={fees[0]}
+            value={fees[1]}
+            onClick={(e) => {
+              handleDiscountAndProfFee(e, "fee");
+              showProfessionalfees()
+            }}
+          >
+            {fees[0]} {fees[1] === 0 ? "" : fees[1]}
+          </button>
+        ))}
+      </div>
+      </div>
+
       <div id='display_selected'>
-        
-      {selectedHybridType === "service" &&
-      <div className='list_length'>
-        {psyc.selectedTest.length}
-      </div>}
-      {selectedHybridType === "product" && 
-      <div className='list_length'>
-        {selectedHybrid.length}
-      </div>}
+        {selectedHybridType === "service" &&
+        <div className='list_length'>
+          {psyc.selectedTest.length}
+        </div>}
+        {selectedHybridType === "product" && 
+        <div className='list_length'>
+          {selectedHybrid.length}
+        </div>}
 
       {selectedHybrid ? 
       selectedHybrid.map((list) => {
@@ -857,29 +900,26 @@ const SelectedHybrid = ({
             {psyc.selectedTest ? psyc.selectedTest.map((list) => (
               <div className="s_hybrid_psycList" key={list.id}>
                 <div className='selected_psyc_test'>
-                <p>Psychological Test:</p> <div>{list.psycTest}</div>
+                <p>{listLabel}:</p> <div>{list.psycTest}</div>
               </div>
                 <div className='selected_stdrd_int'>
-                <p>Standard Input:</p> <div className='price_to_cap'>₱{list.standardRate}</div>
+                <p>{priceLabel}:</p> <div className='price_to_cap'>₱{list.standardRate}</div>
               </div>
               </div>
             )): null}
             {parseFloat(receipt.totalPrice) > 0 && psyc.selectedTest.length > 0 ? (<>
               <div className='discount_conainer'>
                 <label htmlFor="professional_fee">Professional fee: </label>
-                <input 
+                <button 
+                type="button"
+                className='select_prof_fee_bttn'
+                onClick={() => showProfessionalfees()}
                 style={{
-                  display: "block"
+                 display: "block"
                 }}
-                type="number" 
-                placeholder='₱ ###'
-                name="professional_fee" 
-                value={receipt.professionalFee === 0 ? '' : receipt.professionalFee}
-                onChange={(e) => {
-                  e.preventDefault();
-                  handleDiscount(e, "fee");
-                }}
-              />
+                >
+                 {receipt.professionalFee === 0 ? 'Select' : receipt.professionalFee}
+                </button>
               </div>
               <div className='discount_conainer'>
                 <label htmlFor="discount">Discount: </label>
@@ -893,7 +933,7 @@ const SelectedHybrid = ({
                 value={receipt.discount === 0 ? '' : receipt.discount}
                 onChange={(e) => {
                   e.preventDefault();
-                  handleDiscount(e, "discount");
+                  handleDiscountAndProfFee(e, "discount");
                 }}
               />
               </div>

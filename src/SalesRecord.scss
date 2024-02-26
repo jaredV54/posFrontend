@@ -150,68 +150,6 @@
         }
       }
 
-      /* .no-receipt {
-        font-size: 1rem;
-        display: flex;
-        justify-content: center;
-        color: #f7860e;
-      }
-      
-      .receipt-closed {
-        margin: 30px auto;
-        min-width: 300px;
-        padding: 20px;
-        width: 45%;
-        height: auto;
-        padding: 10px;
-        background-color: #eeeeee;
-        color: #1a1a1a;
-
-        h1 {
-          color: #1a1a1a;
-          font-size: 1.9rem;
-          font-family: 'Raleway', sans-serif;
-          font-weight: 600;
-          margin-bottom: 10px;
-          text-align: center;
-        }
-    
-        table.receipt-table {
-          position: relative;
-          thead {
-            background-color: #c3c3c3;
-            color: #1a1a1a;
-            position: sticky;
-            tr {
-
-              th {
-                padding: 5px 10px;
-              }
-            }
-          }
-
-          tbody {
-            background-color: #d3d3d3;
-            color: #1a1a1a;
-            tr {
-              td {
-                font-weight: 400;
-  
-                span {
-                  font-weight: 600;
-                }
-              }
-            }
-          }
-         }
-         .show-payment {
-          display: flex;
-          flex-direction: column;
-          align-items: end;
-          width: 100%;
-         }
-      } */
-      
     .print-button {
       outline: none;
       background-color: #313a72;
@@ -233,7 +171,7 @@
     table.sales-table {
         font-size: .8rem;
         width: 95%;
-        margin: 30px auto 0 auto;
+        margin: 30px 15px;
         border: 1px solid #fff;
 
         thead.table-column {

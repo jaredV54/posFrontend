@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, {useState, useEffect} from "react"; 
+import React, {useState, useEffect, useRef} from "react"; 
 import config from "./Config.json";
 
 const Client = () => {
@@ -23,7 +23,11 @@ const Client = () => {
     const [fieldInfo, setFieldInfo] = useState({
       loading: false,
       delete: false,
-      toBeDelete: null
+      toBeDelete: null,
+      message: "",
+      warn: "",
+      isSuccessful: "",
+      fetchingData: true
     })
 
     const [clientFilter, setClientFilter] = useState(initialClient);
@@ -41,10 +45,10 @@ const Client = () => {
         option: 'Add',
     })
 
-    const [displayCount, setDisplayCount] = useState(150);
+    const [displayCount, setDisplayCount] = useState(250);
 
     const handleExpandClick = () => {
-      setDisplayCount((prev) => prev + 150);
+      setDisplayCount((prev) => prev + 250);
     }
 
     const storedUserData = localStorage.getItem("currentUserType");
@@ -52,19 +56,43 @@ const Client = () => {
 
     const getClients = async () => {
         try {
-            setFieldInfo((prev) => ({...prev, loading: true }))
-            const response = await axios.get(`${config.Configuration.database}/customer`);
-            setClientData((d) => ({...d, client: response.data, filteredClient: response.data}));
+            setFieldInfo((prev) => ({...prev, fetchingData: true }))
+            const response = await axios.get(`${config.Configuration.database}/customer`, {
+              params: {
+                displayCount: displayCount
+              }
+            });
+            if (response.data.isSuccessful) {
+              setClientData((d) => ({...d, client: response.data.result, filteredClient: response.data.result}));
+            } else {
+              setFieldInfo((prev) => ({...prev, warn: response.data.message}))
+            }
         } catch (error) {
-            console.error(error)
+          if (error.response) {
+            console.log(error.response.data.message)
+            setFieldInfo(prev => ({
+              ...prev,
+              message: error.response.data.message
+            }));
+          } else if (error.request) {
+            setFieldInfo((prev) => ({
+              ...prev,
+              message: "No response from server. Please check your internet."
+            }))
+          } else {
+            setFieldInfo((prev) => ({
+              ...prev,
+              warn: error.message
+            }))
+          }
         } finally {
-            setFieldInfo((prev) => ({...prev, loading: false }))
+            setFieldInfo((prev) => ({...prev, fetchingData: false }))
         }
     }
 
     useEffect(() => {
         getClients();
-    }, []);
+    }, [displayCount]);
 
     const handleSearch = (value) => {
         setClientData((data) => ({...data, searchQuery: value}))
@@ -86,6 +114,7 @@ const Client = () => {
         const id = client.id;
         const { storedClientId } = clientData;
         try {
+            setFieldInfo((prev) => ({...prev, loading: true }))
             const response = await axios.put(`${config.Configuration.database}/deleteCustomer/${id}`, {
                 isDeleted: true
             });
@@ -93,14 +122,34 @@ const Client = () => {
                 localStorage.setItem('selectedCustomer', JSON.stringify({}));
             }
             console.log(response)
+            if (response.data.isSuccessful) {
+              setFieldInfo((prev) => ({
+                ...prev,
+                delete: false,
+                toBeDelete: null,
+                isSuccessful: response.data.message
+              }))
+              getClients();
+            }
+        } catch (error) {
+          if (error.response) {
+            setFieldInfo(prev => ({
+              ...prev,
+              warn: error.response.data.message
+            }));
+          } else if (error.request) {
             setFieldInfo((prev) => ({
               ...prev,
-              delete: false,
-              toBeDelete: null
+              warn: "No response from server. Please check your internet."
             }))
-            getClients();
-        } catch (error) {
-            console.error(error);
+          } else {
+            setFieldInfo((prev) => ({
+              ...prev,
+              warn: error.message
+            }))
+          }
+        } finally {
+          setFieldInfo((prev) => ({...prev, loading: false }))
         }
     }
       
@@ -145,52 +194,79 @@ const Client = () => {
     const handleSubmit = async () => {
         const { currentId } = clientData;
         const { option } = inputs;
-        const { mName, email, contactPersonName, contactPersonNo, service, remarks, ...necessaryInfo } = clientFilter;
+        const { mName, email, contactPersonName, contactPersonNo, service, remarks, bDate, ...necessaryInfo } = clientFilter;
         const requiredFields = Object.values(necessaryInfo);
       
-        if (requiredFields.every((field) => field.length > 0)) {
+        if (requiredFields.every((field) => field !== "")) {
             confirmInputs((prev) => ({
                 ...prev,
                 checkInput: ""
             }));
           if (option === "Add") {
             try {
-              await axios.post(`${config.Configuration.database}/customer`, clientFilter);
+              setFieldInfo((prev) => ({...prev, loading: true}));
+              const response = await axios.post(`${config.Configuration.database}/customer`, clientFilter);
               getClients();
               handleReset();
-              confirmInputs((prev) => ({
-                ...prev,
-                checkInput: "New Client Added!"
-              }))
-              setTimeout(() => {
-                confirmInputs((prev) => ({
-                    ...prev,
-                    checkInput: ""
-                  }))
-              }, 2000);
+              if (response.data.isSuccessful) {
+                setFieldInfo((prev) => ({...prev, isSuccessful: response.data.message}));
+              }
             } catch (error) {
-              console.error(error);
+              if (error.response) {
+                console.log(error.response.data.message)
+                setFieldInfo(prev => ({
+                  ...prev,
+                  message: error.response.data.message
+                }));
+              } else if (error.request) {
+                setFieldInfo((prev) => ({
+                  ...prev,
+                  message: "No response from server. Please check your internet."
+                }))
+              } else {
+                setFieldInfo((prev) => ({
+                  ...prev,
+                  warn: error.message
+                }))
+              }
+            } finally {
+              setFieldInfo((prev) => ({...prev, loading: false}));
             }
           } else if (option === "Change") {
             try {
-              await axios.put(`${config.Configuration.database}/customer/${currentId}`, clientFilter);
+              setFieldInfo((prev) => ({...prev, loading: true}));
+              const response = await axios.put(`${config.Configuration.database}/customer/${currentId}`, clientFilter);
               getClients();
               handleReset();
-              const button = document.getElementById("add-bttn");
-              button.classList.add("add-bttn");
+              if (response.data.isSuccessful) {
+                setFieldInfo((prev) => ({...prev, isSuccessful: response.data.message}));
+              }
               confirmInputs((prev) => ({
                 ...prev,
-                option: "Add",
-                checkInput: "Client Updated!"
+                option: "Add"
               }))
-              setTimeout(() => {
-                confirmInputs((prev) => ({
-                    ...prev,
-                    checkInput: ""
-                  }))
-              }, 2000);
+              const button = document.getElementById("add-bttn");
+              button.classList.add("add-bttn");
             } catch (error) {
-              console.error(error);
+              if (error.response) {
+                console.log(error.response.data.message)
+                setFieldInfo(prev => ({
+                  ...prev,
+                  message: error.response.data.message
+                }));
+              } else if (error.request) {
+                setFieldInfo((prev) => ({
+                  ...prev,
+                  message: "No response from server. Please check your internet."
+                }))
+              } else {
+                setFieldInfo((prev) => ({
+                  ...prev,
+                  warn: error.message
+                }))
+              }
+            } finally {
+              setFieldInfo((prev) => ({...prev, loading: false}));
             }
           }
         } else {
@@ -227,21 +303,22 @@ const Client = () => {
     }
 
     const clientFilterToRender = Object.keys(clientFilter);
+    {/*mName, email, contactPersonName, contactPersonNo, service, remarks, bDate,*/}
     const labels = [
-        "First Name: ",
-        "Last Name: ",
+        "First Name: *",
+        "Last Name: *",
         "Middle Name: ",
-        "Address: ",
-        "Contact No: ",
+        "Address: *",
+        "Contact No: *",
         "Email: ",
         "Birth Day: ",
         "Contact Person Name: ",
         "Contact Person No: ",
         "Service: ",
         "Remarks: ",
-        "Source of Referral: ",
-        "Providers: ",
-        "Case Number: "
+        "Source of Referral: *",
+        "Providers: *",
+        "Case Number: *"
     ];
     const { filteredClient, storedClientId, searchQuery } = clientData;
     const { checkInput, option } = inputs;
@@ -261,9 +338,51 @@ const Client = () => {
         "Case_Number"
     ];
 
+  const fieldMessageRef = useRef(null);
+  const fieldWarnRef = useRef(null);
+  const fieldIsSuccessfulRef = useRef(null);
+  
+  useEffect(() => {
+    const showNotification = (elementRef) => {
+      const element = elementRef.current;
+      if (element) {
+        element.classList.add("field_show");
+        setTimeout(() => {
+          element.classList.remove("field_show");
+          setTimeout(() => {
+            setFieldInfo((prev) => ({
+              ...prev,
+              message: "",
+              warn: "",
+              isSuccessful: ""
+            }));
+          }, 500);
+        }, 3000);
+      }
+    };
+
+    if (fieldInfo.message) {
+      showNotification(fieldMessageRef);
+    } else if (fieldInfo.warn){
+      showNotification(fieldWarnRef);
+    } else if (fieldInfo.isSuccessful) {
+      showNotification(fieldIsSuccessfulRef);
+    }
+  }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
+
     if (userType !== undefined) {
         return (
             <div>
+              {fieldInfo.loading ? (<span className="loader"></span>) : null}
+              <div className="field_message" ref={fieldMessageRef}>
+                {fieldInfo.message}
+              </div>
+              <div className="field_warn" ref={fieldWarnRef}>
+                {fieldInfo.warn}
+              </div>
+              <div className="field_is_successful" ref={fieldIsSuccessfulRef}>
+                {fieldInfo.isSuccessful}
+              </div>
                 <div id="customer-info" className="customer-info-container">
                 <h1>Client</h1>
                 <div className='search-form'>
@@ -352,8 +471,8 @@ const Client = () => {
                 </div>
 
                 <table className='customer-table'>
-                {fieldInfo.loading ? (<>
-                  <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+                {fieldInfo.fetchingData ? (<>
+                  <div style={{top: "130px"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
                   </>) : null
                 }
                     <thead className='table-head'>
@@ -368,10 +487,6 @@ const Client = () => {
                     </thead>
                     <tbody className='table-body'>
                         {filteredClient.slice(0, displayCount).map((cust) => {
-                            if (cust.isDeleted) {
-                                return null;
-                            }
-                    
                             return (
                                 <tr className='customer-row' key={cust.id}>
                                 <td className="edit-customer edit-button" 
@@ -381,7 +496,6 @@ const Client = () => {
     
                                 <td className="edit-customer delete-button" 
                                 onClick={(e) => {
-                                  console.log(cust)
                                   e.preventDefault();
                                   setFieldInfo((prev) => ({
                                     ...prev,
@@ -412,8 +526,8 @@ const Client = () => {
                                 <td>{cust.lName}, {cust.fName} {cust.mName}</td>
                                 <td>{cust.address}</td>
                                 <td>{cust.contactNo}</td>
-                                <td>{cust.email.length ? cust.email : "N/A"}</td>
-                                <td>{cust.bDate.slice(0, 10)}</td>
+                                <td>{cust.email ? cust.email : "N/A"}</td>
+                                <td>{cust.bDate ? cust.bDate.slice(0, 10) : "N/A"}</td>
                                 <td>{cust.contactPersonName ? cust.contactPersonName : "N/A"}</td>
                                 <td>{cust.contactPersonNo ? cust.contactPersonNo : "N/A"}</td>
                                 <td>{cust.service ? cust.service : "N/A"}</td>
@@ -440,7 +554,9 @@ const Client = () => {
                           <td></td>
                           <td></td>
                           <td></td>
-                          <td id='expand' onClick={handleExpandClick}>Expand</td>
+                          <td></td>
+                          <td id='expand' onClick={handleExpandClick}
+                          style={{padding: "5px"}}>Expand</td>
                         </tr>
                         ): null}
                     </tbody>

@@ -257,9 +257,13 @@ class Transactions extends React.Component {
             <i className='bx bx-search search-icon'></i>
           </div>
   
-          <table className='sales-table'>
+          <table className='sales-table'
+          style={{
+            width: "1500px"
+          }}>
             <thead className='table-column'>
               <tr className='sales-column'>
+                <th></th>
                 <th title='Transaction ID'>ID</th>
                 <th>Item</th>
                 <th>Amount</th>
@@ -277,12 +281,18 @@ class Transactions extends React.Component {
                 <th>Service</th>
                 <th>Remarks</th>
                 <th>Providers</th>
-                <th></th>
               </tr>
             </thead>
             <tbody className='table-rows'>
               {filteredTransactions.slice(0, displayCount).map((trans) => (
                 <tr className={`sales-row ${matchingSplitPayments[trans.id] ? 'split-balance-passed' : ''}`} key={trans.id}>
+                  <td
+                    id={`${trans.id}`}
+                    onClick={() => {
+                      this.handleSplitPayment(trans.id, trans.changeAmount, trans.customerId, trans.items);
+                    }}
+                    className={`select-split-row ${matchingSplitPayments[trans.id] || trans.typeOfPayment === 'straight' ? 'split-balance-passed' : ''}`}
+                  >Pay</td>
                   <td>{trans.id}</td>
                   <td>{trans.items}</td>
                   <td>{trans.amount}</td>
@@ -309,13 +319,6 @@ class Transactions extends React.Component {
                   <td>{trans.service ? trans.service : "N/A"}</td>
                   <td>{trans.remarks}</td>
                   <td>{trans.providers}</td>
-                  <td
-                    id={`${trans.id}`}
-                    onClick={() => {
-                      this.handleSplitPayment(trans.id, trans.changeAmount, trans.customerId, trans.items);
-                    }}
-                    className={`select-split-row ${matchingSplitPayments[trans.id] || trans.typeOfPayment === 'straight' ? 'split-balance-passed' : ''}`}
-                  >Pay</td>
                 </tr>
               ))}
               {filteredTransactions.length >= displayCount ? (

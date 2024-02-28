@@ -360,6 +360,13 @@ const DisplayHybrids = ({
 }) => {
 
   const selectedHybrid = (hyb) => {
+    if (hyb.quantity < 1) {
+      setFieldInfo(prev => ({
+        ...prev,
+        message: "Not enough items. Please update the product; 0 product quantity."
+      }));
+      return;
+    };
     const fieldAlreadyExist = hybrid.selectedHybrid.find((list) => list.id === hyb.id);
     if (!fieldAlreadyExist && (hyb.hybrid === hybrid.selectedHybridType || !hybrid.selectedHybridType)) {
       setPsyc((prev) => ({
@@ -623,7 +630,7 @@ const SelectedHybrid = ({
   transaction, handleResetSelectionField,
   listLabel, priceLabel
 }) => {
-  const { profFee } = selectedHybrid[0] || false;
+  const { profFee = false } = selectedHybrid[0] || {};
 
   const buildInProfFee = [
     ["Cancel", 0],
@@ -896,7 +903,12 @@ const SelectedHybrid = ({
             <div className='s_hybrid_name'>
               {list.name}
             </div>
-            <p className='s_hybrid_price'>{selectedHybrid[0].hybrid === "product" ? "Price:" : "Actual Price:"} ₱{list.newPrice === list.price ? list.newPrice : list.price}</p>
+            <p className='s_hybrid_price'>
+              <span>{selectedHybrid[0].hybrid === "product" ? `Price: ₱${list.newPrice}` : `Actual Price: ₱${list.price}`}</span>
+              {list.hybrid === "product" && 
+              <span className='s_hybrid_price'>{list.quantity - list.prodQuantity} qty</span>}
+            </p>
+            
             {psyc.selectedTest ? psyc.selectedTest.map((list) => (
               <div className="s_hybrid_psycList" key={list.id}>
                 <div className='selected_psyc_test'>
@@ -922,22 +934,22 @@ const SelectedHybrid = ({
                 </button>
               </div>)}
               
-              <div className='discount_conainer'>
-                <label htmlFor="discount">Discount: </label>
-                <input 
-                style={{
-                  display: "block"
-                }}
-                type="number" 
-                placeholder='₱ ###'
-                name="discount" 
-                value={receipt.discount === 0 ? '' : receipt.discount}
-                onChange={(e) => {
-                  e.preventDefault();
-                  handleDiscountAndProfFee(e, "discount");
-                }}
-              />
-              </div>
+            <div className='discount_conainer'>
+              <label htmlFor="discount">Discount: </label>
+              <input 
+              style={{
+                display: "block"
+              }}
+              type="number" 
+              placeholder='₱ ###'
+              name="discount" 
+              value={receipt.discount === 0 ? '' : receipt.discount}
+              onChange={(e) => {
+                e.preventDefault();
+                handleDiscountAndProfFee(e, "discount");
+              }}
+            />
+            </div>
               <p className='s_hybrid_price'>Total Price: 
               <span style={{color: "#f7860e", marginLeft: receipt.discount > 0 ? 4 : 0}}>{receipt.discount > 0 && `₱${receipt.discounted}`} </span>
               <span style={{
@@ -947,7 +959,6 @@ const SelectedHybrid = ({
                 color: receipt.discount > 0 ? "#ededed" : "#f7860e"
               }}> ₱{receipt.totalPrice} 
               </span>
-              
               </p>
             </>) : null}
             {list.hybrid === "product" ? (
@@ -956,9 +967,6 @@ const SelectedHybrid = ({
                 <button type="button" className='cremental_bttn' onClick={(e) => {e.preventDefault(); handleProductQuantity("-", list.id)}}><i class='bx bx-minus'></i></button>
                 <span>{list.prodQuantity} qty</span>
                 <button type="button" className='cremental_bttn' onClick={(e) => {e.preventDefault(); handleProductQuantity("+", list.id)}}><i className='bx bx-plus'></i></button>
-              </div>
-              <div className='currentProductQuantity'>
-              {list.quantity} qty
               </div>
               </>
             ): (

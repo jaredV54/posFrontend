@@ -216,10 +216,17 @@ const Products = () => {
         }));
 
         const { branch, listLabel, priceLabel } = psychologicalAssessment;
-
+        if (!((listLabel && priceLabel) || hybrid.selectedHybrid === "product")) {
+          setFieldInfo((prev) => ({
+            ...prev,
+            message: "List label and Price label is required!",
+            loading: false
+          }))
+          return;
+        }
+        
         switch (fieldInfo.option) {
           case "Add": 
-          if (listLabel && priceLabel) {
             try {
               const response = await axios.post(`${config.Configuration.database}/hybrid`, {
                 ...hybridInfo,
@@ -260,17 +267,9 @@ const Products = () => {
                 loading: false
               }))
             }
-          } else {
-            setFieldInfo((prev) => ({
-              ...prev,
-              message: "List label and Price label is required!",
-              loading: false
-            }))
-          }
           break;
         
           case "Update" :
-          if (listLabel && priceLabel) {
             try {
               const response = await axios.post(`${config.Configuration.database}/hybrid/${fieldInfo.currentIdToUpdate}`, {
                   ...hybridInfo,
@@ -322,13 +321,6 @@ const Products = () => {
                   loading: false
                 }))
             }
-          } else {
-            setFieldInfo((prev) => ({
-              ...prev,
-              message: "List label and Price label is required!",
-              loading: false
-            }))
-          }
           break;
     
           default: 

@@ -2,6 +2,12 @@ main * {
     letter-spacing: .025em;
 }
 
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 .view_receipt_bttn {
     text-align: center;
     background-color: #f7860e !important;
@@ -690,6 +696,12 @@ main#purchase_container {
                    font-size: .87rem;
                    font-weight: 500;
                    width: 100%;
+                   display: inline-block;
+
+                   span:last-child {
+                    float: right;
+                   }
+
                    @media (max-width: 1050px) {
                     font-size: 0.8rem;
                    }
@@ -769,24 +781,34 @@ main#purchase_container {
                         border: solid 2px #00000000;
                         cursor: pointer;
                         color: #262626;
-                        font-size: .90rem;
+                        font-size: .9rem;
                         border: none;
                         outline: none;
                         font-weight: 700;
-                        width: 25px;
-                        height: 25px;
-                        border-radius: 50px;
+                        width: 30px;
+                        height: 30px;
                         padding: 4px;
                         transition: all ease .25s;
 
                         &:first-child {
                             margin-left: 10%;
                         }
+
                         i {
                             font-size: .9rem;
                             font-weight: 600;
                         }
                     }
+
+                    @media (max-width: 1200px) {
+                        button.cremental_bttn {
+                            font-size: .7rem;
+                            font-weight: 500;
+                            width: 27px;
+                            height: 27px;
+                        }
+                    }
+
                     button.cremental_bttn {
                         &:first-child:hover {
                             background-color: #f7860e;
@@ -795,6 +817,17 @@ main#purchase_container {
                         &:last-child:hover {
                             background-color: #313a72;
                             color: #ededed;
+                        }
+                    }
+
+                    button.cremental_bttn {
+                        &:first-child:active {
+                            background-color: #ededed;
+                            color: #f7860e;
+                        }
+                        &:last-child:active {
+                            background-color: #ededed;
+                            color: #313a72;
                         }
                     }
                 }
@@ -832,7 +865,7 @@ main#purchase_container {
                     }
                 }
 
-                @media (max-width: 1300px) {
+                @media (max-width: 1200px) {
                     button.psy_test_bttn {
                         font-size: .8rem;
                     }

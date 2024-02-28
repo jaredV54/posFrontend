@@ -44,11 +44,7 @@ const NavArea = () => {
 
   const handleLogout = () => {
     setShowLogoutConfirmation(false);
-    localStorage.removeItem('loginValues');
-    localStorage.removeItem('currentUserType');
-    localStorage.removeItem('selectedCustomer');
-    localStorage.removeItem('authenticated');
-    localStorage.removeItem('transId');
+    localStorage.clear();
     navigate('/');
   };
 

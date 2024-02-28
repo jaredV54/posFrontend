@@ -405,6 +405,36 @@ div#hybrid_container {
                 outline: none;
             }
 
+            #select_bttns {
+                width: 100%;
+                height: 40px;
+                margin-top: 20px;
+                display: flex;
+
+                button {
+                    width: 50%;
+                    margin: auto;
+
+                    &:first-child {
+                        background-color: #6878e0;
+                        color: #ededed;
+                        i {
+                            font-size: 1.8rem;
+                        }
+                    }
+                    &:hover {
+                        color: #ededed;
+                        border: 2px solid #ededed;
+                    }
+
+                    &:first-child:hover {
+                        i {
+                            color: #ededed;
+                        }
+                    }
+                }
+            }
+
             button {
                 border: 2px solid #00000000;
                 outline: none;
@@ -416,10 +446,9 @@ div#hybrid_container {
                 font-weight: 500;
                 cursor: pointer;
                 width: 100%;
-                display: inline-block;
                 
                 i {
-                    font-size: 2rem;
+                    font-size: 1.9rem;
                     margin-left: -3px;
                 }  
 

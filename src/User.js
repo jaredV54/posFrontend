@@ -438,7 +438,7 @@ class User extends React.Component {
                       </div>
                     </div>
 
-                    <table className='customer-table'>
+                    <table className='customer-table' style={{width: "100%"}}>
                     {loading ? (<>
                     <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
                     </>) : null

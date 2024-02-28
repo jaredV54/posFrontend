@@ -149,15 +149,17 @@
             cursor: pointer;
             background-color: #6878e0;
             font-size: 1rem;
-            height: 100%;
-            margin-right: -12px;
-            padding: 5px 12px 0 8px;
+            height: 25px;
+            margin-right: -10px;
+            margin-top: 3px;
+            padding: 5px 12px 0 7px;
+            color: #ededed;
             border-left: 2px solid #fff;
             transition: all ease .25s;
     
             &:hover {
               background-color: #f7860e;
-              border-left: 2px solid #f7860e;
+              border-left: 2px solid #151515;
             }
             &:active {
               background-color: #6878e0;

@@ -326,7 +326,6 @@ const Purchase = () => {
           setFieldInfo={setFieldInfo}
           handleShowFillTrans={handleShowFillTrans}
           transaction={transaction}
-          setTransaction={setTransaction}
           selectedHybridType={hybrid.selectedHybridType}
           listLabel={hybrid.selectedHybrid[0]?.listLabel}
           priceLabel={hybrid.selectedHybrid[0]?.priceLabel}
@@ -621,9 +620,10 @@ const SelectedHybrid = ({
   receipt, setReceipt,
   psyc, setPsyc, 
   setFieldInfo, handleShowFillTrans,
-  setTransaction, transaction, handleResetSelectionField,
+  transaction, handleResetSelectionField,
   listLabel, priceLabel
 }) => {
+  const { profFee } = selectedHybrid[0] || false;
 
   const buildInProfFee = [
     ["Cancel", 0],
@@ -908,7 +908,7 @@ const SelectedHybrid = ({
               </div>
             )): null}
             {parseFloat(receipt.totalPrice) > 0 && psyc.selectedTest.length > 0 ? (<>
-              <div className='discount_conainer'>
+            {profFee === 1 && (<div className='discount_conainer'>
                 <label htmlFor="professional_fee">Professional fee: </label>
                 <button 
                 type="button"
@@ -920,7 +920,8 @@ const SelectedHybrid = ({
                 >
                  {receipt.professionalFee === 0 ? 'Select' : receipt.professionalFee}
                 </button>
-              </div>
+              </div>)}
+              
               <div className='discount_conainer'>
                 <label htmlFor="discount">Discount: </label>
                 <input 
@@ -1645,7 +1646,7 @@ const Receipt = ({receiptContainer, setReceiptContainer, handleReset, setFieldIn
                       <td style={{fontWeight: 600}}>Receipt No</td>
                       <td style={{color: "#0204AB"}}>#{receiptNo}</td>
                       <td style={{fontWeight: 600}}>Amount paid</td>
-                      <td>{amountPaid}</td>
+                      <td>{parseFloat(amountPaid).toFixed(2)}</td>
                     </tr>
 
                     <tr>

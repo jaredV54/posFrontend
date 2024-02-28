@@ -24,7 +24,8 @@ const Products = () => {
   const [hybrid, setHybrid] = useState({
     receivedData: [],
     selectedHybrid: "",
-    currentView: localStorage.getItem("currentSelectedHybrid_")
+    currentView: localStorage.getItem("currentSelectedHybrid_"),
+    profFee: false
   });
 
   if (!hybrid.currentView) {
@@ -61,7 +62,8 @@ const Products = () => {
   const resetvalues = () => {
     setHybrid((prev) => ({
       ...prev,
-      selectedHybrid: ''
+      selectedHybrid: '',
+      profFee: false
     }))
 
     setFieldInfo((prev) => ({
@@ -224,7 +226,8 @@ const Products = () => {
                 hybrid: hybrid.selectedHybrid,
                 branch: branch,
                 listLabel: listLabel,
-                priceLabel: priceLabel
+                priceLabel: priceLabel,
+                profFee: hybrid.profFee
               })
               cancelHybridSelection(false, true);
               setFieldInfo((prev) => ({
@@ -274,7 +277,8 @@ const Products = () => {
                   hybrid: hybrid.selectedHybrid,
                   branch: psychologicalAssessment.branch,
                   listLabel: listLabel,
-                  priceLabel: priceLabel
+                  priceLabel: priceLabel,
+                  profFee: hybrid.profFee
                 });
 
                 if (response.data.message === 'Data updated successfully') {
@@ -464,6 +468,8 @@ const Products = () => {
     quantity: service.quantity,
     description: service.description
   }))
+
+  setHybrid((prev) => ({...prev, profFee: service.profFee}));
   addNewHybrid("service");
   }
 
@@ -614,16 +620,26 @@ const Products = () => {
                       }}
                       placeholder='###'
                     />
-                    <button 
-                    type="button"
-                    onClick={() => {
-                    const isService = document.getElementsByClassName('assessmet_field')[0];
-                      if (isService) {
-                        isService.classList.add("display_assessment_field")
-                      }
-                    }}>
-                      <span>List</span> <i className='bx bx-chevron-right'></i>
-                    </button>
+                    <div id='select_bttns'>
+                      <button type="button"
+                      style={{
+                        backgroundColor: !hybrid.profFee ? "#373737" : null,
+                        border: !hybrid.profFee ? "2px solid #ededed" : null,
+                      }}
+                      onClick={() => setHybrid(prev => ({...prev, profFee: !prev.profFee}))}>
+                        <span>Prof Fee</span> {hybrid.profFee ? <i className='bx bx-checkbox-checked' ></i> : <i className='bx bx-checkbox' ></i>}
+                      </button>
+                      <button 
+                      type="button"
+                      onClick={() => {
+                        const isService = document.getElementsByClassName('assessmet_field')[0];
+                        if (isService) {
+                          isService.classList.add("display_assessment_field")
+                        }
+                      }}>
+                        <span>List</span> <i className='bx bx-chevron-right'></i>
+                      </button>
+                    </div>
                     </>
                 )}
 
@@ -701,6 +717,7 @@ const Products = () => {
             className='hybrid_selection_bar'
           ></div>
           </ul>
+
           <DisplayHybrids
             hybrid={hybrid}
             updateSelectedHybrid={updateSelectedHybrid}

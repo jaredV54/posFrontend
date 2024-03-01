@@ -60,7 +60,14 @@ function TotalSales() {
       console.log(response.data.result)
       if (response.data.isSuccessful) setFilteredTransactions(response.data.result);
     } catch (error) {
-      console.log(error.response)
+      if (!error.response.data.isSuccessful) {
+        setFilteredTransactions([{}])
+        setFieldInfo((prev) => ({...prev, warn: error.response.data.message}));
+      } else if (error.request) {
+        setFieldInfo((prev) => ({...prev, warn: "Network issue. Please try again later."}));
+      } else {
+        setFieldInfo((prev) => ({...prev, warn: error.message}))
+      } 
     } finally {
       setFieldInfo((prev) => ({...prev, isfetching: false}));
     }

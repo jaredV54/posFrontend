@@ -8,7 +8,6 @@ import config from "./Config.json"
 function TotalSales() {
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [storeInfo, setStoreInfo] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [viewOption, setViewOption] = useState('daily');
@@ -19,7 +18,6 @@ function TotalSales() {
   })
   const [decryptedUserData, setDecryptUserData] = useState({});
   const userType = decryptedUserData.userType;
-  console.log(place.selectedPlace)
   useEffect(() => {
     const userData = localStorage.getItem('encryptedData');
   
@@ -75,7 +73,7 @@ function TotalSales() {
 
   const getPlaces = async () => {
     try {
-      setFieldInfo((prev) => ({...prev, loading: true}));
+      setFieldInfo((prev) => ({...prev, isfetching: true}));
       const response = await axios.get(`${config.Configuration.database}/store`);
       if (response.data.isSuccessful) setPlace(prev => ({...prev, places: response.data.result}));
     } catch (error) {
@@ -87,7 +85,7 @@ function TotalSales() {
         setFieldInfo((prev) => ({...prev, warn: error.message}))
       } 
     } finally {
-      setFieldInfo((prev) => ({...prev, loading: false}));
+      setFieldInfo((prev) => ({...prev, isfetching: false}));
     }
   }
 
@@ -238,6 +236,7 @@ function TotalSales() {
   if (userType !== 'user' && userType !== undefined) {
   return (
     <div>
+      {fieldInfo.isfetching ? (<span className="loader"></span>) : null}
       <div className="go-back">
         <Link to="/Purchase"><i className='bx bx-chevron-left' ></i></Link>
       </div>

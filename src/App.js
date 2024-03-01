@@ -15,25 +15,6 @@ import SplitPaymentRecord from './SplitPaymentRecord';
 
 const AuthenticatedRoutes = ({ values, authenticated }) => {
   const navigate = useNavigate();
-  useEffect(() => {
-    const handleUnload = () => {
-      const refreshFlag = localStorage.getItem('refreshFlag');
-      if (!refreshFlag) {
-        localStorage.clear();
-      }
-    };
-
-    window.addEventListener('unload', handleUnload);
-    const handleBeforeUnload = () => {
-      localStorage.setItem('refreshFlag', 'true');
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('unload', handleUnload);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
 
   useEffect(() => {
     if (!authenticated) {

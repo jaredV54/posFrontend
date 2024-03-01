@@ -12,9 +12,14 @@ function TotalSales() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [viewOption, setViewOption] = useState('daily');
+  const [place, setPlace] = useState({
+    pickedPlaceId: 0,
+    selectedPlace: {},
+    places: [{}]
+  })
   const [decryptedUserData, setDecryptUserData] = useState({});
   const userType = decryptedUserData.userType;
-
+  console.log(place.selectedPlace)
   useEffect(() => {
     const userData = localStorage.getItem('encryptedData');
   
@@ -30,21 +35,70 @@ function TotalSales() {
     loading: false,
     message: "",
     warn: "",
-    isSuccessful: ""
+    isSuccessful: "",
+    isfetching: false
   })
 
   useEffect(() => {
     getTransactions();
+    getPlaces()
   }, []);
+
+  useEffect(() => {
+    if (place.selectedPlace.id > 0) {
+      filterSalesById();
+    } else {
+      getTransactions();
+    }
+  }, [place.selectedPlace])
+
+  const filterSalesById = async () => {
+    const id = place.selectedPlace.id;
+    try {
+      setFieldInfo((prev) => ({...prev, isfetching: true}));
+      const response = await axios.get(`${config.Configuration.database}/transactionPlace/${id}`);
+      console.log(response.data.result)
+      if (response.data.isSuccessful) setFilteredTransactions(response.data.result);
+    } catch (error) {
+      console.log(error.response)
+    } finally {
+      setFieldInfo((prev) => ({...prev, isfetching: false}));
+    }
+  }
+
+  const getPlaces = async () => {
+    try {
+      setFieldInfo((prev) => ({...prev, loading: true}));
+      const response = await axios.get(`${config.Configuration.database}/store`);
+      if (response.data.isSuccessful) setPlace(prev => ({...prev, places: response.data.result}));
+    } catch (error) {
+      if (error.response) {
+        setFieldInfo((prev) => ({...prev, warn: error.response.data.message}));
+      } else if (error.request) {
+        setFieldInfo((prev) => ({...prev, warn: "Network issue. Please try again later."}));
+      } else {
+        setFieldInfo((prev) => ({...prev, warn: error.message}))
+      } 
+    } finally {
+      setFieldInfo((prev) => ({...prev, loading: false}));
+    }
+  }
 
   const getTransactions = async () => {
     try {
+      setFieldInfo((prev) => ({...prev, loading: true}));
       const response = await axios.get(`${config.Configuration.database}/transactions`);
       setTransactions(response.data);
       setFilteredTransactions(response.data.transactions);
       setFilteredTransactions(response.data);
     } catch (error) {
-      console.error(error);
+      if (error.response) {
+        setFieldInfo((prev) => ({...prev, warn: error.response.data.message}));
+      } else {
+        setFieldInfo((prev) => ({...prev, warn: error.message}))
+      } 
+    } finally {
+      setFieldInfo((prev) => ({...prev, loading: false}));
     }
   };
 
@@ -54,7 +108,6 @@ function TotalSales() {
     return date.toLocaleDateString(undefined, options);
   };
 
-  
   const handleStartDateChange = (event) => {
     const startDate = event.target.value;
     setStartDate(startDate);
@@ -168,6 +221,13 @@ function TotalSales() {
     );
   }
 
+  const handleShowPlaceIds = () => {
+    const button = document.querySelector(".place_id_container");
+    if (button) {
+      button.classList.toggle("place_id_container_toggle")
+    }
+  }
+
   if (userType !== 'user' && userType !== undefined) {
   return (
     <div>
@@ -217,7 +277,27 @@ function TotalSales() {
       </>) : null
       }
 
-      <div className="print-sales-bttn-container">
+      <div className="print_bttn_container"
+      style={{
+        position: "relative",
+        top: 0,
+        marginTop: "20px"
+      }}>
+
+      <button className="select_place_id" onClick={() => handleShowPlaceIds()}>
+        <span>Select Place</span>
+        <div className="place_id_container">
+          <div onClick={() => setPlace((prev) => ({...prev, selectedPlace: {}}))}>
+            All place revenue
+          </div>
+          {place.places.length > 0 ? place.places.map((p) => (
+            <div key={p.id} onClick={() => setPlace((prev) => ({...prev, selectedPlace: p}))}>
+              {p.storeName}
+            </div> 
+          )) : null}
+        </div>
+      </button>
+
       <ReactToPrint
         trigger={() => (
           <button className="print-sales-bttn" >
@@ -230,30 +310,28 @@ function TotalSales() {
       </div>
 
       <div ref={componentRef} className="sales-data">
-        {storeInfo.userTypeIs === 'admin'? null : (
+        {place.selectedPlace.id > 0 ? (
           <div className="store-info" >
           <div>
-            <span>Store</span> {storeInfo.storeName}
+            <span>Store</span> {place.selectedPlace.storeName}
           </div>
           <div>
-            <span>Address:</span> {storeInfo.address}
+            <span>Address:</span> {place.selectedPlace.address}
           </div>
           <div>
-            <span>Contact No:</span> {storeInfo.contactNumber}
+            <span>Contact No:</span> {place.selectedPlace.contactNumber}
           </div>
           <div>
-            <span>Bir/Tin:</span> {storeInfo.birTin}
+            <span>Bir/Tin:</span> {place.selectedPlace.birTin}
           </div>
         </div>
-        )}
+        ) : null}
         {viewComponent}
       </div>
     </div>
   );
   } else {
-    return (<div>
-      You don't have acces to this page.
-    </div>);
+    return;
   }
 }
 
@@ -325,7 +403,7 @@ function Monthly({ combinedTransactions, totalQuantity, totalSales }) {
           <tr>
             <th>Month</th>
             <th>Year</th>
-            <th>QTY</th>
+            <th>Size</th>
             <th>Sales</th>
           </tr>
         </thead>
@@ -382,7 +460,7 @@ function Yearly({ combinedTransactions, formatDay, totalQuantity, totalSales }) 
         <thead>
           <tr>
             <th>Year</th>
-            <th>QTY</th>
+            <th>Size</th>
             <th>Sales</th>
           </tr>
         </thead>

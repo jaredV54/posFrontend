@@ -53,9 +53,19 @@ class Place extends React.Component {
       const response = await axios.get(`${config.Configuration.database}/store`);
       if (response.data.isSuccessful) this.setState({ store: response.data.result, filteredStore: response.data.result });
     } catch (error) {
-      this.setState({
-        message: error.response.data.message
-      })
+      if (error.response) {
+        this.setState({
+          warn: error.response.data.message
+        })
+      } else if (error.request) {
+        this.setState({
+          warn: "Network issue. Please try again later."
+        });
+      } else {
+        this.setState({
+          warn: error.message
+        })
+      } 
     } finally {
       this.setState({ loading: false });
     }

@@ -1,14 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useMatch, useResolvedPath, useNavigate } from 'react-router-dom';
+import decryptedUserDataFunc from './decrypt';
 import LogoutConfirmation from './LogoutConfirmation';
-import axios from 'axios';
-import config from "./Config.json";
 
 const NavArea = () => {
   const [openBar, setOpenBar] = useState(true);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const navigate = useNavigate();
-  const userType = JSON.parse(localStorage.getItem("currentUserType"));
+  const [decryptedUserData, setDecryptUserData] = useState({});
+  const userType = decryptedUserData.userType;
+
+  useEffect(() => {
+    const userData = localStorage.getItem('encryptedData');
+  
+    if (userData) {
+      const decryptionKey = 'NxPPaUqg9d';
+      const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+      setDecryptUserData(decrypted);
+    }
+  }, []);  
 
   const handleMenuClick = () => {
     const NavMenu = document.getElementById("nav-menu");
@@ -52,7 +62,7 @@ const NavArea = () => {
     setShowLogoutConfirmation(false);
   };
 
-  if (userType.userType !== undefined) {
+  if (userType !== undefined) {
   return (
     <React.Fragment>
       <div id='nav-menu-container' className='nav-menu-container'>
@@ -60,7 +70,7 @@ const NavArea = () => {
       </div>
       <div id='shadow' className='shadow' onClick={handleRemoveClass}></div>
       <nav id='nav-container' className='nav-area close-nav-area'>
-        {userType.userType === 'admin' ?
+        {userType === 'admin' ?
         (
           <ul className='nav-ul' onClick={handleRemoveClass}>
             <CustomLink to="/Purchase"><i className='bx bx-money' data-text="Purchase"></i></CustomLink>
@@ -82,7 +92,7 @@ const NavArea = () => {
             </span>
           </li>
         </ul>
-        ) : userType.userType === 'manager' ? (
+        ) : userType === 'manager' ? (
           <ul className='nav-ul' onClick={handleRemoveClass}>
             <CustomLink to="/Purchase"><i className='bx bx-money' data-text="Purchase"></i></CustomLink>
             <CustomLink to="/Hybrid"><i className='bx bx-category' data-text="Product/Service"></i></CustomLink>

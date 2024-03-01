@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import axios from 'axios';
+import decryptedUserDataFunc from './decrypt';
 import { Link } from 'react-router-dom';
 import config from "./Config.json";
 
@@ -21,7 +22,7 @@ class Place extends React.Component {
       branch: '',
       option: 'Add',
       currentId: 0,
-      userType: JSON.parse(localStorage.getItem("currentUserType")).userType,
+      userType: 0,
       loading: false,
       fetchingData: false,
       message: "",
@@ -33,6 +34,17 @@ class Place extends React.Component {
   componentDidMount() {
     this.getStore();
     this.showNotification();
+    this.userInfo()
+  }
+
+  userInfo = () => {
+    const userData = localStorage.getItem('encryptedData');
+    
+    if (userData) {
+      const decryptionKey = 'NxPPaUqg9d';
+      const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+      this.setState({userType: decrypted.userType})
+    }
   }
 
   getStore = async () => {

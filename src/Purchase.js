@@ -4,6 +4,7 @@ import axios from 'axios';
 import ReactToPrint from 'react-to-print';
 import config from "./Config.json";
 import OPIImage from './OIP.jpg';
+import decryptedUserDataFunc from './decrypt';
 
 const Purchase = () => {
   const [hybrid, setHybrid] = useState({
@@ -13,25 +14,16 @@ const Purchase = () => {
     currentView: localStorage.getItem("currentSelectedHybrid_"),
   });
 
+  const [decryptedUserData, setDecryptUserData] = useState({});
+  const containerRef = useRef(null);
+  const userType = decryptedUserData.userType;
+
   if (!hybrid.currentView) {
     localStorage.setItem("currentSelectedHybrid_", "all")
   }
-  const containerRef = useRef(null);
-  const userType = JSON.parse(localStorage.getItem("currentUserType")) || "none";
-  const clientJSON = JSON.parse(localStorage.getItem('selectedCustomer')) || {id: 0};
+
   const [receipt, setReceipt] = useState({
-    client: clientJSON.id > 0 ?
-    [JSON.parse(localStorage.getItem('selectedCustomer'))] : [{
-      id: 0,
-      fName: '',
-      lName: '',
-      mName: '',
-      email: '',
-      contactNo: '',
-      address: '',
-      remarks: '',
-      providers: ''
-    }],
+    client: [{id: 0}],
     quantity: 1,
     currentPrice: 0,
     totalPrice: 0,
@@ -42,7 +34,7 @@ const Purchase = () => {
     professionalFee: 0,
     withProfessionalFee: 0,
     profFeeForDiscount: 0
-  })
+  });  
 
   const [receiptContainer, setReceiptContainer] = useState ({
     showReceipt: false,
@@ -56,8 +48,8 @@ const Purchase = () => {
     accNo: "N/A",
     cash: "",
     opened: false,
-    placeId: userType.storeId
-  });
+    placeId: 0
+  });  
 
   const [fieldInfo, setFieldInfo] = useState({
     searchQuery: "",
@@ -76,6 +68,25 @@ const Purchase = () => {
     filterSelectedList: []
   });
 
+  // Retrieve client and user data
+  useEffect(() => {
+    const userData = localStorage.getItem('encryptedData');
+    const clientData = localStorage.getItem('clientSelection');
+  
+    if (userData) {
+      const decryptionKey = 'NxPPaUqg9d';
+      const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+      setDecryptUserData(decrypted);
+      setTransaction(prev => ({...prev, placeId: decrypted.storeId}))
+    }
+  
+    if (clientData) {
+      const decryptionKey = 'hEv1ZSXzm1';
+      const decrypted = JSON.parse(decryptedUserDataFunc(clientData, decryptionKey));
+      setReceipt(prevReceipt => ({...prevReceipt, client: [decrypted]}));
+    }
+  }, []);
+  
   const getHybrids = async () => {
     try {
       setFieldInfo((prev) => ({ ...prev, fetchingData: true }));
@@ -249,7 +260,7 @@ const Purchase = () => {
     }
   }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
 
-  if (userType.userType !== undefined) {
+  if (userType !== undefined) {
   return (
     <React.Fragment>
       <div className="field_message" ref={fieldMessageRef}>
@@ -283,7 +294,6 @@ const Purchase = () => {
           hybrid={hybrid}
           handleResetSelectionField={handleResetSelectionField}
           setReceiptContainer={setReceiptContainer}
-          userType={userType.userType}
           />
         <div className='search_bar_container'>
           <input 
@@ -376,7 +386,7 @@ const DisplayHybrids = ({
       if (hybrid.selectedHybridType !== "service") {
         setHybrid((prev) => ({
           ...prev,
-          selectedHybrid: [{...hyb, newPrice: hyb.price, prodQuantity: 1}, ...prev.selectedHybrid],
+          selectedHybrid: [{ ...hyb, newPrice: hyb.price, prodQuantity: 1 }, ...prev.selectedHybrid],
           selectedHybridType: hyb.hybrid
         }))
       } else {
@@ -832,12 +842,17 @@ const SelectedHybrid = ({
 
   const productTotalPrice = () => {
     if (selectedHybridType === "product") {
+      const totalPrice = selectedHybrid.reduce(
+        (sum, item) => sum + parseFloat(item.newPrice),
+        0
+      ).toFixed(2);
+  
       setReceipt((prev) => ({
         ...prev,
-        totalPrice: selectedHybrid.reduce((sum, item) => sum + parseFloat(item.newPrice).toFixed(2), 0)
-      }));   
-    } 
-  }
+        totalPrice: totalPrice
+      }));
+    }
+  };  
 
   const showProfessionalfees = () => {
     const displayProfFee = document.querySelector(".prof_fee_container");
@@ -906,7 +921,7 @@ const SelectedHybrid = ({
             <p className='s_hybrid_price'>
               <span>{selectedHybrid[0].hybrid === "product" ? `Price: ₱${list.newPrice}` : `Actual Price: ₱${list.price}`}</span>
               {list.hybrid === "product" && 
-              <span className='s_hybrid_price'>{list.quantity - list.prodQuantity} qty</span>}
+              <span className='prod_qty'>{list.quantity - list.prodQuantity} qty</span>}
             </p>
             
             {psyc.selectedTest ? psyc.selectedTest.map((list) => (

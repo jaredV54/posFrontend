@@ -1,7 +1,9 @@
 import React from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import config from "./Config.json"
+import decryptedUserDataFunc from './decrypt';
+import CryptoJS from 'crypto-js';
+import config from "./Config.json";
 
 class Transactions extends React.Component {
   constructor(props) {
@@ -13,7 +15,7 @@ class Transactions extends React.Component {
       endDate: '',
       searchQuery: '',
       splitPayment: [],
-      userType: JSON.parse(localStorage.getItem("currentUserType")).userType,
+      userType: 0,
       displayCount: 150,
       loading: false,
       message: ""
@@ -23,6 +25,17 @@ class Transactions extends React.Component {
   componentDidMount() {
     this.getTransactions();
     this.getSplitPayment();
+    this.userInfo()
+  }
+
+  userInfo = () => {
+    const userData = localStorage.getItem('encryptedData');
+    
+    if (userData) {
+      const decryptionKey = 'NxPPaUqg9d';
+      const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+      this.setState({userType: decrypted.userType})
+    }
   }
   
   getTransactions = async () => {
@@ -97,38 +110,48 @@ class Transactions extends React.Component {
     });
   };
 
+  // local storage client selection
+  encryptData = (data, key) => {
+    return CryptoJS.AES.encrypt(data, key).toString();
+  };
+
+  handleSaveToLocalStorage = (data) => {
+    const splitData = JSON.stringify(data);
+    const encryptionKey = 'Dr988U3DDD';
+
+    const encrypted = this.encryptData(splitData, encryptionKey);
+    localStorage.setItem('TID', encrypted);
+  }
+
   handleSplitPayment = async (id, balance, customerId, items) => {
     const {splitPayment} = this.state;
     if (splitPayment.length > 0) {
       splitPayment.map((split) => {
         if (split.transId == id && split.balance !== 0) {
-          localStorage.setItem('transId', JSON.stringify(
-            {
+          this.handleSaveToLocalStorage({
             id: id, 
             balance: split.balance, 
             customerId: customerId, 
             items: items
-          }));
+          });
           window.location.assign("/SplitPayment");
         } else {
-          localStorage.setItem('transId', JSON.stringify(
-            {
+          this.handleSaveToLocalStorage({
             id: id, 
             balance: balance, 
             customerId: customerId, 
             items: items
-          }));
+          })
           window.location.assign("/SplitPayment");
         }
       })
     } else {
-      localStorage.setItem('transId', JSON.stringify(
-        {
+      this.handleSaveToLocalStorage({
         id: id, 
         balance: balance, 
         customerId: customerId, 
         items: items
-      }));
+      });
       window.location.assign("/SplitPayment");
     }
   }
@@ -289,7 +312,7 @@ class Transactions extends React.Component {
                   <td
                     id={`${trans.id}`}
                     onClick={() => {
-                      this.handleSplitPayment(trans.id, trans.changeAmount, trans.customerId, trans.items);
+                      this.handleSplitPayment(trans.id, trans.balance, trans.customerId, trans.items);
                     }}
                     className={`select-split-row ${matchingSplitPayments[trans.id] || trans.typeOfPayment === 'straight' ? 'split-balance-passed' : ''}`}
                   >Pay</td>

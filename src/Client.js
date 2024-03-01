@@ -1,6 +1,8 @@
 import axios from "axios";
 import React, {useState, useEffect, useRef} from "react"; 
 import config from "./Config.json";
+import decryptedUserDataFunc from './decrypt';
+import CryptoJS from 'crypto-js';
 
 const Client = () => {
     const initialClient = {
@@ -51,8 +53,18 @@ const Client = () => {
       setDisplayCount((prev) => prev + 250);
     }
 
-    const storedUserData = localStorage.getItem("currentUserType");
-    const userType = storedUserData ? JSON.parse(storedUserData).userType : undefined;
+    const [decryptedUserData, setDecryptUserData] = useState({});
+    const userType = decryptedUserData.userType;
+
+    useEffect(() => {
+      const userData = localStorage.getItem('encryptedData');
+    
+      if (userData) {
+        const decryptionKey = 'NxPPaUqg9d';
+        const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+        setDecryptUserData(decrypted);
+      }
+    }, []);  
 
     const getClients = async () => {
         try {
@@ -291,9 +303,21 @@ const Client = () => {
         if (isSelected) {
             return;
         }
-        localStorage.setItem('selectedCustomer', JSON.stringify(client));
-        window.location.assign("/Purchase");
+        handleSaveToLocalStorage(client)
     } 
+
+    const encryptData = (data, key) => {
+      return CryptoJS.AES.encrypt(data, key).toString();
+    };
+
+    const handleSaveToLocalStorage = (data) => {
+      const sensitiveData = JSON.stringify(data);
+      const encryptionKey = 'hEv1ZSXzm1';
+  
+      const encrypted = encryptData(sensitiveData, encryptionKey);
+      localStorage.setItem('clientSelection', encrypted);
+      window.location.assign("/Purchase");
+    }
 
     const handleClientFilter = (value, name) => {
         setClientFilter((prev) => ({
@@ -303,7 +327,6 @@ const Client = () => {
     }
 
     const clientFilterToRender = Object.keys(clientFilter);
-    {/*mName, email, contactPersonName, contactPersonNo, service, remarks, bDate,*/}
     const labels = [
         "First Name: *",
         "Last Name: *",
@@ -573,4 +596,4 @@ const Client = () => {
         } 
 }
 
-export default Client
+export default Client;

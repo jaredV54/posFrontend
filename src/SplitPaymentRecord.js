@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from "react";
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 import ReactToPrint from 'react-to-print';
+import decryptedUserDataFunc from './decrypt';
 import OPIImage from './OIP.jpg';
 import config from "./Config.json";
 
@@ -11,8 +11,19 @@ function SplitPaymentRecord() {
     const [searchQuery, setSearchQuery] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const userTypeJSON = JSON.parse(localStorage.getItem("currentUserType"));
-    const userType = userTypeJSON.userType;
+    const [decryptedUserData, setDecryptUserData] = useState({});
+    const userType = decryptedUserData.userType;
+
+    useEffect(() => {
+      const userData = localStorage.getItem('encryptedData');
+    
+      if (userData) {
+        const decryptionKey = 'NxPPaUqg9d';
+        const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+        setDecryptUserData(decrypted);
+      }
+    }, []);  
+    
     const [displayCount, setDisplayCount] = useState(150);
     const [fieldInfo, setFieldInfo] = useState({
       loading: false,

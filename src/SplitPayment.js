@@ -4,10 +4,11 @@ import config from "./Config.json";
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import ReactToPrint from 'react-to-print';
+import decryptedUserDataFunc from './decrypt';
+import CryptoJS from 'crypto-js';
 import OPIImage from './OIP.jpg';
 
 function SplitPayment() {
-    const initialValues = JSON.parse(localStorage.getItem('transId'));
     const [cashValue, setCashValue] = useState(false);
     const [modeOfPayment, setModeOfPayment] = useState('Cash');
     const [accNo, setAccNo] = useState('N/A');
@@ -18,9 +19,6 @@ function SplitPayment() {
     });
     const [receiptNo, setReceiptNo] = useState('');
     const [balance, setChange] = useState();
-    const userTypeJSON = JSON.parse(localStorage.getItem("currentUserType"))
-    const placeId = userTypeJSON.storeId;
-    const userType = userTypeJSON.userType;
     const [transFieldInfo, setTransFieldInfo] = useState({
       selectingModeOfPayment: false,
       selectingPlatform: false,
@@ -34,6 +32,27 @@ function SplitPayment() {
       loading: false,
       fetchingData: false
     })
+    const [decryptedUserData, setDecryptUserData] = useState({});
+    const [initialValues, setInitialValues] = useState({});
+    const userType = decryptedUserData.userType;
+    const clientId = initialValues.customerId;
+    const placeId = decryptedUserData.storeId;
+    useEffect(() => {
+      const userData = localStorage.getItem('encryptedData');
+      const splitData = localStorage.getItem('TID');
+    
+      if (userData) {
+        const decryptionKey = 'NxPPaUqg9d';
+        const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+        setDecryptUserData(decrypted);
+      }
+
+      if (splitData) {
+        const decryptionKey = 'Dr988U3DDD';
+        const decrypted = JSON.parse(decryptedUserDataFunc(splitData, decryptionKey));
+        setInitialValues(decrypted)
+      }
+    }, []);  
 
     const [receiptContainer, setReceiptContainer] = useState ({
       splitId: 0,
@@ -88,7 +107,17 @@ function SplitPayment() {
     } else {
     setChange((initialValues.balance - cashValue).toFixed(2));
     }
-    }) 
+    }, [cashValue]) 
+
+    
+    const handleSaveSplitTrans = (data) => {
+      const splitData = JSON.stringify(data);
+      const encryptionKey = 'Dr988U3DDD';
+      
+      const encrypted = CryptoJS.AES.encrypt(splitData, encryptionKey).toString();
+      localStorage.setItem('TID', encrypted);
+    }
+    
 
     const handlePurchase = async (e) => {
     const money = parseFloat(cashValue).toFixed(2);
@@ -107,6 +136,7 @@ function SplitPayment() {
         break;
     
       default:
+        
         try {
           setFieldInfo((prev) => ({...prev, loading: true}));
           const response = await axios.post(`${config.Configuration.database}/splitPayment`, {
@@ -124,13 +154,12 @@ function SplitPayment() {
 
           const { success, id, message } = response.data;
           if (success) {
-            localStorage.setItem('transId', JSON.stringify(
-              {
+            handleSaveSplitTrans({
               id: initialValues.id, 
               balance: balance, 
               customerId: initialValues.customerId, 
               items: initialValues.items
-            }));
+            })
             setReceiptContainer(prev => ({
               ...prev, 
               splitId: id,
@@ -149,6 +178,7 @@ function SplitPayment() {
         } catch (error) {
           if (error.response) {
             setFieldInfo(prev => ({...prev, warn: error.response.data.message}));
+            console.log(error.response.data.message)
           } else if (error.request) {
             setFieldInfo(prev => ({...prev, warn: "Network issue. Please try again later."}));
           } else {
@@ -160,18 +190,15 @@ function SplitPayment() {
         break;
     }   
     };  
-    
-    useEffect(() => {
-      getClient();
-    }, [])
 
     const getClient = async () => {
       try {
+        console.log(clientId)
         setFieldInfo((prev) => ({...prev, loading: true}));
         const response = await axios.get(`${config.Configuration.database}/customerId`, {
-          params: { id: initialValues.customerId }
+          params: { id: clientId }
         });
-        if (response.data.result) {
+        if (response.data.isSuccessful) {
           setCustomer(response.data.result[0]);
         } 
       } catch(error) {
@@ -186,6 +213,10 @@ function SplitPayment() {
         setFieldInfo((prev) => ({...prev, loading: false}));
       }
     };   
+
+    useEffect(() => {
+      getClient();
+    }, [clientId])
 
     const handleAccNo = (e) => {
         setAccNo(e.target.value);
@@ -272,7 +303,7 @@ function SplitPayment() {
 
                         <tr>
                           <td>Name</td>
-                          <td>{`${customer.fName} ${customer.lName}`}
+                          <td>{customer ? `${customer.fName} ${customer.lName}` : ""}
                           </td>
                         </tr>
 
@@ -302,7 +333,7 @@ function SplitPayment() {
                             <td style={{
                               fontWeight: "500",
                               color: "#ff8502"
-                            }}>₱ {balance}</td>
+                            }}>{isNaN(balance) ? `₱ ${initialValues.balance}` : `₱ ${balance}`}</td>
                             </>
                         </tr>
 

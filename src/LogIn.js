@@ -3,10 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import Validation from './LogInValidation';
 import axios from 'axios';
 import config from "./Config.json";
+import CryptoJS from 'crypto-js';
 
 function LogIn({ values, setValues, handleLogin  }) {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
+
+  const encryptData = (data, key) => {
+    return CryptoJS.AES.encrypt(data, key).toString();
+  };
 
   const [fieldInfo, setFieldInfo] = useState({
     loading: false,
@@ -22,6 +27,14 @@ function LogIn({ values, setValues, handleLogin  }) {
     setErrors(Validation(values));
   };
 
+  const handleSaveToLocalStorage = (data) => {
+    const sensitiveData = JSON.stringify(data);
+    const encryptionKey = 'NxPPaUqg9d';
+
+    const encrypted = encryptData(sensitiveData, encryptionKey);
+    localStorage.setItem('encryptedData', encrypted);
+  }
+
   useEffect(() => {
     if (errors.email === '' && errors.password === '') {
       setFieldInfo((prev) => ({...prev, loading: true}));
@@ -30,7 +43,7 @@ function LogIn({ values, setValues, handleLogin  }) {
           if (res.data && res.data.data) {
             const { userType, storeId, userId } = res.data.data[0];
             if (userType && (storeId || userType === "admin")) {
-              localStorage.setItem('currentUserType', JSON.stringify({ userType, storeId, userId }));
+              handleSaveToLocalStorage({ userType, storeId, userId });
               if (res.data.message === 'Requirements Matched') {
                 handleLogin(true);
                 navigate('/Purchase');

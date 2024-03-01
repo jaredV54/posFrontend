@@ -1,6 +1,7 @@
 import axios from "axios";
 import React from "react"; 
-import config from "./Config.json"
+import decryptedUserDataFunc from './decrypt';
+import config from "./Config.json";
 
 class User extends React.Component {
     constructor(props) {
@@ -13,9 +14,9 @@ class User extends React.Component {
             name: '',
             email: '',
             password: '',
-            currentUserType: JSON.parse(localStorage.getItem("currentUserType")).userType,
-            currentUserPlaceId: JSON.parse(localStorage.getItem("currentUserType")).storeId,
-            currentUserId: JSON.parse(localStorage.getItem("currentUserType")).userId,
+            currentUserType: '',
+            currentUserPlaceId: 0,
+            currentUserId: 0,
             userType: '',
             storeName: '',
             currentId: 0,
@@ -34,6 +35,22 @@ class User extends React.Component {
     componentDidMount() {
         this.getUser();
         this.getStores();
+        this.userInfo()
+    }
+    
+    userInfo = () => {
+      const userData = localStorage.getItem('encryptedData');
+      
+      if (userData) {
+        const decryptionKey = 'NxPPaUqg9d';
+        const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+        this.setState({
+          userType: decrypted.userType,
+          currentUserType: decrypted.userType,
+          currentUserPlaceId: decrypted.storeId,
+          currentUserId: decrypted.userId
+        })
+      }
     }
 
     handleExpandClick = () => {

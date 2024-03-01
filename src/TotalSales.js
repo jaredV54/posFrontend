@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import axios from 'axios';
 import ReactToPrint from 'react-to-print';
+import decryptedUserDataFunc from './decrypt';
 import config from "./Config.json"
 
 function TotalSales() {
@@ -11,8 +12,19 @@ function TotalSales() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [viewOption, setViewOption] = useState('daily');
-  const userTypeJSON = JSON.parse(localStorage.getItem("currentUserType"));
-  const userType = userTypeJSON.userType;
+  const [decryptedUserData, setDecryptUserData] = useState({});
+  const userType = decryptedUserData.userType;
+
+  useEffect(() => {
+    const userData = localStorage.getItem('encryptedData');
+  
+    if (userData) {
+      const decryptionKey = 'NxPPaUqg9d';
+      const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
+      setDecryptUserData(decrypted);
+    }
+  }, []);  
+  
   const componentRef = useRef(null);
   const [fieldInfo, setFieldInfo] = useState({
     loading: false,
@@ -23,33 +35,7 @@ function TotalSales() {
 
   useEffect(() => {
     getTransactions();
-    //fetchStoreInfo();
   }, []);
-
-  /* const fetchStoreInfo = async () => {
-    try {
-      setFieldInfo((prev) => ({...prev, loading: true }))
-      const response = await axios.post(`${config.Configuration.database}/placeInfo`, values);
-      setStoreInfo(response.data.storeInfo);
-    } catch (error) {
-      if (error.response) {
-        console.log("Server Error:", error.response.data.message);
-        setFieldInfo((prev) => ({
-          ...prev,
-          warn: error.response.statusText
-        }))
-      } else if (error.request) {
-        setFieldInfo((prev) => ({
-          ...prev,
-          message: "No response from server. Please check your internet."
-        }))
-      } else {
-        console.log("Error:", error.message);
-      }
-    } finally {
-      setFieldInfo((prev) => ({...prev, loading: false }))
-    }
-  }; */
 
   const getTransactions = async () => {
     try {

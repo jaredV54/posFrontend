@@ -1,7 +1,7 @@
 {
     "Configuration": {
-      "database": "http://localhost:8082",
-      "gdatabase": "https://pos-psyzygy.v54.online"
+      "gdatabase": "http://localhost:8082",
+      "database": "https://pos-psyzygy.v54.online"
     }
 }
 

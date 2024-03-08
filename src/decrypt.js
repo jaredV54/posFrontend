@@ -5,4 +5,8 @@ const decryptData = (encryptedData, key) => {
   return bytes.toString(CryptoJS.enc.Utf8);
 };
 
+export const encryptData = (data, key) => {
+  return CryptoJS.AES.encrypt(data, key).toString();
+};
+
 export default decryptData;

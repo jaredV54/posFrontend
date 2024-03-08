@@ -55,7 +55,6 @@ function TotalSales() {
     try {
       setFieldInfo((prev) => ({...prev, isfetching: true}));
       const response = await axios.get(`${config.Configuration.database}/transactionPlace/${id}`);
-      console.log(response.data.result)
       if (response.data.isSuccessful) setFilteredTransactions(response.data.result);
     } catch (error) {
       if (!error.response.data.isSuccessful) {

@@ -2,6 +2,7 @@ import axios from "axios";
 import React from "react"; 
 import decryptedUserDataFunc from './decrypt';
 import config from "./Config.json";
+import { encryptData } from "./decrypt";
 
 class User extends React.Component {
     constructor(props) {
@@ -228,11 +229,15 @@ class User extends React.Component {
             });
 
             if (currentUserId === id) {
-              localStorage.setItem("currentUserType", JSON.stringify({
+                const newData = JSON.stringify({
                 userType: userType,
                 storeId: currentStoreId,
                 userId: currentUserId
-              }));
+                });
+                const encryptionKey = 'NxPPaUqg9d';
+                const encrypted = encryptData(newData, encryptionKey);
+                localStorage.setItem('encryptedData', encrypted)
+                this.userInfo()
             }
     
             this.getUser();

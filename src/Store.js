@@ -432,7 +432,8 @@ class Place extends React.Component {
                     <p className='store-description-text'><span className='desc-label'>Address:</span><span className='desc'>{store.address}</span></p>
                     <p className='store-description-text'><span className='desc-label'>Contact#:</span><span className='desc'>{store.contactNumber}</span></p>
                     <p className='store-description-text'><span className='desc-label'>Email:</span><span className='desc'><a href="#" target="_blank">{store.email}</a></span></p>
-                    <p className='birtin'><span className='desc-label'>Bir/Tin:</span><span className='desc'>{store.birTin}</span></p>
+                    <p className='birtin'><span className='desc-label'>Bir/Tin:</span><span className='desc'> {store.birTin}</span></p>
+                    <p className='birtin' style={{top: "30px"}}><span className='desc-label'>Place ID:</span><span className='desc'> {store.id}</span></p>
                     <p className='store-description-text'><span className='desc-label'>Branch:</span><span className='desc'>{store.branchName}</span></p>
                     <div className='buttons-container'>
                       <button className='update-store-bttn' onClick={() => this.updateStore(store.id)}>

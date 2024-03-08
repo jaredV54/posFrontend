@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ReactToPrint from 'react-to-print';
@@ -260,8 +260,7 @@ const Purchase = () => {
     }
   }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
 
-  if (userType !== undefined) {
-  return (
+  const content = (
     <React.Fragment>
       <div className="field_message" ref={fieldMessageRef}>
         {fieldInfo.message}
@@ -350,15 +349,17 @@ const Purchase = () => {
       setFieldInfo={setFieldInfo}
       />
     </React.Fragment>
-  ) 
-  } else {
-    return (<div
-    style={{
-      color: "#f7860e"
-    }}>
-      Log in to access the page
-    </div>);
-  }
+  )
+
+  const userLoggedIn = useMemo(() => {
+    if (userType !== undefined) {
+      return content
+    } else {
+      return null
+    }
+  })
+
+  return userLoggedIn
 }
 
 const DisplayHybrids = ({

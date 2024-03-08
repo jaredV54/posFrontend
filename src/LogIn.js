@@ -3,15 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import Validation from './LogInValidation';
 import axios from 'axios';
 import config from "./Config.json";
-import CryptoJS from 'crypto-js';
+import { encryptData } from './decrypt';
 
 function LogIn({ values, setValues, handleLogin  }) {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
-
-  const encryptData = (data, key) => {
-    return CryptoJS.AES.encrypt(data, key).toString();
-  };
 
   const [fieldInfo, setFieldInfo] = useState({
     loading: false,

@@ -41,6 +41,7 @@ function LogIn({ values, setValues, handleLogin  }) {
             if (userType && (storeId || userType === "admin")) {
               handleSaveToLocalStorage({ userType, storeId, userId });
               if (res.data.message === 'Requirements Matched') {
+                localStorage.setItem("currentSelectedHybrid_", "all");
                 handleLogin(true);
                 navigate('/Purchase');
               }

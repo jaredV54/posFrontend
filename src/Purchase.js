@@ -18,10 +18,6 @@ const Purchase = () => {
   const containerRef = useRef(null);
   const userType = decryptedUserData.userType;
 
-  if (!hybrid.currentView) {
-    localStorage.setItem("currentSelectedHybrid_", "all")
-  }
-
   const [receipt, setReceipt] = useState({
     client: [{id: 0}],
     quantity: 1,

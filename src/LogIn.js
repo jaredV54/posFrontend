@@ -109,7 +109,7 @@ function LogIn({ values, setValues, handleLogin  }) {
             </div>
             <i className='bx bx-chevrons-right arrow-right'></i>
           </button>
-          <p className='terms-paragraph'>Welcome to PSYZYGY POS!</p>
+          <p className='terms-paragraph'>Welcome to POS webiste!</p>
         </form>
       </div>
     </div>

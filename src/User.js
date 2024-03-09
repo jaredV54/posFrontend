@@ -4,9 +4,14 @@ import decryptedUserDataFunc from './decrypt';
 import config from "./Config.json";
 import { encryptData } from "./decrypt";
 
+export let userLenght = 0
+
 class User extends React.Component {
     constructor(props) {
         super(props);
+        this.fieldMessageRef = React.createRef();
+        this.fieldWarnRef = React.createRef();
+        this.fieldIsSuccessfulRef = React.createRef();
         this.state = {
             user: [],
             filteredUser: [],
@@ -23,6 +28,9 @@ class User extends React.Component {
             currentId: 0,
             checkEmail: '',
             checkinput: '',
+            warn: '',
+            message: '',
+            isSuccessful: '',
             option: 'Add',
             currentStoreId: 0,
             displayCount: 150,
@@ -36,7 +44,8 @@ class User extends React.Component {
     componentDidMount() {
         this.getUser();
         this.getStores();
-        this.userInfo()
+        this.userInfo();
+        this.fieldInfoMessage();
     }
     
     userInfo = () => {
@@ -64,9 +73,23 @@ class User extends React.Component {
         try {
           this.setState({loading: true})
             const response = await axios.get(`${config.Configuration.database}/user`);
-            this.setState({user: response.data, filteredUser: response.data});
+            if (response.data.length > 0) {
+              this.setState({user: response.data, filteredUser: response.data});
+            }
         } catch (error) {
-            console.error(error)
+          if (error.response) {
+            this.setState({
+              warn: "Internal error: status 500"
+            })
+          } else if (error.request) {
+            this.setState({
+              warn: "Network issue. Please try again later."
+            });
+          } else {
+            this.setState({
+              warn: error.message
+            })
+          } 
         } finally {
           this.setState({loading: false})
         }
@@ -77,7 +100,19 @@ class User extends React.Component {
           const response = await axios.get(`${config.Configuration.database}/store`);
           this.setState({stores: response.data.result, currentStoreId: response.data.result[0].id});
       } catch (error) {
-          console.error(error)
+        if (error.response) {
+          this.setState({
+            warn: error.response.data.message
+          })
+        } else if (error.request) {
+          this.setState({
+            warn: "Network issue. Please try again later."
+          });
+        } else {
+          this.setState({
+            warn: error.message
+          })
+        } 
       }
     }
 
@@ -98,14 +133,37 @@ class User extends React.Component {
       });
     };
 
-    handleDeleteUser = async (id) => {
+    handleDeleteUser = async (id, name) => {
       this.removeClass()
+      const adminMoreThanOne = this.state.user.filter(admin => admin.userType).length > 1;
+      if (!adminMoreThanOne) {
+        this.setState({
+          warn: "1 admin should remain!"
+        })
+        return;
+      }
+
       try {
         this.setState({deleteUser: false, toBeDelete: [], loading: true})
-        await axios.delete(`${config.Configuration.database}/deleteUser/${id}`);
+        const response = await axios.delete(`${config.Configuration.database}/deleteUser/${id}`);
+        if (response.status === 200) {
+          this.setState({isSuccessful: `User "${name}" deleted successfully`})
+        }
         this.getUser();
       } catch (error) {
-        console.error(error);
+        if (error.response) {
+          this.setState({
+            warn: error.response.data
+          })
+        } else if (error.request) {
+          this.setState({
+            warn: "Network issue. Please try again later."
+          });
+        } else {
+          this.setState({
+            warn: error.message
+          })
+        } 
       } finally {
         this.setState({loading: false})
       }
@@ -140,7 +198,6 @@ class User extends React.Component {
           userType,
           option: "Change",
           currentId: id,
-          checkEmail: "",
           storeName
         });
     
@@ -171,16 +228,31 @@ class User extends React.Component {
         currentStoreId,
         currentUserId
       } = this.state;
+
+      const dataError = (error) => {
+        if (error.response) {
+          this.setState({
+            warn: "Internal error: status 500"
+          })
+        } else if (error.request) {
+          this.setState({
+            warn: "Network issue. Please try again later."
+          });
+        } else {
+          this.setState({
+            warn: error.message
+          })
+        } 
+      }
     
       const id = currentId;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     
-      if (email.length === 0) {
-        this.setState({ checkinput: "Please fill all fields" });
-      } else if (!emailRegex.test(email)) {
-        this.setState({ checkEmail: 'Invalid email' });
+      if (!emailRegex.test(email)) {
+        this.setState({ message: 'Invalid email', checkEmail: 'Invalid email' });
         return;
       }
+      this.setState({checkEmail: "" });
     
       const requiredFields = [
         name,
@@ -193,9 +265,8 @@ class User extends React.Component {
       const allFieldsValid = requiredFields.every((field) => field && field.length > 0);
        
       if (allFieldsValid) {
-        this.removeClass()
-        this.setState({ checkinput: "" });
-        this.setState({loading: true})
+        this.removeClass();
+        this.setState({ loading: true });
     
         if (option === "Add" && checkEmail === "") {
           try {
@@ -209,12 +280,9 @@ class User extends React.Component {
     
             this.getUser();
             this.handleReset();
-            this.setState({ checkinput: "User Added!" });
-            setTimeout(() => {
-              this.setState({ checkinput: "" });
-            }, 2000);
+            this.setState({ isSuccessful: "User Added!" });
           } catch (error) {
-            console.error(error);
+            dataError(error)
           } finally {
             this.setState({loading: false})
           }
@@ -244,21 +312,15 @@ class User extends React.Component {
             this.handleReset();
             const button = document.getElementById("add-bttn");
             button.classList.add("add-bttn");
-            this.setState({ option: "Add", checkinput: "Change Successful!" });
-            setTimeout(() => {
-              this.setState({ checkinput: "" });
-            }, 2000);
+            this.setState({ option: "Add", isSuccessful: "Change Successful!" });
           } catch (error) {
-            console.error(error);
+            dataError(error)
           } finally {
             this.setState({loading: false})
           }
         }
       } else {
-        this.setState({ checkinput: "Please fill all fields" });
-        setTimeout(() => {
-          this.setState({ checkinput: "" });
-        }, 2000);
+        this.setState({ message: "Please fill all fields" });
       }
     };    
 
@@ -311,13 +373,65 @@ class User extends React.Component {
       }
     }
 
+    componentDidUpdate(prevProps, prevState) {
+      if (
+        prevState.message !== this.state.message ||
+        prevState.warn !== this.state.warn ||
+        prevState.isSuccessful !== this.state.isSuccessful
+      ) {
+        this.fieldInfoMessage();
+      }
+    }
+
+    fieldInfoMessage = () => {
+      const { message, warn, isSuccessful } = this.state;
+  
+      if (message) {
+        this.animateNotification(this.fieldMessageRef);
+      } else if (warn) {
+        this.animateNotification(this.fieldWarnRef);
+      } else if (isSuccessful) {
+        this.animateNotification(this.fieldIsSuccessfulRef);
+      }
+    };
+
+    animateNotification = (elementRef) => {
+      const element = elementRef.current;
+      if (element) {
+        element.classList.add("field_show");
+        setTimeout(() => {
+          element.classList.remove("field_show");
+          this.setState({
+            message: "",
+            warn: "",
+            isSuccessful: ""
+          });
+        }, 3000);
+      }
+    };
+
     render() {
-        const {  filteredUser, searchQuery, name, email, password, currentUserType,userType, checkEmail, checkinput, option, stores,
-        storeName, displayCount, loading, deleteUser, toBeDelete } = this.state;
+        const {  filteredUser, searchQuery, name, email, password, currentUserType, userType, checkEmail, option, stores,
+        storeName, displayCount, loading, deleteUser, toBeDelete, message, warn, isSuccessful } = this.state;
+
+        const displayFieldInfo = 
+          <>
+          <div className="field_message" ref={this.fieldMessageRef}>
+          {message}
+          </div>
+          <div className="field_warn" ref={this.fieldWarnRef}>
+            {warn}
+          </div>
+          <div className="field_is_successful" ref={this.fieldIsSuccessfulRef}>
+            {isSuccessful}
+          </div>
+          </>
 
         if (currentUserType === 'admin') {
         return (
             <div>
+                {displayFieldInfo}
+
                 <div id="customer-info" className="customer-info-container">
                 {deleteUser && 
                 <div className="delete_confirmation">
@@ -334,7 +448,7 @@ class User extends React.Component {
                   <button type="button"
                   onClick={(e) => {
                     e.preventDefault();
-                    this.handleDeleteUser(toBeDelete.id)
+                    this.handleDeleteUser(toBeDelete.id, toBeDelete.name)
                   }}>
                     Delete
                   </button>
@@ -434,7 +548,8 @@ class User extends React.Component {
                       </div>
                       <div className="input-customer-info">
                         <label htmlFor="submit" style={{color: '#fc8200', fontWeight: "700"}}>
-                          Deploy: <p className="check-input">{checkinput ?? checkinput}</p></label>
+                          Deploy: 
+                        </label>
                         <div id="buttons">
                         <button 
                         id="add-bttn"

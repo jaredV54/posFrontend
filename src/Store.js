@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import axios from 'axios';
 import decryptedUserDataFunc from './decrypt';
 import { Link } from 'react-router-dom';

@@ -114,6 +114,7 @@ const NavArea = () => {
         ) : (
           <ul className='nav-ul' onClick={handleRemoveClass}>
             <CustomLink to="/Purchase"><i className='bx bx-money' data-text="Purchase"></i></CustomLink>
+            <CustomLink to="/SalesRecord"><i className='bx bx-bar-chart-square' data-text="Sales Record"></i></CustomLink>
             <CustomLink to="/Transactions"><i className='bx bx-transfer-alt' data-text="Transactions"></i></CustomLink>
             <CustomLink to="/SplitPaymentRecord"><i className='bx bx-expand-horizontal' data-text="Split Payments"></i></CustomLink>
             <CustomLink to="/Customer"><i className='bx bx-spreadsheet' data-text="Clients"></i></CustomLink>

@@ -157,7 +157,7 @@ function SalesRecord() {
     }
   }, [fieldInfo.message, fieldInfo.isSuccessful, fieldInfo.warn]);
 
-  if (userType !== 'user' && userType !== undefined) {
+  if (userType !== undefined) {
     return (
       <div>
         {fieldInfo.fetching ? (<span className="loader"></span>) : null}

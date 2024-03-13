@@ -202,10 +202,6 @@ function SplitPaymentRecord() {
     if (userType !== undefined) {
     return (
         <React.Fragment>
-          {fieldInfo.fetchingData ? (<>
-          <div className="lds-ellipsis"><div></div><div></div><div></div></div>
-          </>) : null
-          }
         <div className="field_message" ref={fieldMessageRef}>
         {fieldInfo.message}
         </div>
@@ -252,6 +248,10 @@ function SplitPaymentRecord() {
           />
           <i className='bx bx-search search-icon' ></i>
         </div>
+        {fieldInfo.fetchingData ? (<>
+          <div className="lds-ellipsis"><div></div><div></div><div></div></div>
+          </>) : null
+        }
 
         <Receipt 
         receiptContainer={receiptContainer}

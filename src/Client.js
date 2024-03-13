@@ -500,14 +500,15 @@ const Client = () => {
                 }
                     <thead className='table-head'>
                     <tr className="customer-table">
-                    <th style={{backgroundColor: '#1a1a1a'}}></th>
-                    <th style={{backgroundColor: '#1a1a1a'}}></th>
-                    <th style={{backgroundColor: '#1a1a1a'}}></th>
+                    <th style={{backgroundColor: '#1a1a1a00'}}></th>
+                    <th style={{backgroundColor: '#1a1a1a00'}}></th>
+                    <th style={{backgroundColor: '#1a1a1a00'}}></th>
                     {clientKeys.map((key) => (
                         <th key={key}>{key}</th>
                     ))}
                     </tr>
                     </thead>
+
                     <tbody className='table-body'>
                         {filteredClient.slice(0, displayCount).map((cust) => {
                             return (

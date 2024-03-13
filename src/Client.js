@@ -500,9 +500,9 @@ const Client = () => {
                 }
                     <thead className='table-head'>
                     <tr className="customer-table">
-                    <th style={{backgroundColor: '#1a1a1a00'}}></th>
-                    <th style={{backgroundColor: '#1a1a1a00'}}></th>
-                    <th style={{backgroundColor: '#1a1a1a00'}}></th>
+                    <th style={{backgroundColor: '#1a1a1a00', zIndex: -1}}></th>
+                    <th style={{backgroundColor: '#1a1a1a00', zIndex: -1}}></th>
+                    <th style={{backgroundColor: '#1a1a1a00', zIndex: -1}}></th>
                     {clientKeys.map((key) => (
                         <th key={key}>{key}</th>
                     ))}

@@ -49,6 +49,7 @@ function SplitPaymentRecord() {
 
       const getSplitPayments = async () => {
         try {
+          setFieldInfo((prev) => ({...prev, fetchingData: true}))
           const response = await axios.get(`${config.Configuration.database}/splitPaymentRecords`);
           setSplitPayment(response.data);
           setFilteredSplitPayment(response.data);
@@ -66,6 +67,8 @@ function SplitPaymentRecord() {
           } else {
             console.error("Error during request setup:", error.message);
           }
+        } finally {
+          setFieldInfo((prev) => ({...prev, fetchingData: false}))
         }
       };
 
@@ -199,6 +202,10 @@ function SplitPaymentRecord() {
     if (userType !== undefined) {
     return (
         <React.Fragment>
+          {fieldInfo.fetchingData ? (<>
+          <div className="lds-ellipsis"><div></div><div></div><div></div></div>
+          </>) : null
+          }
         <div className="field_message" ref={fieldMessageRef}>
         {fieldInfo.message}
         </div>

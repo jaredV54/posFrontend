@@ -245,7 +245,11 @@
           
           tbody {
             background-color: #363636;
+
             tr {
+              &:hover {
+                background-color: #262626;
+              }
               td#expand {
                 background-color: #313a72;
                 text-align: center;

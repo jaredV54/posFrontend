@@ -39,7 +39,7 @@ const Client = () => {
         currentId: 0,
         filteredClient: [],
         searchQuery: "",
-        storedClientId: JSON.parse(localStorage.getItem('selectedCustomer')) || 0
+        storedClientId: 0
     })
 
     const [inputs, confirmInputs] = useState({
@@ -54,15 +54,21 @@ const Client = () => {
     }
 
     const [decryptedUserData, setDecryptUserData] = useState({});
-    const userType = decryptedUserData.userType;
+    const {userType} = decryptedUserData;
 
     useEffect(() => {
       const userData = localStorage.getItem('encryptedData');
+      const selectedClientData = localStorage.getItem('clientSelection');
     
       if (userData) {
         const decryptionKey = 'NxPPaUqg9d';
         const decrypted = JSON.parse(decryptedUserDataFunc(userData, decryptionKey));
         setDecryptUserData(decrypted);
+      }
+      if (selectedClientData) {
+        const decryptionKey = 'hEv1ZSXzm1';
+        const decrypted = JSON.parse(decryptedUserDataFunc(selectedClientData, decryptionKey));
+        setClientData(prev => ({...prev, storedClientId: decrypted.id}));
       }
     }, []);  
 
@@ -106,7 +112,8 @@ const Client = () => {
         getClients();
     }, [displayCount]);
 
-    const handleSearch = (value) => {
+    const handleSearch = (input) => {
+      const value = input.toLowerCase();
         setClientData((data) => ({...data, searchQuery: value}))
         if (value.trim() === '') {
             setClientData((data) => ({ ...data, filteredClient: data.client }));
@@ -299,25 +306,18 @@ const Client = () => {
         setClientFilter(initialClient);
     }
 
-    const handleSelectCustomer = (client, isSelected) => {
-        if (isSelected) {
-            return;
-        }
-        handleSaveToLocalStorage(client)
+    const handleSelectCustomer = (client) => {
+      const clientData = JSON.stringify(client);
+      const encryptionKey = 'hEv1ZSXzm1';
+  
+      const encrypted = encryptData(clientData, encryptionKey);
+      localStorage.setItem('clientSelection', encrypted);
+      window.location.assign("/Purchase");
     } 
 
     const encryptData = (data, key) => {
       return CryptoJS.AES.encrypt(data, key).toString();
     };
-
-    const handleSaveToLocalStorage = (data) => {
-      const sensitiveData = JSON.stringify(data);
-      const encryptionKey = 'hEv1ZSXzm1';
-  
-      const encrypted = encryptData(sensitiveData, encryptionKey);
-      localStorage.setItem('clientSelection', encrypted);
-      window.location.assign("/Purchase");
-    }
 
     const handleClientFilter = (value, name) => {
         setClientFilter((prev) => ({
@@ -532,10 +532,10 @@ const Client = () => {
                                 <td
                                   className="edit-customer select-button"
                                   onClick={() => {
-                                    handleSelectCustomer(cust, cust.id === storedClientId.id);
+                                    handleSelectCustomer(cust);
                                   }}
                                 >
-                                {cust.id == storedClientId.id ? (
+                                {cust.id == storedClientId ? (
                                 <div to="/Purchase" className="selected">
                                   Selected
                                 </div>

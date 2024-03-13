@@ -250,7 +250,7 @@ function SplitPaymentRecord() {
         </div>
         {fieldInfo.fetchingData ? (<>
           <div 
-            style={{ top: 300 }}
+            style={{ top: 250 }}
             className="lds-ellipsis"><div></div><div></div><div></div></div>
           </>) : null
         }

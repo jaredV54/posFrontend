@@ -229,7 +229,6 @@
       overflow: auto;
 
         thead {
-            background-color: #151515;
             tr {
               th {
                 padding: 5px;
@@ -238,6 +237,7 @@
 
             th {
               z-index: 200;
+              background-color: #151515;
               position: sticky;
               top: 0;
               z-index: 100;

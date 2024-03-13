@@ -249,7 +249,9 @@ function SplitPaymentRecord() {
           <i className='bx bx-search search-icon' ></i>
         </div>
         {fieldInfo.fetchingData ? (<>
-          <div className="lds-ellipsis"><div></div><div></div><div></div></div>
+          <div 
+            style={{ top: 200 }}
+            className="lds-ellipsis"><div></div><div></div><div></div></div>
           </>) : null
         }
 

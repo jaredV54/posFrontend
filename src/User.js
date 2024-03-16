@@ -587,7 +587,7 @@ class User extends React.Component {
                       <thead className='table-head'>
                         <tr className='customer-column'>
                           <th>ID</th>
-                          <th>Name</th>
+                          <th>Username</th>
                           <th>Email</th>
                           <th>Password</th>
                           <th>User Type</th>

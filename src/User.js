@@ -280,7 +280,7 @@ class User extends React.Component {
     
             this.getUser();
             this.handleReset();
-            this.setState({ isSuccessful: "User Added!" });
+            this.setState({ isSuccessful: "New User Added!" });
           } catch (error) {
             dataError(error)
           } finally {
@@ -312,7 +312,7 @@ class User extends React.Component {
             this.handleReset();
             const button = document.getElementById("add-bttn");
             button.classList.add("add-bttn");
-            this.setState({ option: "Add", isSuccessful: "Change Successful!" });
+            this.setState({ option: "Add", isSuccessful: "User info changed successfully!" });
           } catch (error) {
             dataError(error)
           } finally {
@@ -412,7 +412,7 @@ class User extends React.Component {
 
     render() {
         const {  filteredUser, searchQuery, name, email, password, currentUserType, userType, checkEmail, option, stores,
-        storeName, displayCount, loading, deleteUser, toBeDelete, message, warn, isSuccessful } = this.state;
+        storeName, displayCount, loading, deleteUser, toBeDelete, message, warn, isSuccessful, currentId } = this.state;
 
         const displayFieldInfo = 
           <>
@@ -469,7 +469,7 @@ class User extends React.Component {
 
                     <div id="deploy-user" className="add-customer">
                       <div className="input-customer-info">
-                        <label htmlFor="name">First name:</label>
+                        <label htmlFor="name">Username*</label>
                         <input 
                         type="text" 
                         name="name" 
@@ -478,7 +478,7 @@ class User extends React.Component {
                         onChange={(e) => this.handleName(e.target.value)}/>
                       </div>
                       <div className="input-customer-info">
-                        <label htmlFor="email">Email: <p className="check-input" style={{color: "#f7860e"}}>{checkEmail ?? checkEmail}</p></label>
+                        <label htmlFor="email">Email* <p className="check-input" style={{color: "#f7860e"}}>{checkEmail ?? checkEmail}</p></label>
                         <input 
                         type="text" 
                         name="email" 
@@ -487,7 +487,7 @@ class User extends React.Component {
                         onChange={(e) => this.handleEmail(e.target.value)}/>
                       </div>
                       <div className="input-customer-info">
-                        <label htmlFor="password">Password: </label>
+                        <label htmlFor="password">Password* </label>
                         <input 
                         type="text" 
                         name="password" 
@@ -496,7 +496,7 @@ class User extends React.Component {
                         onChange={(e) => this.handlePassword(e.target.value)}/>
                       </div>
                       <div className="input-customer-info">
-                        <label htmlFor="userType">User Type: </label>
+                        <label htmlFor="userType">User Type* </label>
                         <input 
                         name="userType" 
                         placeholder="---"
@@ -520,7 +520,7 @@ class User extends React.Component {
                         </div>
                       </div>
                       <div className="input-customer-info">
-                      <label htmlFor="storeName">Place: </label>
+                      <label htmlFor="storeName">Place* </label>
                       <input 
                       name="storeName" 
                       placeholder={'---'}
@@ -548,7 +548,7 @@ class User extends React.Component {
                       </div>
                       <div className="input-customer-info">
                         <label htmlFor="submit" style={{color: '#fc8200', fontWeight: "700"}}>
-                          Deploy: 
+                          Action: 
                         </label>
                         <div id="buttons">
                         <button 
@@ -557,6 +557,7 @@ class User extends React.Component {
                         type="button" 
                         name="submit" 
                         onClick={() => {
+                          this.setState({currentId: 0});
                           this.handleSubmit();
                         }}
                         >
@@ -567,7 +568,10 @@ class User extends React.Component {
                         type="button"
                         name="submit"
                         className="cancel-bttn"
-                        onClick={() => this.handleCancel()}
+                        onClick={() => {
+                          this.handleCancel();
+                          this.setState({currentId: 0});
+                        }}
                         >
                           Cancel
                         </button>: null}
@@ -577,7 +581,7 @@ class User extends React.Component {
 
                     <table className='customer-table' style={{width: "100%"}}>
                     {loading ? (<>
-                    <div style={{top: "100%"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+                    <div style={{top: "100%", marginTop: 100}} class="lds-ellipsis"><div></div><div></div><div></div></div>
                     </>) : null
                     }
                       <thead className='table-head'>
@@ -609,8 +613,11 @@ class User extends React.Component {
                             <td>{cust.storeName}</td>
 
                             <td className="edit-customer edit-button" 
+                            style={cust.id === currentId ? {
+                              backgroundColor: "#6878e0"
+                            }: null}
                             onClick={() => this.handleEditUser(cust.id)}>
-                            Edit
+                            {cust.id === currentId ? "Editing" : "Edit"}
                             </td>
 
                             <td className="edit-customer delete-button" 

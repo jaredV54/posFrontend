@@ -281,7 +281,7 @@ function SplitPaymentRecord() {
               <th>Receipt#</th>
               <th>Client ID</th>
               <th>Mode of Payment</th>
-              <th>Acc Number</th>
+              <th>Acc/Ref Number</th>
               <th>Receipt</th>
             </tr>
           </thead>

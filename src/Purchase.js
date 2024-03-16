@@ -696,7 +696,7 @@ const SelectedHybrid = ({
     }
     }
     productTotalPrice();
-    
+    console.log(selectedHybrid)
   }, [selectedHybrid]);
 
   const getList = async (id) => {
@@ -1186,8 +1186,7 @@ const FillTransaction = ({
           totalPrice: discount > 0 ? discounted : totalPrice,
           hybridType: hybrid.selectedHybridType,
           clientName: `${client[0].fName} ${client[0].lName}`,
-          name: hybrid.selectedHybrid[0].name,
-          price: hybrid.selectedHybrid[0].price,
+          selectedHybrids: hybrid.selectedHybrid.map(item => ({ name: item.name, price: item.price })),
           receiptNo: receiptNo,
           dateTime: formattedDate,
           modeOfPayment: modeOfPayment,
@@ -1206,11 +1205,20 @@ const FillTransaction = ({
         }))
       }
     } catch (error) {
-      console.error(error)
-      if (error) {
+      if (error.response) {
         setFieldInfo((prev) => ({
           ...prev,
           warn: error.response.data.message
+        }))
+      } else if (error.request) {
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: "Network issue. Please try again."
+        }))
+      } else {
+        setFieldInfo((prev) => ({
+          ...prev,
+          warn: error.message
         }))
       }
     } finally {
@@ -1469,7 +1477,8 @@ const stylesForReceipt = {
           display: "inlineBlock",
           width: "450px",
           borderRadius: "10px",
-          height: "110px",
+          height: "auto",
+          minHeight: "110px",
           marginBottom: "20px"
         },
         div1: {
@@ -1533,7 +1542,7 @@ const Receipt = ({receiptContainer, setReceiptContainer, handleReset, setFieldIn
     hybridType, 
     clientName,
     totalPrice, 
-    name, price,
+    selectedHybrids,
     dateTime, 
     receiptNo, 
     typeOfPayment,
@@ -1630,8 +1639,13 @@ const Receipt = ({receiptContainer, setReceiptContainer, handleReset, setFieldIn
                   -------------------------- {hybridType} --------------------------
                 </div>
                 <div style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.div2}>
-                  <p style={{fontSize: ".92rem", fontWeight: 600}}>{name}</p>
-                  <p><span style={{fontWeight: 600}}>Price: </span>{price}</p>
+                  {selectedHybrids.map(item => (
+                    <>
+                    <p style={{fontSize: ".92rem", fontWeight: 600}}>{item.name}</p>
+                    <p style={{paddingBottom: "5px"}}><span style={{fontWeight: 600}}>₱</span>{item.price}</p>
+                    </>
+                  ))}
+                  
                 </div>
                 </div>
                 <img src={OPIImage} alt="OPI Logo" style={stylesForReceipt.row1.hybridInfo.img} />

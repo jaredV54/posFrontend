@@ -79,7 +79,7 @@ const NavArea = () => {
             <CustomLink to="/Transactions"><i className='bx bx-transfer-alt' data-text="Transactions"></i></CustomLink>
             <CustomLink to="/SplitPaymentRecord"><i className='bx bx-expand-horizontal' data-text="Split Payments"></i></CustomLink>
             <CustomLink to="/TotalSales"><i className='bx bx-dollar-circle' data-text="Total Sales"></i></CustomLink>
-            <CustomLink to="/Place"><i className='bx bxs-buildings' data-text="Place"></i></CustomLink>
+            <CustomLink to="/Place"><i className='bx bxs-buildings' data-text="Workplace"></i></CustomLink>
             <CustomLink to="/Customer"><i className='bx bx-spreadsheet' data-text="Clients"></i></CustomLink>
             <CustomLink to="/User"><i className='bx bxs-user' data-text="User"></i></CustomLink>
           <li>

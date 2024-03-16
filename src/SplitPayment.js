@@ -40,6 +40,7 @@ function SplitPayment() {
     useEffect(() => {
       const userData = localStorage.getItem('encryptedData');
       const splitData = localStorage.getItem('TID');
+      
     
       if (userData) {
         const decryptionKey = 'NxPPaUqg9d';

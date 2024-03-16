@@ -140,8 +140,8 @@ const Client = () => {
             if (storedClientId.id === id) {
                 localStorage.setItem('selectedCustomer', JSON.stringify({}));
             }
-            console.log(response)
             if (response.data.isSuccessful) {
+              handleReset()
               setFieldInfo((prev) => ({
                 ...prev,
                 delete: false,
@@ -258,7 +258,7 @@ const Client = () => {
               getClients();
               handleReset();
               if (response.data.isSuccessful) {
-                setFieldInfo((prev) => ({...prev, isSuccessful: response.data.message}));
+                setFieldInfo((prev) => ({...prev, isSuccessful: "Client info changed successfully!"}));
               }
               confirmInputs((prev) => ({
                 ...prev,
@@ -328,20 +328,20 @@ const Client = () => {
 
     const clientFilterToRender = Object.keys(clientFilter);
     const labels = [
-        "First Name: *",
-        "Last Name: *",
-        "Middle Name: ",
-        "Address: *",
-        "Contact No: *",
-        "Email: ",
-        "Birth Day: ",
-        "Contact Person Name: ",
-        "Contact Person No: ",
-        "Service: ",
-        "Remarks: ",
-        "Source of Referral: *",
-        "Providers: *",
-        "Case Number: *"
+        "First Name*",
+        "Last Name*",
+        "Middle Name",
+        "Address*",
+        "Contact No*",
+        "Email",
+        "Birth Day",
+        "Contact Person Name",
+        "Contact Person No",
+        "Service",
+        "Remarks",
+        "Source of Referral*",
+        "Providers*",
+        "Case Number*"
     ];
     const { filteredClient, storedClientId, searchQuery } = clientData;
     const { checkInput, option } = inputs;
@@ -447,36 +447,42 @@ const Client = () => {
                 
                 <div id="deploy-customer" className="add-customer">
                 {clientFilterToRender.map((key, index) => (
-                    <div className="input-customer-info" key={key}>
-                        <label htmlFor={key}>{labels[index]}</label>
+                    <div 
+                    className="input-customer-info" 
+                    key={key}>
+                        <label 
+                        htmlFor={key}>
+                          {labels[index]}</label>
                         {key === 'bDate' ? (
                             <input
-                                type="date"
-                                name={key}
-                                value={clientFilter[key]}
-                                onChange={(e) => handleClientFilter(e.target.value, e.target.name)}
+                              type="date"
+                              name={key}
+                              value={clientFilter[key]}
+                              onChange={(e) => handleClientFilter(e.target.value, e.target.name)}
                             />
                         ): (
                             <input
-                                type="text"
-                                name={key}
-                                value={clientFilter[key]}
-                                placeholder="---"
-                                onChange={(e) => handleClientFilter(e.target.value, e.target.name)}
+                              type="text"
+                              name={key}
+                              value={clientFilter[key]}
+                              placeholder="---"
+                              onChange={(e) => handleClientFilter(e.target.value, e.target.name)}
                             />
                         )}
                     </div>
                 ))}
 
-                 <div className="input-customer-info">
-                        <label htmlFor="submit" style={{color: '#fc8200', fontWeight: "700"}}>Deploy: <p className="check-input">{checkInput ?? checkInput}</p></label>
+                  <div className="input-customer-info">
+                        <label htmlFor="submit" style={{color: '#fc8200', fontWeight: "700"}}>Action: <p className="check-input">{checkInput ?? checkInput}</p></label>
                         <div id="buttons">
                         <button 
                         id="add-bttn"
                         className="add-bttn"
                         type="button" 
                         name="submit" 
-                        onClick={() => handleSubmit()}
+                        onClick={() => {
+                          handleSubmit()
+                          setClientData(prev => ({...prev, currentId: 0}))}}
                         >
                           {option === "Invalid email" ? "Add" : option }
                         </button>
@@ -485,12 +491,15 @@ const Client = () => {
                         type="button"
                         name="submit"
                         className="cancel-bttn"
-                        onClick={() => handleCancel()}
+                        onClick={() => {
+                          handleCancel();
+                          setClientData(prev => ({...prev, currentId: 0}))
+                        }}
                         >
                           Cancel
                         </button>: null}
                         </div>
-                      </div>
+                  </div>
                 </div>
 
                 <table className='customer-table'>
@@ -514,8 +523,11 @@ const Client = () => {
                             return (
                                 <tr className='customer-row' key={cust.id}>
                                 <td className="edit-customer edit-button" 
+                                style={clientData.currentId === cust.id ? {
+                                  backgroundColor: "#6878e0"
+                                }: null}
                                 onClick={() => handleEditCustomer(cust.id, cust.id === storedClientId.id)}>
-                                Edit
+                                {clientData.currentId === cust.id ? "Editing" : "Edit"}
                                 </td>
     
                                 <td className="edit-customer delete-button" 

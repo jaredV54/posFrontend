@@ -27,7 +27,11 @@ class Place extends React.Component {
       fetchingData: false,
       message: "",
       warn: "",
-      isSuccessful: ""
+      isSuccessful: "",
+      deletePlace: {
+        toBeDelete: null,
+        delete: false
+      }
     };
   }
 
@@ -55,7 +59,9 @@ class Place extends React.Component {
     } catch (error) {
       if (error.response) {
         this.setState({
-          warn: error.response.data.message
+          warn: error.response.data.message,
+          store: [], 
+          filteredStore: []
         })
       } else if (error.request) {
         this.setState({
@@ -240,15 +246,14 @@ class Place extends React.Component {
       this.setState({ fetchingData: true });
       const response = await axios.delete(`${config.Configuration.database}/store/${id}`);
       if (response.data.isSuccessful) {
-        this.getStore();
         this.setState({
           isSuccessful: response.data.message
         })
+        this.getStore();
       } else {
         this.setState({
           warn: response.data.message
         })
-        this.getStore();
       }
     } catch (error) {
       this.setState({
@@ -299,7 +304,40 @@ class Place extends React.Component {
   render() {
     const { filteredStore, userType, searchQuery, storeName, address, fetchingData,
     contactNo, email, birTin, branch, option, checkEmail, loading,
-    message, warn, isSuccessful } = this.state;
+    message, warn, isSuccessful, deletePlace } = this.state;
+    const { toBeDelete } = deletePlace;
+    const deleteWorkPlace = <>
+                {deletePlace.delete && 
+                <div className="delete_confirmation">
+                  <p>Are you sure you want to delete <span>
+                    {toBeDelete.storeName}
+                    </span></p>
+                    <button type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      this.setState(({
+                        deletePlace: {
+                          toBeDelete: null,
+                          delete: false
+                        }
+                      })) 
+                    }}>
+                      Cancel
+                    </button>
+                    <button type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      this.deleteStore(toBeDelete.id)
+                      this.setState(({
+                        deletePlace: {
+                          toBeDelete: null,
+                          delete: false
+                        }
+                      })) 
+                    }}>
+                      Delete
+                    </button>
+                </div>}</>
     
     if (userType === 'admin') {
       return (
@@ -318,10 +356,11 @@ class Place extends React.Component {
           <Link to="/Purchase"><i className='bx bx-chevron-left' ></i></Link>
           </div>
           <div id='page-container'>
+          {deleteWorkPlace}
           {fetchingData ? (<span className="loader"></span>) : null}
           <div className='grid-store add-store-wrapper'>
-            <h2 className='prod-label'>Add Place</h2>
-            <label htmlFor='store-name label-first'>Place name: </label>
+            <h2 className='prod-label'>Add Work Place Location</h2>
+            <label htmlFor='store-name label-first'>Place name*</label>
             <input
               className='inp-store-name'
               type='text'
@@ -330,7 +369,7 @@ class Place extends React.Component {
               onChange={(e) => this.handleStoreName(e.target.value)}
               placeholder='---'
             />
-            <label htmlFor='store-address'>Address: </label>
+            <label htmlFor='store-address'>Address*</label>
             <input
               className='inp-store-address'
               type='text'
@@ -339,7 +378,7 @@ class Place extends React.Component {
               onChange={(e) => this.handleAddress(e.target.value)}
               placeholder='---'
             />
-            <label htmlFor='store-contactNo'>Contact Number: </label>
+            <label htmlFor='store-contactNo'>Contact Number*</label>
             <input
               className='inp-store-contactNo'
               type='text'
@@ -348,7 +387,7 @@ class Place extends React.Component {
               onChange={(e) => this.handleContactNo(e.target.value)}
               placeholder='---'
             />
-            <label htmlFor='store-email'>Email: 
+            <label htmlFor='store-email'>Email* 
             <p className='check-input'>
               {checkEmail ?? checkEmail}
             </p>
@@ -361,7 +400,7 @@ class Place extends React.Component {
               onChange={(e) => this.handleEmail(e.target.value)}
               placeholder='---'
             />
-            <label htmlFor='store-birTin'>Bir/Tin: </label>
+            <label htmlFor='store-birTin'>Bir/Tin*</label>
             <input
               className='inp-store-birTin'
               type='text'
@@ -370,7 +409,7 @@ class Place extends React.Component {
               onChange={(e) => this.handleBirTin(e.target.value)}
               placeholder='---'
             />
-            <label htmlFor='store-branch'>Branch: </label>
+            <label htmlFor='store-branch'>Branch*</label>
             <input
               className='inp-store-branch'
               type='text'
@@ -395,13 +434,13 @@ class Place extends React.Component {
               onClick={this.editStore}
               style={{pointerEvents: fetchingData ? "none" : null}}
               >
-              {option === "Invalid email" ? "Add" : option }
+              {option === "Change" ? "Update": option}
               </button>
             </div>
           </div>
   
           <div className='grid-store stores-wrapper'>
-            <h2 className='prod-label'>Places</h2>
+            <h2 className='prod-label'>Workplace Info</h2>
             <div className='search-form'>
               <input
                 className='search-bar'
@@ -409,7 +448,7 @@ class Place extends React.Component {
                 name='search-bar'
                 value={searchQuery}
                 onChange={(e) => this.handleSearch(e.target.value)}
-                placeholder='Search the store'
+                placeholder='Search workplace info...'
               />
               <i className='bx bx-search search-icon'></i>
             </div>
@@ -440,7 +479,13 @@ class Place extends React.Component {
                         <div>Change</div>
                         <i className='bx bx-message-alt-detail mess-detail'></i>
                       </button>
-                      <button className='delete-store-bttn' onClick={() => this.deleteStore(store.id)}>
+                      <button className='delete-store-bttn' onClick={() => 
+                      this.setState(({
+                        deletePlace: {
+                          toBeDelete: store,
+                          delete: true
+                        }
+                      }))}>
                         <div>Delete</div>
                         <i className='bx bx-message-alt-minus mess-minus'></i>
                       </button>

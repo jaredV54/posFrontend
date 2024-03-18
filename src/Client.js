@@ -213,7 +213,7 @@ const Client = () => {
     const handleSubmit = async () => {
         const { currentId } = clientData;
         const { option } = inputs;
-        const { mName, email, contactPersonName, contactPersonNo, service, remarks, bDate, ...necessaryInfo } = clientFilter;
+        const { mName, email, contactPersonName, contactPersonNo, service, remarks, bDate, sourceOfReferral, ...necessaryInfo } = clientFilter;
         const requiredFields = Object.values(necessaryInfo);
       
         if (requiredFields.every((field) => field !== "")) {
@@ -339,7 +339,7 @@ const Client = () => {
         "Contact Person No",
         "Service",
         "Remarks",
-        "Source of Referral*",
+        "Source of Referral",
         "Providers*",
         "Case Number*"
     ];
@@ -567,8 +567,8 @@ const Client = () => {
                                 <td>{cust.contactPersonName ? cust.contactPersonName : "N/A"}</td>
                                 <td>{cust.contactPersonNo ? cust.contactPersonNo : "N/A"}</td>
                                 <td>{cust.service ? cust.service : "N/A"}</td>
-                                <td>{cust.remarks? cust.remarks : "N/A"}</td>
-                                <td>{cust.sourceOfReferral}</td>
+                                <td>{cust.remarks ? cust.remarks : "N/A"}</td>
+                                <td>{cust.sourceOfReferral ? cust.sourceOfReferral : "N/A"}</td>
                                 <td>{cust.providers}</td>
                                 <td>{cust.caseNumber}</td>
                               </tr>

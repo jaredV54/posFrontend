@@ -35,7 +35,7 @@ const AuthenticatedRoutes = ({ values, authenticated }) => {
             <Route path='/Transactions' element={<Transactions />} />
             <Route path='/TotalSales' element={<TotalSales />} />
             <Route path='/Place' element={<Place />} />
-            <Route path='/Customer' element={<Client />} />
+            <Route path='/Client-Info' element={<Client />} />
             <Route path='/SplitPayment' element={<SplitPayment />} />
             <Route path='/SplitPaymentRecord' element={<SplitPaymentRecord />} />
           </Routes>

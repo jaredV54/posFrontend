@@ -40,7 +40,8 @@ function SalesRecord() {
     container: [],
     hybridName: "",
     actualPrice: "",
-    hybridType: ""
+    hybridType: "",
+    selectedHybrids: []
   })
 
   const getSalesRecord = async () => {
@@ -85,12 +86,14 @@ function SalesRecord() {
     });
 
     if (filteredSalesQuery.length > 0) {
+      console.log(filteredSalesQuery)
       setReceiptContainer(prev => ({
         ...prev, 
         transId: parseFloat(query),
         hybridName: filteredSalesQuery[0].name,
         actualPrice: filteredSalesQuery[0].price,
-        hybridType: filteredSalesQuery[0].hybrid
+        hybridType: filteredSalesQuery[0].hybrid,
+        selectedHybrids: filteredSalesQuery
       }))
     } else {
       setReceiptContainer(prev => ({...prev, transId: 0}))
@@ -293,7 +296,8 @@ const stylesForReceipt = {
           display: "inlineBlock",
           width: "450px",
           borderRadius: "10px",
-          height: "110px",
+          minHeight: "110px",
+          height: "auto",
           marginBottom: "20px"
         },
         div1: {
@@ -362,7 +366,8 @@ const Receipt = ({
     transId,
     hybridType,
     actualPrice,
-    hybridName
+    hybridName,
+    selectedHybrids
   } = receiptContainer;
 
   const {
@@ -437,6 +442,8 @@ const Receipt = ({
     }
   }, [transId]);
 
+  const isProduct = hybridType === "product" ? {display: "inline-block"}: null;
+
   return (
     <React.Fragment>
     <div className='react_to_print_sales'>
@@ -467,8 +474,17 @@ const Receipt = ({
                   -------------------------- {hybridType} --------------------------
                 </div>
                 <div style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.div2}>
-                  <p style={{fontSize: ".92rem", fontWeight: 600}}>{hybridName}</p>
-                  <p><span style={{fontWeight: 600}}>Price: </span>{actualPrice}</p>
+                {selectedHybrids.map(item => (
+                    <div key={item.name} style={{width: "100%"}}>
+                    <p style={isProduct}>{isProduct ? item.qty: null}  <span style={{fontSize: ".92rem", fontWeight: 600}}>{item.name}</span></p>
+                    <p style={{...isProduct, float: isProduct && "right", textAlign: isProduct && "right"}}>
+                      <span style={{fontWeight: 600}}>
+                      {hybridType === "service" ? "Price: " : "₱"}</span>  
+                      {!isProduct && "₱"}
+                      {item.price}
+                    </p>
+                    </div>
+                  ))}
                 </div>
                 </div>
                 <img src={OPIImage} alt="OPI Logo" style={stylesForReceipt.row1.hybridInfo.img} />

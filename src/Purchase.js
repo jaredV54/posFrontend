@@ -289,6 +289,7 @@ const Purchase = () => {
           hybrid={hybrid}
           handleResetSelectionField={handleResetSelectionField}
           setReceiptContainer={setReceiptContainer}
+          selectedHybridType={hybrid.selectedHybridType}
           />
         <div className='search_bar_container'>
           <input 
@@ -1022,7 +1023,8 @@ const FillTransaction = ({
   receipt, setReceipt,
   setFieldInfo,
   hybrid,
-  setReceiptContainer
+  setReceiptContainer,
+  selectedHybridType
 }) => {
   
   const [transFieldInfo, setTransFieldInfo] = useState({
@@ -1185,7 +1187,7 @@ const FillTransaction = ({
           totalPrice: discount > 0 ? discounted : totalPrice,
           hybridType: hybrid.selectedHybridType,
           clientName: `${client[0].fName} ${client[0].lName}`,
-          selectedHybrids: hybrid.selectedHybrid.map(item => ({ name: item.name, price: item.price, qty: item.prodQuantity })),
+          selectedHybrids: hybrid.selectedHybrid.map(item => ({ name: item.name, price: item.price, qty: item.prodQuantity, newPrice: item.newPrice })),
           receiptNo: receiptNo,
           dateTime: formattedDate,
           modeOfPayment: modeOfPayment,
@@ -1316,6 +1318,7 @@ const FillTransaction = ({
                 }}>
                   Straight
                 </div>
+                {selectedHybridType === "service" && 
                 <div
                 onClick={(e) => {
                   e.preventDefault();
@@ -1323,6 +1326,7 @@ const FillTransaction = ({
                 }}>
                   Split
                 </div>
+                }
               </div>
               </td>
             </tr>
@@ -1606,6 +1610,8 @@ const Receipt = ({receiptContainer, setReceiptContainer, handleReset, setFieldIn
     return formattedTime;
   };
 
+  const isProduct = hybridType === "product" ? {display: "inline-block"}: null;
+
   if (receiptContainer.showReceipt) {
   return (
       <React.Fragment>
@@ -1638,11 +1644,17 @@ const Receipt = ({receiptContainer, setReceiptContainer, handleReset, setFieldIn
                   -------------------------- {hybridType} --------------------------
                 </div>
                 <div style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.div2}>
+                  
                   {selectedHybrids.map(item => (
-                    <>
-                    <p key={item.name}>{item.qty}  <span style={{fontSize: ".92rem", fontWeight: 600}}>{item.name}</span></p>
-                    <p key={item.price} style={{paddingBottom: "5px"}}><span style={{fontWeight: 600}}>Price: </span>₱{item.price}</p>
-                    </>
+                    <div key={item.name} style={{width: "100%"}}>
+                    <p style={isProduct}>{isProduct ? item.qty: null}  <span style={{fontSize: ".92rem", fontWeight: 600}}>{item.name}</span></p>
+                    <p style={{...isProduct, float: isProduct && "right", textAlign: isProduct && "right"}}>
+                      <span style={{fontWeight: 600}}>
+                      {hybridType === "service" ? "Price: " : "₱"}</span>  
+                      {!isProduct && "₱"}
+                      {!isProduct ? item.price : item.newPrice}
+                    </p>
+                    </div>
                   ))}
                   
                 </div>

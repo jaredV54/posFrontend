@@ -696,7 +696,6 @@ const SelectedHybrid = ({
     }
     }
     productTotalPrice();
-    console.log(selectedHybrid)
   }, [selectedHybrid]);
 
   const getList = async (id) => {
@@ -861,7 +860,7 @@ const SelectedHybrid = ({
   return (
     <React.Fragment>
       <div id='select_client' className='client_info_container'>
-        <Link className='link' to='/Customer'>
+        <Link className='link' to='/Client-Info'>
         <button type="button" className='select_client_bttn'>
           <p>Select</p> <i className='bx bxs-user-detail'></i>
         </button>
@@ -1186,7 +1185,7 @@ const FillTransaction = ({
           totalPrice: discount > 0 ? discounted : totalPrice,
           hybridType: hybrid.selectedHybridType,
           clientName: `${client[0].fName} ${client[0].lName}`,
-          selectedHybrids: hybrid.selectedHybrid.map(item => ({ name: item.name, price: item.price })),
+          selectedHybrids: hybrid.selectedHybrid.map(item => ({ name: item.name, price: item.price, qty: item.prodQuantity })),
           receiptNo: receiptNo,
           dateTime: formattedDate,
           modeOfPayment: modeOfPayment,
@@ -1641,8 +1640,8 @@ const Receipt = ({receiptContainer, setReceiptContainer, handleReset, setFieldIn
                 <div style={stylesForReceipt.row1.hybridInfo.serviceBckgrnd.div2}>
                   {selectedHybrids.map(item => (
                     <>
-                    <p style={{fontSize: ".92rem", fontWeight: 600}}>{item.name}</p>
-                    <p style={{paddingBottom: "5px"}}><span style={{fontWeight: 600}}>₱</span>{item.price}</p>
+                    <p key={item.name}>{item.qty}  <span style={{fontSize: ".92rem", fontWeight: 600}}>{item.name}</span></p>
+                    <p key={item.price} style={{paddingBottom: "5px"}}><span style={{fontWeight: 600}}>Price: </span>₱{item.price}</p>
                     </>
                   ))}
                   

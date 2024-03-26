@@ -255,10 +255,10 @@ const Client = () => {
             try {
               setFieldInfo((prev) => ({...prev, loading: true}));
               const response = await axios.put(`${config.Configuration.database}/customer/${currentId}`, clientFilter);
-              getClients();
-              handleReset();
               if (response.data.isSuccessful) {
                 setFieldInfo((prev) => ({...prev, isSuccessful: "Client info changed successfully!"}));
+                handleReset();
+                getClients();
               }
               confirmInputs((prev) => ({
                 ...prev,
@@ -396,7 +396,8 @@ const Client = () => {
     if (userType !== undefined) {
         return (
             <div>
-              {fieldInfo.loading ? (<span className="loader"></span>) : null}
+              {fieldInfo.loading ? (<span 
+              style={{zIndex: 300}} className="loader"></span>) : null}
               <div className="field_message" ref={fieldMessageRef}>
                 {fieldInfo.message}
               </div>

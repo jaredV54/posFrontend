@@ -885,7 +885,7 @@ const SelectedHybrid = ({
             value={fees[1]}
             onClick={(e) => {
               handleDiscountAndProfFee(e, "fee");
-              showProfessionalfees()
+              showProfessionalfees();
             }}
           >
             {fees[0]} {fees[1] === 0 ? "" : fees[1]}
@@ -1244,7 +1244,7 @@ const FillTransaction = ({
             </tr>
 
             <tr>
-              <td>Place ID:</td>
+              <td>Workplace ID:</td>
               <td>{transaction.placeId}</td>
             </tr>
 
@@ -1368,7 +1368,7 @@ const FillTransaction = ({
             </tr>
 
             <tr>
-              <td>Account Number:</td>
+              <td>Acc/Ref Number:</td>
               <td>
                 {transaction.modeOfPayment === "cash" ? (
                   "N/A"

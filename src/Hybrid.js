@@ -561,8 +561,8 @@ const Products = () => {
             id='deploy_new_hybrid'
             className='edit_selected_hybrid'
             >
-              <h2>Create new {hybrid.selectedHybrid}</h2>
-                <label htmlFor='hybrid-name label-first'>Name</label>
+              <h2>{fieldInfo.currentIdToUpdate > 0 ? "Edit" :"Create new"} {hybrid.selectedHybrid}</h2>
+                <label htmlFor='hybrid-name label-first'>Name*</label>
                 <input
                   className='inp-product-name'
                   type='text'
@@ -579,7 +579,7 @@ const Products = () => {
                 
                 {hybrid.selectedHybrid === "product" ? (
                   <>
-                  <label htmlFor='hybrid-price'>Price</label>
+                  <label htmlFor='hybrid-price'>Price*</label>
                   <input
                     className='inp-hybrid-price'
                     type='number'
@@ -593,7 +593,7 @@ const Products = () => {
                     }}
                     placeholder='###'
                   />
-                  <label htmlFor='product-quantity'>Quantity</label>
+                  <label htmlFor='product-quantity'>Quantity*</label>
                   <input
                     className='inp-product-quantity'
                     type='number'
@@ -610,7 +610,7 @@ const Products = () => {
                   </>
                 ): (
                     <>
-                    <label htmlFor='hybrid-price'>Actual Price</label>
+                    <label htmlFor='hybrid-price'>Actual Price*</label>
                     <input
                       className='inp-hybrid-price'
                       type='text'
@@ -647,7 +647,7 @@ const Products = () => {
                     </>
                 )}
 
-                <label htmlFor="hybrid_description">Description</label>
+                <label htmlFor="hybrid_description">Description*</label>
                 <textarea
                 name='hybrid_description'
                 placeholder='---' 

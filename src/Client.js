@@ -505,7 +505,7 @@ const Client = () => {
 
                 <table className='customer-table'>
                 {fieldInfo.fetchingData ? (<>
-                  <div style={{top: "130px"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
+                  <div style={{position: "relative", top:"130px"}} class="lds-ellipsis"><div></div><div></div><div></div></div>
                   </>) : null
                 }
                     <thead className='table-head'>
